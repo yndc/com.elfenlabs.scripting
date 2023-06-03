@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 
-namespace Yonderlabs.Scripting
+namespace Elfenlabs.Scripting
 {
     public struct Code
     {

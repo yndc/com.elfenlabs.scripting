@@ -1,7 +1,7 @@
 {
-    "name": "Yonderlabs.Scripting.Tests",
+    "name": "Elfenlabs.Scripting.Tests",
     "references": [
-        "Yonderlabs.Scripting",
+        "Elfenlabs.Scripting",
         "Unity.Burst",
         "Unity.Collections",
         "Unity.Entities",

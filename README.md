@@ -1,4 +1,6 @@
-# Yonderlabs.Scripting
+# Elfenscript
+
+An interpreted language designed for Unity DOTS. 
 
 ## Quickstart 
 

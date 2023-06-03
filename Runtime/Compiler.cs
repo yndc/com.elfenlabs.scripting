@@ -6,7 +6,7 @@ using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.VisualScripting;
 
-namespace Yonderlabs.Scripting
+namespace Elfenlabs.Scripting
 {
     public enum Precedence
     {

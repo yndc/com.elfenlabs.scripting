@@ -1,6 +1,6 @@
 using Unity.Entities;
 
-namespace Yonderlabs.Scripting
+namespace Elfenlabs.Scripting
 {
     public enum InstructionType : byte
     {

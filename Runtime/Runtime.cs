@@ -2,7 +2,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections;
 using System.Runtime.CompilerServices;
 
-namespace Yonderlabs.Scripting
+namespace Elfenlabs.Scripting
 {
     public enum ExecutionState
     {

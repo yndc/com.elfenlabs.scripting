@@ -1,5 +1,5 @@
 {
-    "name": "io.yonderlabs.scripting",
+    "name": "com.elfenlabs.scripting",
     "version": "0.0.0",
     "displayName": "Scripting Engine",
     "description": "An interpreted language designed for Unity DOTS",

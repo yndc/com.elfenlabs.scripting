@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Yonderlabs.Scripting
+namespace Elfenlabs.Scripting
 {
     public enum TokenType
     {

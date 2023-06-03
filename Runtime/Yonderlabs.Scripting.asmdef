@@ -1,5 +1,5 @@
 {
-    "name": "Yonderlabs.Scripting",
+    "name": "Elfenlabs.Scripting",
     "references": [
         "Unity.Burst",
         "Unity.Collections",
