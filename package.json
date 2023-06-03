@@ -1,7 +1,7 @@
 {
     "name": "com.elfenlabs.scripting",
     "version": "0.0.0",
-    "displayName": "Scripting Engine",
+    "displayName": "Elfenscript",
     "description": "An interpreted language designed for Unity DOTS",
     "unity": "2022.2",
     "unityRelease": "15f1",
