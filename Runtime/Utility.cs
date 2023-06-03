@@ -5,6 +5,8 @@ namespace Elfenlabs.Scripting
 {
     public static partial class CompilerUtility
     {
+        public const int WordSize = 4;
+
         public static int[] ToIntArray<T>(T value) where T : struct
         {
             var wordLength = UnsafeUtility.SizeOf<T>();

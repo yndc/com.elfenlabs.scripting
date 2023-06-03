@@ -75,7 +75,7 @@ namespace Elfenlabs.Scripting
         unsafe void PushConstant(ushort offset, byte wordLen)
         {
             Stack.ResizeUninitialized(StackPointer + wordLen);
-            UnsafeUtility.MemCpy(stackPtr + StackPointer, (int*)Code.Constants.GetUnsafeReadOnlyPtr() + offset, wordLen * 4);
+            UnsafeUtility.MemCpy(stackPtr + StackPointer, (int*)Code.Constants.GetUnsafeReadOnlyPtr() + offset, wordLen * CompilerUtility.WordSize);
             StackPointer += wordLen;
         }
 
@@ -88,7 +88,7 @@ namespace Elfenlabs.Scripting
         unsafe void PushVariable(ushort offset, byte wordLen)
         {
             Stack.ResizeUninitialized(StackPointer + wordLen);
-            UnsafeUtility.MemCpy(stackPtr + StackPointer, stackPtr + offset, wordLen * 4);
+            UnsafeUtility.MemCpy(stackPtr + StackPointer, stackPtr + offset, wordLen * CompilerUtility.WordSize);
             StackPointer += wordLen;
         }
     }

@@ -1,19 +1,10 @@
 using NUnit.Framework;
 using Unity.Collections;
-using UnityEngine;
 
 namespace Elfenlabs.Scripting.Tests
 {
     public class ExpressionTests
     {
-        Machine machine;
-
-        [SetUp]
-        public void Setup()
-        {
-            machine = new Machine(1024, Allocator.Temp);
-        }
-
         [Test]
         public void Precedence()
         {

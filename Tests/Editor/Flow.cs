@@ -2,15 +2,15 @@ using NUnit.Framework;
 
 namespace Elfenlabs.Scripting.Tests
 {
-    public class VariableTests
+    public class FlowTests
     {
         [Test]
-        public void Order()
+        public void If()
         {
             var stack = CompilerUtility.Debug(@"
-                var a = 1 - 20          // -19
-                var b = 2 + (-a * 2)    // 40
-                var c = a + b           // 21
+                var a = 5
+                if a > 0 
+                    a = a + 10
             ");
 
             Assert.AreEqual(-19, stack[0]);
