@@ -9,6 +9,7 @@ namespace Elfenlabs.Scripting
     {
         public NativeArray<Instruction> Instructions;
         public NativeArray<uint> Constants;
+        public bool IsEmpty => !Instructions.IsCreated && !Constants.IsCreated; 
         public Code(NativeList<Instruction> instructions, NativeList<uint> constants)
         {
             Instructions = instructions.AsArray();
@@ -45,6 +46,19 @@ namespace Elfenlabs.Scripting
         public void Add(Instruction instruction)
         {
             m_Instructions.Add(instruction);
+        }
+
+        public ushort AddConstant(int[] value)
+        {
+            fixed(int* ptr = value)
+            {
+                var offset = (ushort)m_Constants.Length;
+                var wordLength = value.Length;
+                m_Constants.ResizeUninitialized(m_Constants.Length + wordLength);
+                UnsafeUtility.MemCpy(m_Constants.GetUnsafePtr() + offset, ptr, wordLength * sizeof(int));
+                Add(new Instruction(InstructionType.LoadConstant, offset, (byte)wordLength));
+                return offset;
+            }
         }
 
         public ushort AddConstant<T>(T value) where T : unmanaged

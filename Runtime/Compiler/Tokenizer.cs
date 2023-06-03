@@ -3,71 +3,24 @@ using System.Collections.Generic;
 
 namespace Elfenlabs.Scripting
 {
-    public enum TokenType
-    {
-        Invalid,
-
-        // Single character tokens
-        LeftParentheses, RightParentheses,
-        Comma, Dot,
-        Minus, Plus, Slash, Asterisk,
-
-        // One or two character tokens
-        Bang, BangEqual,
-        Equal, EqualEqual,
-        Greater, GreaterEqual,
-        Less, LessEqual,
-
-        // Literals
-        Identifier, String, Integer, Float,
-
-        // Keywords
-        If, Else,
-        True, False, Null,
-        Structure, Function,
-        And, Or,
-        Loop,
-        External,
-        Return,
-        Global,
-        Variable,
-
-        // Formatting
-        NewLine, Indent,
-
-        // Structural 
-        StatementTerminator,
-
-        // Miscelanous
-        Error,
-
-        // End of file
-        EOF
-    }
-
-    public struct Token
-    {
-        public TokenType Type;
-        public string Value;
-        public int Line;
-        public int Column;
-
-        public static Token Invalid => new Token { Type = TokenType.Error, Value = "Invalid token" };
-        public static Token TerminatorFromNewline(Token newline) => new Token { Type = TokenType.StatementTerminator, Value = "", Line = newline.Line, Column = newline.Column };
-    }
-
     public class Tokenizer
     {
-        string _source;
-        int _tail;
-        int _head;
-        int _line;
-        int _longestSymbolLength = 0;
-        LinkedList<Token> _tokens = new LinkedList<Token>();
-        Dictionary<string, TokenType> _symbols = new();
+        readonly string source;
+        readonly Dictionary<string, TokenType> symbols = new();
+        LinkedList<Token> tokens = new LinkedList<Token>();
+        int tail;
+        int head;
+        int line;
+        int longestSymbolLength = 0;
 
-        public Tokenizer()
+        public static LinkedList<Token> Tokenize(string source)
         {
+            return new Tokenizer(source).Tokenize();
+        }
+
+        public Tokenizer(string source)
+        {
+            // Add symbols
             AddSymbol("if", TokenType.If);
             AddSymbol("else", TokenType.Else);
             AddSymbol("true", TokenType.True);
@@ -98,19 +51,16 @@ namespace Elfenlabs.Scripting
             AddSymbol("!", TokenType.Bang);
             AddSymbol(",", TokenType.Comma);
             AddSymbol(".", TokenType.Dot);
+
+            this.source = source;
         }
 
-        public LinkedList<Token> Tokenize(string source)
+        public LinkedList<Token> Tokenize()
         {
-            _source = source;
-            _tail = 0;
-            _head = 0;
-            _line = 0;
-            _tokens.Clear();
             do ScanNextToken();
             while (Last().Type != TokenType.EOF && Last().Type != TokenType.Error);
             CleanFormatting();
-            return _tokens;
+            return tokens;
         }
 
         void ScanNextToken()
@@ -140,27 +90,27 @@ namespace Elfenlabs.Scripting
 
         void AddToken(TokenType type)
         {
-            var oldCursor = _tail;
-            if (_head == _tail) _head++;
-            _head = Math.Min(_head, _source.Length);
-            _tail = _head;
-            _tokens.AddLast(new Token
+            var oldCursor = tail;
+            if (head == tail) head++;
+            head = Math.Min(head, source.Length);
+            tail = head;
+            tokens.AddLast(new Token
             {
                 Type = type,
-                Value = _source[oldCursor.._head],
-                Line = _line,
+                Value = source[oldCursor..head],
+                Line = line,
                 Column = oldCursor
             });
         }
 
         void AddError(string message)
         {
-            _tokens.AddLast(new Token
+            tokens.AddLast(new Token
             {
                 Type = TokenType.Error,
                 Value = message,
-                Line = _line,
-                Column = _tail
+                Line = line,
+                Column = tail
             });
         }
 
@@ -242,13 +192,13 @@ namespace Elfenlabs.Scripting
             var longestMatchLength = 0;
 
             // Prioritize matching the longest symbol
-            for (int length = 1; length < _longestSymbolLength; length++)
+            for (int length = 1; length < longestSymbolLength; length++)
             {
                 if (Peek() == '\0')
                     break;
 
                 var str = CurrentSlice();
-                if (_symbols.TryGetValue(str, out var match))
+                if (symbols.TryGetValue(str, out var match))
                 {
                     longestMatch = match;
                     longestMatchLength = length;
@@ -290,35 +240,35 @@ namespace Elfenlabs.Scripting
 
         char Peek(int offset = 0)
         {
-            var next = _head + offset;
-            if (next > _source.Length - 1)
+            var next = head + offset;
+            if (next > source.Length - 1)
                 return '\0';
-            return _source[next];
+            return source[next];
         }
 
         string PeekSlice(int length, int offset = 0)
         {
 
-            var start = Math.Min(_head + offset, _source.Length);
-            var end = Math.Min(start + length, _source.Length);
-            return _source[start..end];
+            var start = Math.Min(head + offset, source.Length);
+            var end = Math.Min(start + length, source.Length);
+            return source[start..end];
         }
 
         string CurrentSlice()
         {
-            return _source[_tail.._head];
+            return source[tail..head];
         }
 
         void Skip(int length = 1)
         {
-            _tail += 1;
-            _head = Math.Max(_head, _tail);
+            tail += 1;
+            head = Math.Max(head, tail);
         }
 
         bool AdvanceHead(int length = 1)
         {
-            _head += length;
-            if (_head >= _source.Length)
+            head += length;
+            if (head >= source.Length)
                 return false;
 
             return true;
@@ -326,7 +276,7 @@ namespace Elfenlabs.Scripting
 
         void ResetHead(int offset = 0)
         {
-            _head = _tail + offset;
+            head = tail + offset;
         }
 
         void SkipWhitespace()
@@ -338,7 +288,7 @@ namespace Elfenlabs.Scripting
                 {
                     case '\n':
                         AddToken(TokenType.NewLine);
-                        _line++;
+                        line++;
                         Skip();
                         break;
                     case '\t':
@@ -375,13 +325,13 @@ namespace Elfenlabs.Scripting
 
         void AddSymbol(string str, TokenType type)
         {
-            _symbols.Add(str, type);
-            _longestSymbolLength = Math.Max(_longestSymbolLength, str.Length);
+            symbols.Add(str, type);
+            longestSymbolLength = Math.Max(longestSymbolLength, str.Length);
         }
 
         Token Last()
         {
-            return _tokens.Last.Value;
+            return tokens.Last.Value;
         }
 
         /// <summary>
@@ -411,7 +361,7 @@ namespace Elfenlabs.Scripting
                 return;
 
             var lineDepth = 0;
-            for (var node = _tokens.First; node.Next != null; node = node.Next)
+            for (var node = tokens.First; node.Next != null; node = node.Next)
             {
                 var token = node.Value;
                 switch (token.Type)
@@ -438,7 +388,7 @@ namespace Elfenlabs.Scripting
         void RemoveRedundantNewLines()
         {
             var lineHasContent = false;
-            for (var node = _tokens.First; node.Next != null; node = node.Next)
+            for (var node = tokens.First; node.Next != null; node = node.Next)
             {
                 var token = node.Value;
                 switch (token.Type)
@@ -468,7 +418,7 @@ namespace Elfenlabs.Scripting
             //var expressionTokens = new HashSet<TokenType> { 
             //    TokenType.And, TokenType.Or, TokenType.
             //};
-            for (var node = _tokens.First; node.Next != null; node = node.Next)
+            for (var node = tokens.First; node.Next != null; node = node.Next)
             {
                 var token = node.Value;
                 switch (token.Type)
@@ -476,7 +426,7 @@ namespace Elfenlabs.Scripting
                     case TokenType.StatementTerminator:
                         if (node.Next.Value.Type == TokenType.Indent)
                         {
-                            _tokens.Remove(node.Next);
+                            tokens.Remove(node.Next);
                             node = RemoveNode(node);
                         }
                         break;
@@ -489,7 +439,7 @@ namespace Elfenlabs.Scripting
         int GetBaseIndentation()
         {
             var baseDepth = 0;
-            foreach (var token in _tokens)
+            foreach (var token in tokens)
             {
                 switch (token.Type)
                 {
@@ -511,8 +461,8 @@ namespace Elfenlabs.Scripting
         LinkedListNode<Token> RemoveNode(LinkedListNode<Token> node)
         {
             var prev = node.Previous;
-            _tokens.Remove(node);
-            prev ??= _tokens.First;
+            tokens.Remove(node);
+            prev ??= tokens.First;
             return prev;
         }
     }

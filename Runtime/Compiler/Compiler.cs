@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
-using Unity.VisualScripting;
 
 namespace Elfenlabs.Scripting
 {
@@ -182,6 +181,16 @@ namespace Elfenlabs.Scripting
         Dictionary<string, Function> functions;
         Dictionary<string, ValueType> types;
 
+        public static Code Compile(string source)
+        {
+            return new Compiler(new Tokenizer(source).Tokenize()).Compile();
+        }
+
+        public static Code Compile(LinkedList<Token> tokens)
+        {
+            return new Compiler(tokens).Compile();
+        }
+
         public Compiler(LinkedList<Token> tokens)
         {
             current = tokens.First;
@@ -250,9 +259,9 @@ namespace Elfenlabs.Scripting
                 while (!MatchAdvance(TokenType.EOF))
                     ConsumeDeclaration();
             }
-            catch (Exception exception)
+            catch (CompilerException exception)
             {
-                throw new System.Exception($"{exception.Message}\n at line {exception.Token.Line}, column {exception.Token.Column}");
+                throw new System.Exception($"{exception.Message} at line {exception.Token.Line}, column {exception.Token.Column}");
             }
 
             return builder.Build();
@@ -278,7 +287,7 @@ namespace Elfenlabs.Scripting
             {
                 default:
                     ConsumeExpression();
-                    Expect(TokenType.StatementTerminator, "Expected ';' after expression");
+                    Expect(TokenType.StatementTerminator, "Expected new-line after statement");
                     builder.Add(new Instruction(InstructionType.Pop));
                     break;
             }
@@ -294,7 +303,7 @@ namespace Elfenlabs.Scripting
 
             var valueType = ConsumeExpression();
             if (valueType == ValueType.Void)
-                throw new Exception(previous.Value, "Cannot declare variable of type void");
+                throw new CompilerException(previous.Value, "Cannot declare variable of type void");
 
             currentScope.DeclareVariable(variableName, valueType);
         }
@@ -309,7 +318,7 @@ namespace Elfenlabs.Scripting
             Advance();
             var prefixRule = GetRule(previous.Value.Type).Prefix;
             if (prefixRule == Handling.None)
-                throw new Exception(previous.Value, "Expected expression.");
+                throw new CompilerException(previous.Value, "Expected expression.");
 
             // This is the only place where infix operation is compiled, therefore we need to store the last value type here 
             lastValueType = ConsumeExpression(prefixRule);
@@ -342,13 +351,13 @@ namespace Elfenlabs.Scripting
                     {
                         case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntNegate)); break;
                         case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatNegate)); break;
-                        default: throw new Exception(previous.Value, "Invalid type {0} for symbol {1}", valueType.ToString(), TokenType.Minus.ToString());
+                        default: throw new CompilerException(previous.Value, "Invalid type {0} for symbol {1}", valueType.ToString(), TokenType.Minus.ToString());
                     }
                     break;
                 case TokenType.Bang:
                     AssertValueType(valueType, ValueType.Bool);
                     builder.Add(new Instruction(InstructionType.BoolNegate)); break;
-                default: throw new Exception(previous.Value, "Invalid unary symbol {0}", op.ToString());
+                default: throw new CompilerException(previous.Value, "Invalid unary symbol {0}", op.ToString());
             }
 
             return valueType;
@@ -453,7 +462,7 @@ namespace Elfenlabs.Scripting
                     builder.AddConstant(1);
                     return ValueType.Bool;
                 default:
-                    throw new Exception(
+                    throw new CompilerException(
                         previous.Value,
                         "Unknown literal {0} of type {1}",
                         str, previous.Value.Type.ToString());
@@ -485,7 +494,7 @@ namespace Elfenlabs.Scripting
                 return function.ReturnType;
             }
 
-            throw new Exception(previous.Value, "Unknown identifier {0}", identifier);
+            throw new CompilerException(previous.Value, "Unknown identifier {0}", identifier);
         }
 
         ValueType ConsumeExpression(Handling handling)
@@ -541,7 +550,7 @@ namespace Elfenlabs.Scripting
             if (current.Value.Type == type)
                 Advance();
             else
-                throw new Exception(current.Value, error ?? string.Format(
+                throw new CompilerException(current.Value, error ?? string.Format(
                     "Expected token {0} but get {1}",
                     type.ToString(),
                     current.Value.Type.ToString()));
@@ -550,7 +559,7 @@ namespace Elfenlabs.Scripting
         void AssertValueType(ValueType type, params ValueType[] set)
         {
             if (!set.Contains(type))
-                throw new Exception(previous.Value, string.Format(
+                throw new CompilerException(previous.Value, string.Format(
                     "Expected value type {0} to be any of {1}",
                     string.Join(", ", set.Select(x => x.ToString()).ToArray()),
                     type.Name));
@@ -559,21 +568,21 @@ namespace Elfenlabs.Scripting
         void AssertValueTypeEqual(ValueType lhs, ValueType rhs)
         {
             if (lhs != rhs)
-                throw new Exception(previous.Value, string.Format(
+                throw new CompilerException(previous.Value, string.Format(
                     "Expected value type {0} but received {1}",
                     lhs.Name, rhs.Name));
         }
 
-        public class Exception : System.Exception
+        public class CompilerException : System.Exception
         {
             public Token Token;
 
-            public Exception(Token token) : base(token.Value)
+            public CompilerException(Token token) : base(token.Value)
             {
                 this.Token = token;
             }
 
-            public Exception(Token token, string message, params string[] args) : base(message)
+            public CompilerException(Token token, string message, params string[] args) : base(message)
             {
                 message = string.Format(message, args);
                 this.Token = token;
@@ -587,69 +596,9 @@ namespace Elfenlabs.Scripting
         }
     }
 
-    public static class CompilerUtility
+    public static partial class CompilerUtility
     {
         public const int WordSize = 4;
-
-        public static string Debug(LinkedList<Token> tokens, bool ignoreFormatting = true)
-        {
-            var text = new StringBuilder();
-            foreach (var token in tokens)
-            {
-                switch (token.Type)
-                {
-                    case TokenType.NewLine: goto formatting;
-                    case TokenType.Indent: goto formatting;
-                    default:
-                        text.Append(token.Value); break;
-                    formatting: if (ignoreFormatting) continue; else break;
-                }
-                text.Append("\t");
-                text.Append(token.Type.ToString());
-                text.Append("\n");
-            }
-
-            return text.ToString();
-        }
-
-        public static string Debug(Code code)
-        {
-            var text = new StringBuilder();
-            var constants = code.Constants;
-            text.Append("-- Constants:\n");
-            for (var i = 0; i < constants.Length; i++)
-            {
-                text.Append(constants[i]);
-                text.Append("\t");
-                if ((i + 1) % 4 == 0) text.Append("\n");
-            }
-            text.Append("\n-- Instructions:\n");
-            for (var ip = 0; ip < code.Instructions.Length; ip++)
-            {
-                var instruction = code.Instructions[ip];
-                switch (instruction.Type)
-                {
-                    case InstructionType.LoadConstant:
-                        var index = instruction.ArgShort;
-                        var size = instruction.ArgByte1;
-                        text.Append("Load");
-                        text.Append("\t");
-                        text.Append(index);
-                        text.Append("\t");
-                        text.Append(size);
-                        text.Append("\n");
-                        break;
-                    default: text.Append(instruction.Type.ToString()); text.Append("\n"); break;
-                }
-            }
-
-            return text.ToString();
-        }
-
-        public static int GetWordLength<T>() where T : unmanaged
-        {
-            return (UnsafeUtility.SizeOf<T>() + WordSize - 1) / WordSize;
-        }
 
         public static unsafe T Read<T>(NativeArray<byte> bytes, int offset) where T : unmanaged
         {
