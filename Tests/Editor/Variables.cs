@@ -1,10 +1,9 @@
 using NUnit.Framework;
 using Unity.Collections;
-using UnityEngine;
 
 namespace Elfenlabs.Scripting.Tests
 {
-    public class ExpressionTests
+    public class VariableTests
     {
         Machine machine;
 
@@ -15,13 +14,17 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
-        public void Precedence()
+        public void Order()
         {
             var stack = CompilerUtility.Debug(@"
-                (8 - 1 + 3) * 6 - ((3 + 7) * 2) - 24 / 2 + 1 + (((2 - 5 * 4) / 2) + 1 * 100) * 2 - 5 + 5 * 2
+                var a = 1 - 20          // -19
+                var b = 2 + (-a * 2)    // 40
+                var c = a + b           // 21
             ");
 
-            Assert.AreEqual(216, stack[0]);
+            Assert.AreEqual(-19, stack[0]);
+            Assert.AreEqual(40, stack[1]);
+            Assert.AreEqual(21, stack[2]);
         }
     }
 }

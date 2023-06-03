@@ -17,9 +17,14 @@ namespace Elfenlabs.Scripting
             machine.Run();
             var stack = machine.GetStackSnapshot(Allocator.Temp);
             var snapshot = stack.ToArray();
+            UnityEngine.Debug.Log("-- Stack:");
+            for (var i = 0; i < snapshot.Length; i++)
+            {
+                UnityEngine.Debug.Log(snapshot[i]);
+            }
 
             machine.Dispose();
-            //stack.Dispose();
+            stack.Dispose();
 
             return snapshot;
         }

@@ -278,7 +278,6 @@ namespace Elfenlabs.Scripting
                     ConsumeStatement();
                     break;
             }
-            Expect(TokenType.StatementTerminator, "Expected new-line after statement");
         }
 
         void ConsumeStatement()
@@ -287,10 +286,10 @@ namespace Elfenlabs.Scripting
             {
                 default:
                     ConsumeExpression();
-                    Expect(TokenType.StatementTerminator, "Expected new-line after statement");
                     builder.Add(new Instruction(InstructionType.Pop));
                     break;
             }
+            Expect(TokenType.StatementTerminator, "Expected new-line after statement");
         }
 
         void ConsumeStatementVariableDeclaration()
@@ -306,6 +305,7 @@ namespace Elfenlabs.Scripting
                 throw new CompilerException(previous.Value, "Cannot declare variable of type void");
 
             currentScope.DeclareVariable(variableName, valueType);
+            Expect(TokenType.StatementTerminator, "Expected new-line after declaration");
         }
 
         ValueType ConsumeExpression()

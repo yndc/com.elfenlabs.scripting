@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Plastic.Newtonsoft.Json.Converters;
 
 namespace Elfenlabs.Scripting
 {
@@ -340,7 +341,7 @@ namespace Elfenlabs.Scripting
         /// </summary>
         void CleanFormatting()
         {
-            // First pass: remove redundant indentation
+            // First pass: normalize base indentation
             NormalizeIndentation();
 
             // Second pass: remove redundant newlines and replace relevant newlines with terminators
@@ -348,6 +349,9 @@ namespace Elfenlabs.Scripting
 
             // Third pass: remove line wrapping
             RemoveLineWrapping();
+
+            // Fourth pass: remove redundant indentation
+            RemoveRedundantIndents();
         }
 
         /// <summary>
@@ -405,6 +409,31 @@ namespace Elfenlabs.Scripting
                         break;
                     default:
                         lineHasContent = true;
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove all indentations that are not at the beginning of a line
+        /// </summary>
+        void RemoveRedundantIndents()
+        {
+            var isNewLine = true;
+            for (var node = tokens.First; node.Next != null; node = node.Next)
+            {
+                var token = node.Value;
+                switch (token.Type)
+                {
+                    case TokenType.Indent:
+                        if (!isNewLine)
+                            node = RemoveNode(node);
+                        break;
+                    case TokenType.StatementTerminator:
+                        isNewLine = true;
+                        break;
+                    default:
+                        isNewLine = false;
                         break;
                 }
             }
