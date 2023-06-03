@@ -1,0 +1,15 @@
+{
+    "name": "io.yonderlabs.scripting",
+    "version": "0.0.0",
+    "displayName": "Scripting Engine",
+    "description": "An interpreted language designed for Unity DOTS",
+    "unity": "2022.2",
+    "unityRelease": "15f1",
+    "dependencies": {
+        "com.unity.entities": "1.0.10"
+    },
+    "author": {
+        "name": "Yonder",
+        "email": "yondercode@gmail.com"
+    }
+}
