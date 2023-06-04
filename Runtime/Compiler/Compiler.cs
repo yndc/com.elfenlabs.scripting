@@ -142,6 +142,7 @@ namespace Elfenlabs.Scripting
             parseRules[(int)TokenType.Slash] = new ParseRule(Handling.None, Handling.Binary, Precedence.Factor);
             parseRules[(int)TokenType.Asterisk] = new ParseRule(Handling.None, Handling.Binary, Precedence.Factor);
             parseRules[(int)TokenType.Bang] = new ParseRule(Handling.Unary);
+            parseRules[(int)TokenType.And] = new ParseRule(Handling.None, Handling.And, Precedence.And);
 
             // Literal values
             parseRules[(int)TokenType.Integer] = new ParseRule(Handling.Literal);
@@ -152,6 +153,7 @@ namespace Elfenlabs.Scripting
             // Structural
             parseRules[(int)TokenType.StatementTerminator] = new ParseRule();
             parseRules[(int)TokenType.EOF] = new ParseRule();
+            parseRules[(int)TokenType.Then] = new ParseRule();
 
             // Comparison 
             parseRules[(int)TokenType.BangEqual] = new ParseRule(Handling.None, Handling.Binary, Precedence.Equality);
@@ -171,15 +173,8 @@ namespace Elfenlabs.Scripting
 
         public Code Compile()
         {
-            try
-            {
-                while (!MatchAdvance(TokenType.EOF))
-                    ConsumeDeclaration();
-            }
-            catch (CompilerException exception)
-            {
-                throw new System.Exception($"{exception.Message} at line {exception.Token.Line}, column {exception.Token.Column}");
-            }
+            while (!MatchAdvance(TokenType.EOF))
+                ConsumeDeclaration();
 
             return builder.Build();
         }
@@ -201,6 +196,9 @@ namespace Elfenlabs.Scripting
         {
             switch (current.Value.Type)
             {
+                case TokenType.If:
+                    ConsumeStatementIf();
+                    break;
                 default:
                     ConsumeExpression();
                     builder.Add(new Instruction(InstructionType.Pop));
@@ -229,6 +227,8 @@ namespace Elfenlabs.Scripting
 
         ParseRule GetRule(TokenType type)
         {
+            if (parseRules[(int)type] == null)
+                throw new CompilerException(current.Value, string.Format("No parse rule for token '{0}'", type.ToString()));
             return parseRules[(int)type];
         }
 
@@ -241,6 +241,14 @@ namespace Elfenlabs.Scripting
                     "Expected token {0} but get {1}",
                     type.ToString(),
                     current.Value.Type.ToString()));
+        }
+
+        void Expect(TokenType type, int count, string error = null)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                Expect(type, error);
+            }
         }
 
         void AssertValueType(ValueType type, params ValueType[] set)

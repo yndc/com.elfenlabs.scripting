@@ -83,6 +83,16 @@ namespace Elfenlabs.Scripting
                         YieldStartTime = env.Time;
                         YieldDuration = instruction.ArgShort;
                         return false;
+                    case InstructionType.Jump:
+                        InstructionPointer += instruction.ArgShort;
+                        break;
+                    case InstructionType.JumpIfFalse:
+                        {
+                            var value = Peek<bool>();
+                            if (value == false)
+                                InstructionPointer += instruction.ArgShort;
+                            break;
+                        }
 
                     // Stack operations
                     case InstructionType.LoadConstant:

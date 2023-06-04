@@ -23,6 +23,7 @@ namespace Elfenlabs.Scripting
         {
             // Add symbols
             AddSymbol("if", TokenType.If);
+            AddSymbol("then", TokenType.Then);
             AddSymbol("else", TokenType.Else);
             AddSymbol("true", TokenType.True);
             AddSymbol("false", TokenType.False);
@@ -348,7 +349,7 @@ namespace Elfenlabs.Scripting
             RemoveRedundantNewLines();
 
             // Third pass: remove line wrapping
-            RemoveLineWrapping();
+            //RemoveLineWrapping();
 
             // Fourth pass: remove redundant indentation
             RemoveRedundantIndents();
@@ -444,9 +445,6 @@ namespace Elfenlabs.Scripting
         /// </summary>
         void RemoveLineWrapping()
         {
-            //var expressionTokens = new HashSet<TokenType> { 
-            //    TokenType.And, TokenType.Or, TokenType.
-            //};
             for (var node = tokens.First; node.Next != null; node = node.Next)
             {
                 var token = node.Value;

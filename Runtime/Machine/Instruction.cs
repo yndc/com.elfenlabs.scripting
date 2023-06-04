@@ -4,10 +4,20 @@ namespace Elfenlabs.Scripting
 {
     public enum InstructionType : byte
     {
+        // --------------------------------
+        // Control flow operations 
+        // --------------------------------
+
         Halt,
         Yield,
+        Jump,               // <short>    - The offset to jump to
+        JumpIfFalse,        // <short>    - The offset to jump to if the condition is false
+        JumpIfTrue,         // <short>    - The offset to jump to if the condition is true
 
-        // Load operations
+        // --------------------------------
+        // Stack operations
+        // --------------------------------
+
         LoadConstant,       // <short>    - The index of the constant to load
                             // <byte>     - The number of words to load from the constant
 
@@ -16,26 +26,29 @@ namespace Elfenlabs.Scripting
 
         Pop,                // <short>    - The number of words to pop from the stack
 
-        // Integer operations
+
+        // --------------------------------
+        // Value operations
+        // --------------------------------
+
         IntAdd,
         IntSubstract,
         IntMultiply,
         IntDivide,
         IntModulo,
         IntNegate,
-
-        // Float operations
         FloatAdd,
         FloatSubstract,
         FloatMultiply,
         FloatDivide,
         FloatModulo,
         FloatNegate,
-
-        // Boolean operations
         BoolNegate,
 
+        // --------------------------------
         // Comparison operations
+        // --------------------------------
+
         Equal,      // Equality can be used for any data type as we compare the raw bytes
         NotEqual,
         IntLessThan,
@@ -62,6 +75,10 @@ namespace Elfenlabs.Scripting
             get
             {
                 fixed (byte* ptr = Data) return *(ushort*)(ptr + 2);
+            }
+            set
+            {
+                fixed (byte* ptr = Data) *(ushort*)(ptr + 2) = value;
             }
         }
 

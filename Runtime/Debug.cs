@@ -35,7 +35,7 @@ namespace Elfenlabs.Scripting
         /// <param name="tokens"></param>
         /// <param name="ignoreFormatting"></param>
         /// <returns></returns>
-        public static string Debug(LinkedList<Token> tokens, bool ignoreFormatting = true)
+        public static string Debug(LinkedList<Token> tokens, bool ignoreFormatting = false)
         {
             var text = new StringBuilder();
             foreach (var token in tokens)

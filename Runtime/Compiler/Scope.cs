@@ -41,6 +41,25 @@ namespace Elfenlabs.Scripting
 
     public partial class Compiler
     {
+        void ConsumeBlock()
+        {
+            BeginScope();
+
+            var depth = currentScope.Depth;
+
+            while (true)
+            {
+                var indent = ConsumeIndents();
+                if (indent < depth)
+                {
+                    EndScope();
+                    return;
+                }
+
+                ConsumeStatement();
+            }
+        }
+
         void BeginScope()
         {
             var scope = new Scope { Parent = currentScope, Depth = currentScope.Depth + 1 };
@@ -51,6 +70,14 @@ namespace Elfenlabs.Scripting
         {
             builder.Add(new Instruction(InstructionType.Pop, currentScope.WordLength));
             currentScope = currentScope.Parent;
+        }
+
+        int ConsumeIndents()
+        {
+            var count = 0;
+            while (MatchAdvance(TokenType.Indent))
+                count++;
+            return count;
         }
     }
 }

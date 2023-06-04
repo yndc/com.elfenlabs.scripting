@@ -9,7 +9,7 @@ namespace Elfenlabs.Scripting
     {
         public NativeArray<Instruction> Instructions;
         public NativeArray<uint> Constants;
-        public bool IsEmpty => !Instructions.IsCreated && !Constants.IsCreated; 
+        public bool IsEmpty => !Instructions.IsCreated && !Constants.IsCreated;
         public Code(NativeList<Instruction> instructions, NativeList<uint> constants)
         {
             Instructions = instructions.AsArray();
@@ -21,6 +21,8 @@ namespace Elfenlabs.Scripting
     {
         NativeList<Instruction> m_Instructions;
         NativeList<uint> m_Constants;
+
+        public int Length => m_Instructions.Length;
 
         public CodeBuilder(Allocator allocator)
         {
@@ -43,14 +45,20 @@ namespace Elfenlabs.Scripting
             Add(new Instruction(InstructionType.Yield, time.value));
         }
 
-        public void Add(Instruction instruction)
+        public int Add(Instruction instruction)
         {
             m_Instructions.Add(instruction);
+            return m_Instructions.Length - 1;
+        }
+
+        public ref Instruction Patch(int index)
+        {
+            return ref m_Instructions.ElementAt(index);
         }
 
         public ushort AddConstant(int[] value)
         {
-            fixed(int* ptr = value)
+            fixed (int* ptr = value)
             {
                 var offset = (ushort)m_Constants.Length;
                 var wordLength = value.Length;

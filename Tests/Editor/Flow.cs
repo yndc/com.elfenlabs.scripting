@@ -8,14 +8,14 @@ namespace Elfenlabs.Scripting.Tests
         public void If()
         {
             var stack = CompilerUtility.Debug(@"
-                var a = 5
-                if a > 0 
-                    a = a + 10
+                var a = 0
+
+                if a > 0 then
+                    a = a + 1
+                a = a + 2
             ");
 
-            Assert.AreEqual(-19, stack[0]);
-            Assert.AreEqual(40, stack[1]);
-            Assert.AreEqual(21, stack[2]);
+            Assert.AreEqual(15, stack[0]);
         }
     }
 }

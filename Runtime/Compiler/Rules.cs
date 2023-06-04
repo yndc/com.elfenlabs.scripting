@@ -32,6 +32,7 @@ namespace Elfenlabs.Scripting
         Binary,
         Literal,
         Identifier,
+        And
     }
 
     public class ParseRule

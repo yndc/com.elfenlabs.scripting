@@ -19,7 +19,7 @@ namespace Elfenlabs.Scripting
         Identifier, String, Integer, Float,
 
         // Keywords
-        If, Else,
+        If, Then, Else,
         True, False, Null,
         Structure, Function,
         And, Or,
