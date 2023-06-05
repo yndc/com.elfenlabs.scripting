@@ -29,22 +29,12 @@ namespace Elfenlabs.Scripting
         /// Prepare the virtual machine with the given code
         /// </summary>
         /// <param name="code"></param>
-        public unsafe void Insert(Code code)
+        public unsafe void Insert(ByteCode code)
         {
             Code = code;
             StackPointer = 0;
             InstructionPointer = 0;
             State = ExecutionState.Running;
-        }
-
-        /// <summary>
-        /// Prepare the virtual machine with the given source code. 
-        /// The code will be compiled before being inserted.
-        /// </summary>
-        /// <param name="source"></param>
-        public void Insert(string source)
-        {
-            Insert(Compiler.Compile(source));
         }
 
         public unsafe bool Run(EnvironmentState state = default)
@@ -88,7 +78,7 @@ namespace Elfenlabs.Scripting
                         break;
                     case InstructionType.JumpIfFalse:
                         {
-                            var value = Peek<bool>();
+                            var value = Pop<bool>();
                             if (value == false)
                                 InstructionPointer += instruction.ArgShort;
                             break;
@@ -100,6 +90,9 @@ namespace Elfenlabs.Scripting
                         break;
                     case InstructionType.LoadVariable:
                         PushVariable(instruction.ArgShort, instruction.ArgByte1);
+                        break;
+                    case InstructionType.StoreVariable:
+                        StoreVariable(instruction.ArgShort, instruction.ArgByte1);
                         break;
                     case InstructionType.Pop:
                         Remove(instruction.ArgShort);

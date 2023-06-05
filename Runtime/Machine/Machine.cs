@@ -1,6 +1,5 @@
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections;
-using System.Runtime.CompilerServices;
 using Unity.Jobs;
 
 namespace Elfenlabs.Scripting
@@ -13,7 +12,7 @@ namespace Elfenlabs.Scripting
         public float YieldStartTime;
         public NativeList<int> Stack;
         public ExecutionState State;
-        public Code Code;
+        public ByteCode Code;
         int* stackPtr;
 
         public Machine(int initialStackCapacity, Allocator allocator)
@@ -26,12 +25,6 @@ namespace Elfenlabs.Scripting
             State = ExecutionState.Running;
             Code = default;
             stackPtr = Stack.GetUnsafePtr();
-        }
-
-        public void Run(string sourceCode)
-        {
-            Insert(sourceCode);
-            Run();
         }
 
         public void Dispose()

@@ -12,7 +12,7 @@ namespace Elfenlabs.Scripting
             Advance();
             var prefixRule = GetRule(previous.Value.Type).Prefix;
             if (prefixRule == Handling.None)
-                throw new CompilerException(previous.Value, "Expected expression.");
+                throw CreateException(previous.Value, "Expected expression.");
 
             // This is the only place where infix operation is compiled, therefore we need to store the last value type here 
             lastValueType = ConsumeExpression(prefixRule);
@@ -45,13 +45,13 @@ namespace Elfenlabs.Scripting
                     {
                         case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntNegate)); break;
                         case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatNegate)); break;
-                        default: throw new CompilerException(previous.Value, "Invalid type {0} for symbol {1}", valueType.ToString(), TokenType.Minus.ToString());
+                        default: throw CreateException(previous.Value, $"Invalid type {valueType} for symbol {TokenType.Minus}");
                     }
                     break;
                 case TokenType.Bang:
                     AssertValueType(valueType, ValueType.Bool);
                     builder.Add(new Instruction(InstructionType.BoolNegate)); break;
-                default: throw new CompilerException(previous.Value, "Invalid unary symbol {0}", op.ToString());
+                default: throw CreateException(previous.Value, $"Invalid unary symbol {op}");
             }
 
             return valueType;
@@ -156,10 +156,7 @@ namespace Elfenlabs.Scripting
                     builder.AddConstant(1);
                     return ValueType.Bool;
                 default:
-                    throw new CompilerException(
-                        previous.Value,
-                        "Unknown literal {0} of type {1}",
-                        str, previous.Value.Type.ToString());
+                    throw CreateException(previous.Value, $"Unknown literal {str} of type {previous.Value.Type}");
             };
         }
 
@@ -175,7 +172,7 @@ namespace Elfenlabs.Scripting
             }
 
             // Check if it refers to a variable
-            if (currentScope.Variables.TryGetValue(identifier, out Variable variable))
+            if (currentScope.TryGetVariable(identifier, out var variable))
             {
                 builder.Add(new Instruction(InstructionType.LoadVariable, variable.Position, variable.Type.WordLength));
                 return variable.Type;
@@ -188,7 +185,7 @@ namespace Elfenlabs.Scripting
                 return function.ReturnType;
             }
 
-            throw new CompilerException(previous.Value, "Unknown identifier {0}", identifier);
+            throw CreateException(previous.Value, $"Unknown expression identifier {identifier}");
         }
 
         ValueType ConsumeExpression(Handling handling)

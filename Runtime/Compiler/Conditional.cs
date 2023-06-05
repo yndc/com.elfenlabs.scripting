@@ -10,6 +10,9 @@ namespace Elfenlabs.Scripting
             ConsumeExpression();
             Expect(TokenType.Then, "Expected 'then' after condition");
 
+            // Ignore the next statement terminator 
+            Ignore(TokenType.StatementTerminator);
+
             // Jump to the else block if the condition is false
             var jumpToElseInstructionIndex = builder.Add(new Instruction(InstructionType.JumpIfFalse, 0));
 
@@ -17,14 +20,14 @@ namespace Elfenlabs.Scripting
             ConsumeBlock();
             var jumpToEndInstructionIndex = builder.Add(new Instruction(InstructionType.Jump, 0));
 
-            builder.Patch(jumpToElseInstructionIndex).ArgShort = (ushort)(builder.Length - jumpToElseInstructionIndex);
+            builder.Patch(jumpToElseInstructionIndex).ArgShort = (ushort)(builder.InstructionCount - jumpToElseInstructionIndex - 1);
 
             if (MatchAdvance(TokenType.Else))
             {
                 ConsumeBlock();
             }
 
-            builder.Patch(jumpToEndInstructionIndex).ArgShort = (ushort)(builder.Length - jumpToEndInstructionIndex);
+            builder.Patch(jumpToEndInstructionIndex).ArgShort = (ushort)(builder.InstructionCount - jumpToEndInstructionIndex - 1);
         }
     }
 }

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Unity.Entities;
+using Unity.Mathematics;
 
 namespace Elfenlabs.Scripting
 {
@@ -23,6 +25,9 @@ namespace Elfenlabs.Scripting
 
         LoadVariable,       // <short>    - The index of the variable to load
                             // <byte>     - The number of words to load from the stack
+
+        StoreVariable,      // <short>    - The index of the variable to store
+                            // <byte>     - The number of words to store from the stack
 
         Pop,                // <short>    - The number of words to pop from the stack
 
@@ -59,6 +64,18 @@ namespace Elfenlabs.Scripting
         FloatLessThanEqual,
         FloatGreaterThan,
         FloatGreaterThanEqual,
+    }
+
+    // Instruction layout format (O = opcode, S = short, B = byte)
+    public enum Format
+    {
+        O,
+        OS,
+        OBS,
+        OBBB,
+        I,
+        SS,
+        BBBB,
     }
 
     public unsafe struct Instruction
@@ -148,44 +165,49 @@ namespace Elfenlabs.Scripting
         }
     }
 
-    public unsafe struct A
-    {
-        public fixed byte Data[1024];
-
-        // blah methods
-    }
-
-    public unsafe struct B
-    {
-        public fixed byte Data[1024];
-
-        // blah methods 
-
-        public A AsStructA()
-        {
-            return Utility.UnsafeCast<A, B>(this);
-        }
-    }
-
-    public unsafe static class Utility
+    public unsafe static class InstructionUtility
     {
         public static unsafe T UnsafeCast<T, R>(R input) where T : unmanaged where R : unmanaged
         {
             return *(T*)&input;
         }
-    }
 
-    //public unsafe struct InstructionData
-    //{
-    //    public fixed byte Data[4];
-    //    public int ArgInt => *(int*)Data[0];
-    //    public short ArgShort1 => *(short*)Data[0];
-    //    public short ArgShort2 => *(short*)Data[2];
-    //    public byte ArgByte1 => Data[1];
-    //    public byte ArgByte2 => Data[2];
-    //    public byte ArgByte3 => Data[3];
-    //    public byte ArgByte4 => Data[4];
-    //}
+        public static Dictionary<InstructionType, Format> InstructionFormats = new()
+        {
+            { InstructionType.Halt, Format.O },
+            { InstructionType.Yield, Format.OS },
+            { InstructionType.Jump, Format.OS },
+            { InstructionType.JumpIfFalse, Format.OS },
+            { InstructionType.JumpIfTrue, Format.OS },
+            { InstructionType.LoadConstant, Format.OBS },
+            { InstructionType.LoadVariable, Format.OBS },
+            { InstructionType.StoreVariable, Format.OBS },
+            { InstructionType.Pop, Format.OS },
+            { InstructionType.IntAdd, Format.O },
+            { InstructionType.IntSubstract, Format.O },
+            { InstructionType.IntMultiply, Format.O },
+            { InstructionType.IntDivide, Format.O },
+            { InstructionType.IntModulo, Format.O },
+            { InstructionType.IntNegate, Format.O },
+            { InstructionType.FloatAdd, Format.O },
+            { InstructionType.FloatSubstract, Format.O },
+            { InstructionType.FloatMultiply, Format.O },
+            { InstructionType.FloatDivide, Format.O },
+            { InstructionType.FloatModulo, Format.O },
+            { InstructionType.FloatNegate, Format.O },
+            { InstructionType.BoolNegate, Format.O },
+            { InstructionType.Equal, Format.O },
+            { InstructionType.NotEqual, Format.O },
+            { InstructionType.IntLessThan, Format.O },
+            { InstructionType.IntLessThanEqual, Format.O },
+            { InstructionType.IntGreaterThan, Format.O },
+            { InstructionType.IntGreaterThanEqual, Format.O },
+            { InstructionType.FloatLessThan, Format.O },
+            { InstructionType.FloatLessThanEqual, Format.O },
+            { InstructionType.FloatGreaterThan, Format.O },
+            { InstructionType.FloatGreaterThanEqual, Format.O },
+        };
+    }
 
     public struct Script
     {

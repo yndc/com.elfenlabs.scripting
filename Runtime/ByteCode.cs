@@ -2,15 +2,16 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using System.Collections.Generic;
 
 namespace Elfenlabs.Scripting
 {
-    public struct Code
+    public struct ByteCode
     {
         public NativeArray<Instruction> Instructions;
-        public NativeArray<uint> Constants;
+        public NativeArray<int> Constants;
         public bool IsEmpty => !Instructions.IsCreated && !Constants.IsCreated;
-        public Code(NativeList<Instruction> instructions, NativeList<uint> constants)
+        public ByteCode(NativeList<Instruction> instructions, NativeList<int> constants)
         {
             Instructions = instructions.AsArray();
             Constants = constants.AsArray();
@@ -19,15 +20,15 @@ namespace Elfenlabs.Scripting
 
     public unsafe struct CodeBuilder
     {
-        NativeList<Instruction> m_Instructions;
-        NativeList<uint> m_Constants;
+        NativeList<Instruction> instructions;
+        NativeList<int> constants;
 
-        public int Length => m_Instructions.Length;
+        public int InstructionCount => instructions.Length;
 
         public CodeBuilder(Allocator allocator)
         {
-            m_Instructions = new NativeList<Instruction>(allocator);
-            m_Constants = new NativeList<uint>(allocator);
+            instructions = new NativeList<Instruction>(allocator);
+            constants = new NativeList<int>(allocator);
         }
 
         public void Halt()
@@ -47,23 +48,23 @@ namespace Elfenlabs.Scripting
 
         public int Add(Instruction instruction)
         {
-            m_Instructions.Add(instruction);
-            return m_Instructions.Length - 1;
+            instructions.Add(instruction);
+            return instructions.Length - 1;
         }
 
         public ref Instruction Patch(int index)
         {
-            return ref m_Instructions.ElementAt(index);
+            return ref instructions.ElementAt(index);
         }
 
         public ushort AddConstant(int[] value)
         {
             fixed (int* ptr = value)
             {
-                var offset = (ushort)m_Constants.Length;
+                var offset = (ushort)constants.Length;
                 var wordLength = value.Length;
-                m_Constants.ResizeUninitialized(m_Constants.Length + wordLength);
-                UnsafeUtility.MemCpy(m_Constants.GetUnsafePtr() + offset, ptr, wordLength * sizeof(int));
+                constants.ResizeUninitialized(constants.Length + wordLength);
+                UnsafeUtility.MemCpy(constants.GetUnsafePtr() + offset, ptr, wordLength * sizeof(int));
                 Add(new Instruction(InstructionType.LoadConstant, offset, (byte)wordLength));
                 return offset;
             }
@@ -71,36 +72,36 @@ namespace Elfenlabs.Scripting
 
         public ushort AddConstant<T>(T value) where T : unmanaged
         {
-            var offset = (ushort)m_Constants.Length;
+            var offset = (ushort)constants.Length;
             var wordLength = CompilerUtility.GetWordLength<T>();
-            m_Constants.ResizeUninitialized(m_Constants.Length + wordLength);
-            UnsafeUtility.CopyStructureToPtr(ref value, m_Constants.GetUnsafePtr() + offset);
+            constants.ResizeUninitialized(constants.Length + wordLength);
+            UnsafeUtility.CopyStructureToPtr(ref value, constants.GetUnsafePtr() + offset);
             Add(new Instruction(InstructionType.LoadConstant, offset, (byte)wordLength));
             return offset;
         }
 
-        public Code Build()
+        public ByteCode Build()
         {
             AssertEndWithHalt();
-            return new Code(m_Instructions, m_Constants);
+            return new ByteCode(instructions, constants);
         }
 
         public BlobBuilderArray<byte> Build(BlobBuilder blobBuilder, ref BlobArray<byte> dst)
         {
             AssertEndWithHalt();
-            var codeBuilder = blobBuilder.Allocate(ref dst, m_Instructions.Length);
+            var codeBuilder = blobBuilder.Allocate(ref dst, instructions.Length);
             unsafe
             {
-                UnsafeUtility.MemCpy(codeBuilder.GetUnsafePtr(), m_Instructions.GetUnsafePtr(), m_Instructions.Length);
+                UnsafeUtility.MemCpy(codeBuilder.GetUnsafePtr(), instructions.GetUnsafePtr(), instructions.Length);
             }
             return codeBuilder;
         }
 
         void AssertEndWithHalt()
         {
-            if (m_Instructions[^1].Type != InstructionType.Halt)
+            if (instructions[^1].Type != InstructionType.Halt)
             {
-                m_Instructions.Add(new Instruction(InstructionType.Halt));
+                instructions.Add(new Instruction(InstructionType.Halt));
             }
         }
     }

@@ -91,5 +91,17 @@ namespace Elfenlabs.Scripting
             UnsafeUtility.MemCpy(stackPtr + StackPointer, stackPtr + offset, wordLen * CompilerUtility.WordSize);
             StackPointer += wordLen;
         }
+
+        /// <summary>
+        /// Store the stack value onto a variable
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="wordLen"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void StoreVariable(ushort offset, byte wordLen)
+        {
+            UnsafeUtility.MemCpy(stackPtr + offset, stackPtr + StackPointer - wordLen, wordLen * CompilerUtility.WordSize);
+            StackPointer -= wordLen;
+        }
     }
 }

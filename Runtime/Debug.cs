@@ -8,12 +8,13 @@ namespace Elfenlabs.Scripting
     {
         public static int[] Debug(string sourceCode)
         {
-            var tokens = Tokenizer.Tokenize(sourceCode);
-            UnityEngine.Debug.Log(Debug(tokens));
-            var code = Compiler.Compile(tokens);
-            UnityEngine.Debug.Log(Debug(code));
+            var module = new Module(sourceCode);
+            new Tokenizer().Tokenize(module);
+            UnityEngine.Debug.Log(Debug(module.Tokens));
+            new Compiler().Compile(module);
+            UnityEngine.Debug.Log(Debug(module.ByteCode));
             var machine = new Machine(1024, Allocator.Temp);
-            machine.Insert(code);
+            machine.Insert(module.ByteCode);
             machine.Run();
             var stack = machine.GetStackSnapshot(Allocator.Temp);
             var snapshot = stack.ToArray();
@@ -61,7 +62,7 @@ namespace Elfenlabs.Scripting
         /// </summary>
         /// <param name="code"></param>
         /// <returns></returns>
-        public static string Debug(Code code)
+        public static string Debug(ByteCode code)
         {
             var text = new StringBuilder();
             var constants = code.Constants;
@@ -76,21 +77,49 @@ namespace Elfenlabs.Scripting
             for (var ip = 0; ip < code.Instructions.Length; ip++)
             {
                 var instruction = code.Instructions[ip];
-                switch (instruction.Type)
-                {
-                    case InstructionType.LoadConstant:
-                        var index = instruction.ArgShort;
-                        var size = instruction.ArgByte1;
-                        text.Append("Load");
-                        text.Append("\t");
-                        text.Append(index);
-                        text.Append("\t");
-                        text.Append(size);
-                        text.Append("\n");
-                        break;
-                    default: text.Append(instruction.Type.ToString()); text.Append("\n"); break;
-                }
+                var format = InstructionUtility.InstructionFormats[instruction.Type];
+                text.Append($"{ip:D4}\t{Debug(instruction, format)}");
             }
+
+            return text.ToString();
+        }
+
+        public static string Debug(Instruction instruction, Format format)
+        {
+            var text = new StringBuilder();
+            text.Append(instruction.Type.ToString());
+            text.Append("\t");
+            switch (format)
+            {
+                case Format.O:
+                    break;
+                case Format.OS:
+                    text.Append(instruction.ArgShort);
+                    break;
+                case Format.OBS:
+                    text.Append(instruction.ArgShort);
+                    text.Append("\t");
+                    text.Append(instruction.ArgByte1);
+                    text.Append("\t");
+                    break;
+                case Format.OBBB:
+                    text.Append(instruction.ArgByte1);
+                    text.Append("\t");
+                    text.Append(instruction.ArgByte2);
+                    text.Append("\t");
+                    text.Append(instruction.ArgByte3);
+                    text.Append("\t");
+                    break;
+                case Format.I:
+                    text.Append(instruction.DataInt);
+                    break;
+                case Format.SS:
+                    text.Append(instruction.DataShort1);
+                    text.Append("\t");
+                    text.Append(instruction.DataShort2);
+                    break;
+            }
+            text.Append("\n");
 
             return text.ToString();
         }

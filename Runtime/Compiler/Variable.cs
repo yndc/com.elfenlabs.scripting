@@ -12,7 +12,7 @@ namespace Elfenlabs.Scripting
 
             var valueType = ConsumeExpression();
             if (valueType == ValueType.Void)
-                throw new CompilerException(previous.Value, "Cannot declare variable of type void");
+                throw CreateException(previous.Value, "Cannot declare variable of type void");
 
             currentScope.DeclareVariable(variableName, valueType);
             Expect(TokenType.StatementTerminator, "Expected new-line after declaration");

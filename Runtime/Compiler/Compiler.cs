@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Plastic.Antlr3.Runtime;
 
 namespace Elfenlabs.Scripting
 {
@@ -66,58 +68,23 @@ namespace Elfenlabs.Scripting
         public static ValueType String => new() { Index = 4, Name = "String", WordLength = 1 };
     }
 
-    public class BooleanMatrix
-    {
-        readonly bool[,] values;
-        public BooleanMatrix(int size)
-        {
-            values = new bool[size, size];
-        }
-
-        public void Add(int row, int column)
-        {
-            values[row, column] = true;
-        }
-
-        public bool Get(int row, int column)
-        {
-            return values[row, column];
-        }
-    }
-
     public partial class Compiler
     {
+        readonly ParseRule[] parseRules;
+        readonly Dictionary<string, Function> functions;
+        readonly Dictionary<string, ValueType> types;
+        Module module;
         LinkedListNode<Token> current;
         LinkedListNode<Token> previous;
         CodeBuilder builder;
-        ParseRule[] parseRules;
-        BooleanMatrix equatableValues;
         ValueType lastValueType;
         Scope globalScope;
         Scope currentScope;
-        Dictionary<string, Function> functions;
-        Dictionary<string, ValueType> types;
 
-        public static Code Compile(string source)
+        public Compiler()
         {
-            return new Compiler(new Tokenizer(source).Tokenize()).Compile();
-        }
-
-        public static Code Compile(LinkedList<Token> tokens)
-        {
-            return new Compiler(tokens).Compile();
-        }
-
-        public Compiler(LinkedList<Token> tokens)
-        {
-            current = tokens.First;
-            previous = tokens.First;
-            builder = new CodeBuilder(Allocator.Temp);
             parseRules = new ParseRule[Enum.GetValues(typeof(TokenType)).Length];
             functions = new Dictionary<string, Function>();
-
-            globalScope = new Scope();
-            currentScope = globalScope;
 
             // TEST 
             functions["print"] = new Function("print", ValueType.Void, new ValueType[] { ValueType.String });
@@ -163,20 +130,25 @@ namespace Elfenlabs.Scripting
             parseRules[(int)TokenType.Less] = new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison);
             parseRules[(int)TokenType.LessEqual] = new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison);
 
+            // Values 
+            parseRules[(int)TokenType.Equal] = new ParseRule(Handling.None, Handling.Binary, Precedence.Assignment);
+
             // User defined 
             parseRules[(int)TokenType.Identifier] = new ParseRule(Handling.Identifier);
-
-            equatableValues = new BooleanMatrix(Enum.GetValues(typeof(PrimitiveType)).Length);
-            equatableValues.Add((int)PrimitiveType.Int, (int)PrimitiveType.Int);
-            equatableValues.Add((int)PrimitiveType.Float, (int)PrimitiveType.Float);
         }
 
-        public Code Compile()
+        public void Compile(Module module)
         {
+            this.module = module;
+            builder = new CodeBuilder(Allocator.Temp);
+            current = module.Tokens.First;
+            globalScope = new Scope();
+            currentScope = globalScope;
+
             while (!MatchAdvance(TokenType.EOF))
                 ConsumeDeclaration();
 
-            return builder.Build();
+            module.ByteCode = builder.Build();
         }
 
         void ConsumeDeclaration()
@@ -190,21 +162,6 @@ namespace Elfenlabs.Scripting
                     ConsumeStatement();
                     break;
             }
-        }
-
-        void ConsumeStatement()
-        {
-            switch (current.Value.Type)
-            {
-                case TokenType.If:
-                    ConsumeStatementIf();
-                    break;
-                default:
-                    ConsumeExpression();
-                    builder.Add(new Instruction(InstructionType.Pop));
-                    break;
-            }
-            Expect(TokenType.StatementTerminator, "Expected new-line after statement");
         }
 
         void Advance()
@@ -228,8 +185,14 @@ namespace Elfenlabs.Scripting
         ParseRule GetRule(TokenType type)
         {
             if (parseRules[(int)type] == null)
-                throw new CompilerException(current.Value, string.Format("No parse rule for token '{0}'", type.ToString()));
+                throw CreateException(current.Value, string.Format("No parse rule for token '{0}'", type.ToString()));
             return parseRules[(int)type];
+        }
+
+        void Ignore(TokenType type)
+        {
+            if (current.Value.Type == type)
+                Advance();
         }
 
         void Expect(TokenType type, string error = null)
@@ -237,7 +200,7 @@ namespace Elfenlabs.Scripting
             if (current.Value.Type == type)
                 Advance();
             else
-                throw new CompilerException(current.Value, error ?? string.Format(
+                throw CreateException(current.Value, error ?? string.Format(
                     "Expected token {0} but get {1}",
                     type.ToString(),
                     current.Value.Type.ToString()));
@@ -254,7 +217,7 @@ namespace Elfenlabs.Scripting
         void AssertValueType(ValueType type, params ValueType[] set)
         {
             if (!set.Contains(type))
-                throw new CompilerException(previous.Value, string.Format(
+                throw CreateException(previous.Value, string.Format(
                     "Expected value type {0} to be any of {1}",
                     string.Join(", ", set.Select(x => x.ToString()).ToArray()),
                     type.Name));
@@ -263,7 +226,7 @@ namespace Elfenlabs.Scripting
         void AssertValueTypeEqual(ValueType lhs, ValueType rhs)
         {
             if (lhs != rhs)
-                throw new CompilerException(previous.Value, string.Format(
+                throw CreateException(previous.Value, string.Format(
                     "Expected value type {0} but received {1}",
                     lhs.Name, rhs.Name));
         }

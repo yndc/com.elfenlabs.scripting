@@ -27,15 +27,15 @@ namespace Elfenlabs.Scripting
             return variable.Position;
         }
 
-        public Variable GetVariable(string name)
+        public bool TryGetVariable(string name, out Variable variable)
         {
-            if (Variables.TryGetValue(name, out var variable))
-                return variable;
+            if (Variables.TryGetValue(name, out variable))
+                return true;
 
             if (Parent != null)
-                return Parent.GetVariable(name);
+                return Parent.TryGetVariable(name, out variable);
 
-            throw new Exception($"Variable {name} is not declared in this scope");
+            return false;
         }
     }
 

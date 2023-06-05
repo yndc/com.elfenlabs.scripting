@@ -1,24 +1,36 @@
+using Elfenlabs.Strings;
+
 namespace Elfenlabs.Scripting
 {
+    public partial class Compiler
+    {
+        public CompilerException CreateException(Token token, string message)
+        {
+            return new CompilerException(module, token, message);
+        }
+    }
+
     public class CompilerException : System.Exception
     {
-        public Token Token;
+        public Module Module { get; set; }
+        public Token Token { get; set; }
 
-        public CompilerException(Token token) : base(token.Value)
+        public override string Message
         {
-            this.Token = token;
+            get
+            {
+                return $@"
+                    line: {Token.Line}, col: {Token.Column}
+                    {CompilerUtility.GenerateSourcePointer(Module, Token.Location, Token.Length)}:
+                    {base.Message}  
+                ".AutoTrim();
+            }
         }
 
-        public CompilerException(Token token, string message, params string[] args) : base(message)
+        public CompilerException(Module module, Token token, string message) : base(message)
         {
-            message = string.Format(message, args);
-            this.Token = token;
-            this.Token.Value = message;
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{{0},{1}}: {2}", Token.Line, Token.Column, Token.Value);
+            Module = module;
+            Token = token;
         }
     }
 }
