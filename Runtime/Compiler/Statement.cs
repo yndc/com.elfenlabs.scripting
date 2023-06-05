@@ -42,37 +42,5 @@ namespace Elfenlabs.Scripting
 
             throw CreateException(previous.Value, $"Unknown statement identifier {identifier}");
         }
-
-        void ConsumeStatementVariable(Variable variable)
-        {
-            Advance();
-
-            switch (current.Value.Type)
-            {
-                case TokenType.Equal:
-                    ConsumeStatementVariableAssignment(variable);
-                    break;
-                case TokenType.Dot:
-                    //ConsumeStatementVariableMember();
-                    break;
-                default:
-                    throw CreateException(current.Value, "Expected operator after variable");
-            }
-        }
-
-        void ConsumeStatementVariableAssignment(Variable variable)
-        {
-            Advance();
-
-            var evaluationType = ConsumeExpression();
-
-            if (evaluationType != variable.Type)
-                throw CreateException(current.Value, $"Cannot assign {evaluationType.Name} to {variable.Type.Name}");
-
-            builder.Add(new Instruction(
-                InstructionType.StoreVariable,
-                variable.Position,
-                variable.Type.WordLength));
-        }
     }
 }
