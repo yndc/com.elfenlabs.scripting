@@ -24,6 +24,7 @@ namespace Elfenlabs.Scripting
 
             if (MatchAdvance(TokenType.Else))
             {
+                Ignore(TokenType.StatementTerminator);
                 ConsumeBlock();
             }
 
