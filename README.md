@@ -16,6 +16,11 @@ Variable types are inferred by usage.
 
 ### Types 
 
+Primitive type supported:
+- `Int` (32-bit)
+- `Float` (single-precision 32-bit)
+- `Bool`
+
 Literal values are parsed by these rules:
 
 ```
@@ -42,6 +47,30 @@ var int = Int       // Same as 0
 var float = Float   // Same as 0.0
 var str = String    // Same as an empty string ("")
 var bool = Bool     // Same as false
+```
+
+#### Reference Types
+
+A reference type can be created with the `create` keyword.
+
+```
+var refInt = create 12   // A Ref Int
+var value = refInt.Value // Get a copy of the value
+
+destroy refInt           // Destroys refInt, the memory is freed
+
+print refInt.Value       // Error: refInt has been destroyed
+
+```
+
+#### Structs
+
+Define a structure with the `structure` keyword.
+
+```
+structure Data
+    Number Int
+    
 ```
 
 ### Conditionals 
