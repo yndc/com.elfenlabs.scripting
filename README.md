@@ -144,6 +144,33 @@ structure Data
     
 ```
 
+### Alias
+
+Type can be aliased with the `alias` keyword for convenience.
+
+```
+alias Position as Int<2>
+alias Name as Byte<32>
+
+structure Character 
+    Label Name
+    CurrentPosition Position
+    
+var char1 = Character
+    Name = 'One'
+    CurrentPosition = {1, 2}
+    
+var char2 = Character 
+    Name = 'Two'
+    CurrentPosition = {-4, 10} 
+
+// Returns the delta cell position and distance
+function Distance(Character first, Character second) returns (Position, Float) 
+    var delta = Math.Abs(first.Position - second.Position)
+    var dist = Math.Distance(first.Position, second.Position)
+    return (delta, dist)
+```
+
 ## Functions 
 
 Functions can be declared with the `function keyword: 
