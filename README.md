@@ -312,3 +312,13 @@ foreach number in numbers with i
     
 debug numbers
 ```
+
+## Convention
+
+### Naming 
+
+All types and functions uses `PascalCase` such as `Int`, `Float`, `PlayerInventory`, `CalculateDistance` and so on. 
+
+All variables uses `camelCase`. 
+
+Abbreviations uses capital letters, such as `ID`, `DPS`, etc. 
