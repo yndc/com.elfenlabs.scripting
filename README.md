@@ -69,10 +69,11 @@ print refInt.Value          // Error: refInt has been destroyed
 ### Compound Types
 
 4 compount types are available to use: 
-- Spans: Stack-allocated compile-time fixed-sized array  
-- Lists: Heap-allocated dynamic-sized array
-- Tuple: Stack-allocated fixed group of values 
-- Map: Heap-allocated hash map
+- Spans `T<n>`: Stack-allocated compile-time fixed-sized array  
+- Lists `T[]``: Heap-allocated dynamic-sized array
+- Tuple `(T1, T2, ... Tn)`: Stack-allocated fixed group of values 
+- Map `[Tk] -> Tv`: Heap-allocated hash map
+- Functions `(T1, T2, ... Tn) -> TR`
 
 #### Spans
 
@@ -125,6 +126,8 @@ AddZero(arr)
 
 Print(arr.Length())     // Prints "2" 
 Print(arr.Last())       // Prints "0"
+
+destroy arr
 ```
 
 #### Maps
@@ -141,9 +144,40 @@ structure Data
     
 ```
 
-### Conditionals 
+## Functions 
 
-#### If Statements
+Functions can be declared with the `function keyword: 
+
+```
+function Add (Int a, Int b) returns Int
+    return a + b
+    
+var result = Add(1, 2)  // 
+```
+
+Functions are first-class citizens, therefore it's possible to store functions in variables. Functions have the type signature `(<args>) -> <return type>`
+
+```
+function AddOne (Int x) returns Int   
+    return x + 1
+    
+function TimesTwo (Int x) returns Int 
+    return x * 2
+    
+// Both functions have the same type signature of '(Int) -> Int'
+// Therefore they can be added in the same collection
+var operations = { AddOne, TimesTwo, TimesTwo }     // The type is ((Int) -> Int)<3>
+
+var number = 1
+foreach operation in operations 
+    number = operation(number)
+    
+Print(number)       // Prints 8
+```
+
+## Control Flow 
+
+### If Statements
 
 As an indented language, this is the syntax for an if expression: 
 
@@ -177,7 +211,7 @@ else
     <statement>
 ```
 
-#### Branch 
+### Branch 
 
 For complex multiway branching, use the `branch` statement:
 
@@ -209,34 +243,45 @@ branch
 
 The branches are evaluated from top to bottom.
 
-### Collections
+### Loops 
 
-#### List 
-
-Lists are dynamic sized and they are allocated on the heap.
+To create an infinite loop, use the `loop` keyword. `break` and `continue` can be used to break out of loops.
 
 ```
-// Declare an array of int 
-var list1 = Int[4]
-
-// Declare an array without predefined size 
-var list2 = Int[]
-list2.Add 2
-list2.Add 5
-list2.Add 10
-
-// Lists need to be disposed 
-dispose list1 
-dispose list2
-
+var counter = 0
+loop 
+    Print(counter)
+    if counter > 5
+        break
+    counter = counter + 1 
 ```
 
-#### Spans 
-
-Spans are like arrays but allocated on the stack, i.e. you don't need to dispose of them. They have a fixed size.
+Add a condition to a loop with `while`:
 
 ```
-var span = Int<4>
-span[0] = 5
-span[2] = span[0]
+var counter = 0
+var n = 5
+loop while counter <= n 
+    Print(counter)
+    counter = counter + 1
+```
+
+Loop a specific number of times with `loop <Int> times`
+
+```
+var n = 5
+loop n times with counter
+    Print(counter)
+```
+
+#### Foreach 
+
+`foreach` is a special keyword to iterate on collections such as spans and lists. 
+
+```
+var numbers = {1, 2, 3, 4, 5} 
+foreach number in numbers with i 
+    numbers[i] = numbers[i] * 2 
+    
+debug numbers
 ```
