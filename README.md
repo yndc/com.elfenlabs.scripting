@@ -14,12 +14,16 @@ var a = 1
 
 Variable types are inferred by usage. 
 
-### Types 
+## Types 
+
+### Primitives
 
 Primitive type supported:
 - `Int` (32-bit)
 - `Float` (single-precision 32-bit)
+- `Byte` (8 bit)
 - `Bool`
+- `Null` for reference types
 
 Literal values are parsed by these rules:
 
@@ -54,14 +58,78 @@ var bool = Bool     // Same as false
 A reference type can be created with the `create` keyword.
 
 ```
-var refInt = create 12   // A Ref Int
-var value = refInt.Value // Get a copy of the value
+var refInt = create 12      // A Ref Int
+var value = refInt.Unwrap   // Get a copy of the value wrapped inside
 
-destroy refInt           // Destroys refInt, the memory is freed
+destroy refInt              // Destroys refInt, the memory is freed
 
-print refInt.Value       // Error: refInt has been destroyed
+print refInt.Value          // Error: refInt has been destroyed
+```
+
+### Compound Types
+
+4 compount types are available to use: 
+- Spans: Stack-allocated compile-time fixed-sized array  
+- Lists: Heap-allocated dynamic-sized array
+- Tuple: Stack-allocated fixed group of values 
+- Map: Heap-allocated hash map
+
+#### Spans
+
+Spans are fixed-sized arrays allocated on the stack. 
 
 ```
+var numbers = Int<3>
+numbers = { 1, 2, 3 }
+```
+
+Spans are passed by value and doesn't need to be destroyed after use. 
+
+```
+function Dot (Float<2> vector) returns Float 
+    return vector[0] * vector[0] + vector[1] * vector[1]
+
+var vector = { 10.0, 5.0 }
+var dot = Dot(vector) 
+```
+
+#### Lists 
+
+Lists are dynamically-sized array allocated on the heap. 
+
+```
+var numbers = create Int[]  // Create an empty list
+numbers.Add(1)
+numbers.Add(2)
+numbers.Add(3)
+var len = numbers.Length()
+
+// Accessing list values 
+var first = numbers.First()
+var middle = numbers[1]   
+var last = numbers.Last()
+
+// Lists need to be destroyed after use to prevent memory leaks 
+destroy numbers
+```
+
+Lists are reference types, and therefore passed by reference 
+
+```
+function AddZero(Int[] array)
+    array.Add(0)
+    
+var arr = create Int[]
+arr.Add(1)
+AddZero(arr)
+
+Print(arr.Length())     // Prints "2" 
+Print(arr.Last())       // Prints "0"
+```
+
+#### Maps
+
+#### Tuples
 
 #### Structs
 
