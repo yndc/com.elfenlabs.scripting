@@ -1,6 +1,6 @@
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Collections;
 using System.Runtime.CompilerServices;
+using Unity.Collections.LowLevel.Unsafe;
+using UnityEngine;
 
 namespace Elfenlabs.Scripting
 {
@@ -20,21 +20,9 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         Instruction NextInstruction()
         {
-            var instruction = Code.Instructions[InstructionPointer];
-            InstructionPointer++;
+            var instruction = *instructionPtr;
+            instructionPtr++;
             return instruction;
-        }
-
-        /// <summary>
-        /// Prepare the virtual machine with the given code
-        /// </summary>
-        /// <param name="code"></param>
-        public unsafe void Insert(ByteCode code)
-        {
-            Code = code;
-            StackPointer = 0;
-            InstructionPointer = 0;
-            State = ExecutionState.Running;
         }
 
         public unsafe bool Run(EnvironmentState state = default)
@@ -74,22 +62,32 @@ namespace Elfenlabs.Scripting
                         YieldDuration = instruction.ArgShort;
                         return false;
                     case InstructionType.Jump:
-                        InstructionPointer += instruction.ArgShort;
+                        instructionPtr += instruction.ArgShort;
                         break;
                     case InstructionType.JumpIfFalse:
                         {
                             var value = Pop<bool>();
                             if (value == false)
-                                InstructionPointer += instruction.ArgShort;
+                                instructionPtr += instruction.ArgShort;
+                            break;
+                        }
+                    case InstructionType.Call:
+                        {
+                            Call(instruction.ArgShort, instruction.ArgByte1);
+                            break;
+                        }
+                    case InstructionType.Return:
+                        {
+                            Return(instruction.ArgByte);
                             break;
                         }
 
                     // Stack operations
                     case InstructionType.LoadConstant:
-                        PushConstant(instruction.ArgShort, instruction.ArgByte1);
+                        LoadConstant(instruction.ArgShort, instruction.ArgByte1);
                         break;
                     case InstructionType.LoadVariable:
-                        PushVariable(instruction.ArgShort, instruction.ArgByte1);
+                        LoadVariable(instruction.ArgShort, instruction.ArgByte1);
                         break;
                     case InstructionType.StoreVariable:
                         StoreVariable(instruction.ArgShort, instruction.ArgByte1);

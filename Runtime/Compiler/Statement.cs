@@ -13,12 +13,19 @@ namespace Elfenlabs.Scripting
                     break;
                 case TokenType.Identifier:
                     ConsumeStatementIdentifier();
-                    Expect(TokenType.StatementTerminator, "Expected new-line after statement");
+                    Consume(TokenType.StatementTerminator, "Expected new-line after statement");
+                    break;
+                case TokenType.Function:
+                    ConsumeFunctionDeclaration();
+                    break;
+                case TokenType.Return:
+                    ConsumeStatementReturn();
+                    Consume(TokenType.StatementTerminator, "Expected new-line after statement");
                     break;
                 default:
                     ConsumeExpression();
                     builder.Add(new Instruction(InstructionType.Pop));
-                    Expect(TokenType.StatementTerminator, "Expected new-line after statement");
+                    Consume(TokenType.StatementTerminator, "Expected new-line after statement");
                     break;
             }
         }
@@ -35,7 +42,7 @@ namespace Elfenlabs.Scripting
             }
 
             // Check if it refers to a function
-            if (functions.TryGetValue(identifier, out Function function))
+            if (currentScope.TryGetFunction(identifier, out Function function))
             {
 
             }

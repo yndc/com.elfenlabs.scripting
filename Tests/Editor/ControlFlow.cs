@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace Elfenlabs.Scripting.Tests
 {
-    public class FlowTests
+    public class ControlFlowTests
     {
         [Test]
         public void IfTrue()

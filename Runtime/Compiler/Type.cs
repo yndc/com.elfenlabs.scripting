@@ -2,7 +2,7 @@ using System;
 
 namespace Elfenlabs.Scripting
 {
-    public struct ValueType : IEquatable<ValueType>
+    public class ValueType : IEquatable<ValueType>
     {
         public string Name;
         public int Index;
@@ -54,5 +54,23 @@ namespace Elfenlabs.Scripting
         public static ValueType Int => new() { Index = 2, Name = "Int", WordLength = 1 };
         public static ValueType Float => new() { Index = 3, Name = "Float", WordLength = 1 };
         public static ValueType String => new() { Index = 4, Name = "String", WordLength = 1 };
+    }
+
+    public partial class Compiler
+    {
+        public ValueType ConsumeType()
+        {
+            var identifier = Consume(TokenType.Identifier, $"Expected type name but get {current.Value.Type}").Value;
+            var type = GetType(identifier) ?? throw new Exception($"Unknown type {identifier}");
+            return type;
+        }
+
+        public ValueType GetType(string identifier)
+        {
+            if (types.TryGetValue(identifier, out var type))
+                return type;
+
+            return null;
+        }
     }
 }

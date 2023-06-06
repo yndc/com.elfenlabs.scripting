@@ -8,25 +8,21 @@ namespace Elfenlabs.Scripting
 {
     public partial class Compiler
     {
-        readonly Dictionary<string, Function> functions;
         readonly Dictionary<string, ValueType> types;
+        readonly List<Function> functions = new();
         Module module;
         Function currentFunction;
         Function rootFunction;
         LinkedListNode<Token> current;
         LinkedListNode<Token> previous;
-        CodeBuilder builder;
         ValueType lastValueType;
         Scope globalScope;
         Scope currentScope;
 
+        ByteCodeBuilder builder => currentFunction.Builder;
+
         public Compiler()
         {
-            functions = new Dictionary<string, Function>();
-
-            // TEST 
-            functions["print"] = new Function("print", ValueType.Void, new ValueType[] { ValueType.String });
-
             // Add built-in types
             types = new Dictionary<string, ValueType>
             {
@@ -38,18 +34,37 @@ namespace Elfenlabs.Scripting
             };
         }
 
-        public void Compile(Module module)
+        public void AddModule(Module module)
         {
             this.module = module;
-            builder = new CodeBuilder(Allocator.Temp);
-            current = module.Tokens.First;
+
+            // Create global scope 
             globalScope = new Scope();
             currentScope = globalScope;
 
+            // Create root function in the global scope
+            var globalSubprogram = new Function("global", ValueType.Void);
+            functions.Add(globalSubprogram);
+            currentFunction = globalSubprogram;
+
+            current = module.Tokens.First;
+
             while (!MatchAdvance(TokenType.EOF))
                 ConsumeDeclaration();
+        }
 
-            module.ByteCode = builder.Build();
+        public Program Build()
+        {
+            var chunks = new NativeArray<ByteCode>(functions.Count, Allocator.Persistent);
+            foreach (var function in functions)
+            {
+                chunks[function.Index] = function.Builder.Build();
+            }
+            return new Program
+            {
+                Chunks = chunks,
+                EntryPoint = 0
+            };
         }
 
         void ConsumeDeclaration()
@@ -63,6 +78,18 @@ namespace Elfenlabs.Scripting
                     ConsumeStatement();
                     break;
             }
+        }
+
+        Token Consume(TokenType type, string error = null)
+        {
+            if (current.Value.Type == type)
+            {
+                Advance();
+                return previous.Value;
+            }
+            else
+                throw CreateException(current.Value, error
+                    ?? string.Format("Expected token {0} but get {1}", type.ToString(), current.Value.Type.ToString()));
         }
 
         void Advance()
@@ -89,22 +116,11 @@ namespace Elfenlabs.Scripting
                 Advance();
         }
 
-        void Expect(TokenType type, string error = null)
-        {
-            if (current.Value.Type == type)
-                Advance();
-            else
-                throw CreateException(current.Value, error ?? string.Format(
-                    "Expected token {0} but get {1}",
-                    type.ToString(),
-                    current.Value.Type.ToString()));
-        }
-
         void Expect(TokenType type, int count, string error = null)
         {
             for (int i = 0; i < count; i++)
             {
-                Expect(type, error);
+                Consume(type, error);
             }
         }
 

@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Elfenlabs.Scripting
 {
     public partial class Compiler
@@ -10,9 +12,12 @@ namespace Elfenlabs.Scripting
         ValueType ConsumeExpressionForward(Precedence minimumPrecedence)
         {
             Advance();
+
             var prefixRule = GetRule(previous.Value.Type).Prefix;
             if (prefixRule == Handling.None)
-                throw CreateException(previous.Value, "Expected expression.");
+                throw CreateException(
+                    previous.Value,
+                    $"Expected expression, received {previous.Value.Value} ({previous.Value.Type})");
 
             // This is the only place where infix operation is compiled, therefore we need to store the last value type here 
             lastValueType = ConsumeExpression(prefixRule);
@@ -30,7 +35,7 @@ namespace Elfenlabs.Scripting
         ValueType ConsumeExpressionGroup()
         {
             var valueType = ConsumeExpression();
-            Expect(TokenType.RightParentheses, "Expected ')' after expression.");
+            Consume(TokenType.RightParentheses, "Expected ')' after expression.");
             return valueType;
         }
 
@@ -179,10 +184,18 @@ namespace Elfenlabs.Scripting
             }
 
             // Check if it refers to a function
-            if (functions.TryGetValue(identifier, out Function function))
+            if (currentScope.TryGetFunction(identifier, out var function))
             {
-                //builder.Add(new Instruction(InstructionType.Call, function.Index));
-                return function.ReturnType;
+                if (MatchAdvance(TokenType.LeftParentheses))
+                {
+                    ConsumeFunctionCallParameters(function);
+                    builder.Add(new Instruction(InstructionType.Call, function.Index, function.ParameterWordLength));
+                    return function.ReturnType;
+                }
+                else
+                {
+                    // TODO: Add function pointer support
+                }
             }
 
             throw CreateException(previous.Value, $"Unknown expression identifier {identifier}");

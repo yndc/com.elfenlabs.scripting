@@ -18,14 +18,14 @@ namespace Elfenlabs.Scripting
         }
     }
 
-    public unsafe struct CodeBuilder
+    public unsafe struct ByteCodeBuilder
     {
         NativeList<Instruction> instructions;
         NativeList<int> constants;
 
         public int InstructionCount => instructions.Length;
 
-        public CodeBuilder(Allocator allocator)
+        public ByteCodeBuilder(Allocator allocator)
         {
             instructions = new NativeList<Instruction>(allocator);
             constants = new NativeList<int>(allocator);

@@ -14,6 +14,9 @@ namespace Elfenlabs.Scripting
         Jump,               // <short>    - The offset to jump to
         JumpIfFalse,        // <short>    - The offset to jump to if the condition is false
         JumpIfTrue,         // <short>    - The offset to jump to if the condition is true
+        Call,               // <short>    - The index of the function to call
+                            // <byte>     - The number of words to push on the stack
+        Return,             // <byte>     - The number of words to return
 
         // --------------------------------
         // Stack operations
@@ -97,6 +100,7 @@ namespace Elfenlabs.Scripting
                 fixed (byte* ptr = Data) *(ushort*)(ptr + 2) = value;
             }
         }
+        public byte ArgByte => Data[2];
 
 
         public int DataInt
@@ -145,6 +149,12 @@ namespace Elfenlabs.Scripting
                 *(ptr + 1) = byteArg;
                 *(ushort*)(ptr + 2) = shortArg;
             }
+        }
+
+        public Instruction(InstructionType type, byte arg)
+        {
+            Data[0] = (byte)type;
+            Data[2] = arg;
         }
 
         public Instruction(InstructionType type, byte arg1, byte arg2 = 0, byte arg3 = 0)

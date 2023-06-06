@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System;
+using UnityEngine;
 
 namespace Elfenlabs.Scripting
 {
@@ -7,6 +8,7 @@ namespace Elfenlabs.Scripting
     {
         public Scope Parent;
         public Dictionary<string, Variable> Variables = new();
+        public Dictionary<string, Function> Functions = new();
         public int Depth;
         public ushort WordLength;
 
@@ -27,6 +29,14 @@ namespace Elfenlabs.Scripting
             return variable.Position;
         }
 
+        public Function DeclareFunction(Function function)
+        {
+            if (!Functions.TryAdd(function.Name, function))
+                throw new Exception($"Function {function.Name} already declared in this scope");
+
+            return function;
+        }
+
         public bool TryGetVariable(string name, out Variable variable)
         {
             if (Variables.TryGetValue(name, out variable))
@@ -37,14 +47,28 @@ namespace Elfenlabs.Scripting
 
             return false;
         }
+
+        public bool TryGetFunction(string name, out Function function)
+        {
+            if (Functions.TryGetValue(name, out function))
+                return true;
+
+            if (Parent != null)
+                return Parent.TryGetFunction(name, out function);
+
+            return false;
+        }
+
+        public Scope CreateChild()
+        {
+            return new Scope { Parent = this, Depth = Depth + 1 };
+        }
     }
 
     public partial class Compiler
     {
         void ConsumeBlock()
         {
-            BeginScope();
-
             var depth = currentScope.Depth;
 
             while (true)
@@ -52,7 +76,6 @@ namespace Elfenlabs.Scripting
                 var indent = ConsumeIndents();
                 if (indent < depth)
                 {
-                    EndScope();
                     return;
                 }
 
@@ -62,8 +85,7 @@ namespace Elfenlabs.Scripting
 
         void BeginScope()
         {
-            var scope = new Scope { Parent = currentScope, Depth = currentScope.Depth + 1 };
-            currentScope = scope;
+            currentScope = currentScope.CreateChild();
         }
 
         void EndScope()

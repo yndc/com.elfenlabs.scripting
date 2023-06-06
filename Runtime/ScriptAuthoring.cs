@@ -10,7 +10,7 @@ namespace Elfenlabs.Scripting
         {
             var builder = new BlobBuilder(Allocator.Temp);
             ref var root = ref builder.ConstructRoot<Script>();
-            var scriptBuilder = new CodeBuilder(Allocator.Temp);
+            var scriptBuilder = new ByteCodeBuilder(Allocator.Temp);
             scriptBuilder.Yield((half)1f);
             scriptBuilder.Halt();
             scriptBuilder.Build(builder, ref root.Code);
@@ -19,7 +19,7 @@ namespace Elfenlabs.Scripting
             return result;
         }
 
-        public static BlobAssetReference<Script> CreateReference(CodeBuilder builder)
+        public static BlobAssetReference<Script> CreateReference(ByteCodeBuilder builder)
         {
             var blobBuilder = new BlobBuilder(Allocator.Temp);
             ref var root = ref blobBuilder.ConstructRoot<Script>();

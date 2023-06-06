@@ -29,6 +29,7 @@ namespace Elfenlabs.Scripting
             AddSymbol("or", TokenType.Or);
             AddSymbol("loop", TokenType.Loop);
             AddSymbol("return", TokenType.Return);
+            AddSymbol("returns", TokenType.Returns);
             AddSymbol("external", TokenType.External);
             AddSymbol("global", TokenType.Global);
             AddSymbol("var", TokenType.Variable);

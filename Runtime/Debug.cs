@@ -9,12 +9,14 @@ namespace Elfenlabs.Scripting
         public static int[] Debug(string sourceCode)
         {
             var module = new Module(sourceCode);
+            var compiler = new Compiler();
             new Tokenizer().Tokenize(module);
             UnityEngine.Debug.Log(Debug(module.Tokens));
-            new Compiler().Compile(module);
+            compiler.AddModule(module);
+            var program = compiler.Build();
             UnityEngine.Debug.Log(Debug(module.ByteCode));
             var machine = new Machine(1024, Allocator.Temp);
-            machine.Insert(module.ByteCode);
+            machine.Boot(program);
             machine.Run();
             var stack = machine.GetStackSnapshot(Allocator.Temp);
             var snapshot = stack.ToArray();

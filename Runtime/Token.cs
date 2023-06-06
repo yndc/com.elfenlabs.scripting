@@ -26,6 +26,7 @@ namespace Elfenlabs.Scripting
         Loop,
         External,
         Return,
+        Returns,
         Global,
         Variable,
 

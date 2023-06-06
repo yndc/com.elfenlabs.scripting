@@ -12,17 +12,17 @@ namespace Elfenlabs.Scripting
         void ConsumeStatementVariableDeclaration()
         {
             Advance();
-            Expect(TokenType.Identifier, "Expected variable name");
+            Consume(TokenType.Identifier, "Expected variable name");
             var variableName = previous.Value.Value;
 
-            Expect(TokenType.Equal, "Expected '=' after variable name");
+            Consume(TokenType.Equal, "Expected '=' after variable name");
 
             var valueType = ConsumeExpression();
             if (valueType == ValueType.Void)
                 throw CreateException(previous.Value, "Cannot declare variable of type void");
 
             currentScope.DeclareVariable(variableName, valueType);
-            Expect(TokenType.StatementTerminator, "Expected new-line after declaration");
+            Consume(TokenType.StatementTerminator, "Expected new-line after declaration");
         }
 
         void ConsumeStatementVariable(Variable variable)

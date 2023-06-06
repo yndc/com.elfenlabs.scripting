@@ -12,7 +12,7 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe void Remove(int wordLen = 1)
         {
-            StackPointer -= wordLen;
+            ValueStackPointer -= wordLen;
         }
 
         /// <summary>
@@ -23,8 +23,8 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe T Pop<T>(byte wordLen = 1) where T : unmanaged
         {
-            StackPointer -= wordLen;
-            var value = *(T*)(stackPtr + StackPointer);
+            ValueStackPointer -= wordLen;
+            var value = *(T*)(stackPtr + ValueStackPointer);
             return value;
         }
 
@@ -36,7 +36,7 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe ref T Peek<T>(int wordLen = 1) where T : unmanaged
         {
-            var ptr = (T*)(stackPtr + StackPointer - wordLen);
+            var ptr = (T*)(stackPtr + ValueStackPointer - wordLen);
             return ref *ptr;
         }
 
@@ -72,11 +72,11 @@ namespace Elfenlabs.Scripting
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void PushConstant(ushort offset, byte wordLen)
+        unsafe void LoadConstant(ushort offset, byte wordLen)
         {
-            Stack.ResizeUninitialized(StackPointer + wordLen);
-            UnsafeUtility.MemCpy(stackPtr + StackPointer, (int*)Code.Constants.GetUnsafeReadOnlyPtr() + offset, wordLen * CompilerUtility.WordSize);
-            StackPointer += wordLen;
+            Values.ResizeUninitialized(ValueStackPointer + wordLen);
+            UnsafeUtility.MemCpy(stackPtr + ValueStackPointer, constantsPtr + offset, wordLen * CompilerUtility.WordSize);
+            ValueStackPointer += wordLen;
         }
 
         /// <summary>
@@ -85,11 +85,11 @@ namespace Elfenlabs.Scripting
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void PushVariable(ushort offset, byte wordLen)
+        unsafe void LoadVariable(ushort offset, byte wordLen)
         {
-            Stack.ResizeUninitialized(StackPointer + wordLen);
-            UnsafeUtility.MemCpy(stackPtr + StackPointer, stackPtr + offset, wordLen * CompilerUtility.WordSize);
-            StackPointer += wordLen;
+            Values.ResizeUninitialized(ValueStackPointer + wordLen);
+            UnsafeUtility.MemCpy(stackPtr + ValueStackPointer, stackPtr + offset, wordLen * CompilerUtility.WordSize);
+            ValueStackPointer += wordLen;
         }
 
         /// <summary>
@@ -100,8 +100,8 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe void StoreVariable(ushort offset, byte wordLen)
         {
-            UnsafeUtility.MemCpy(stackPtr + offset, stackPtr + StackPointer - wordLen, wordLen * CompilerUtility.WordSize);
-            StackPointer -= wordLen;
+            UnsafeUtility.MemCpy(stackPtr + offset, stackPtr + ValueStackPointer - wordLen, wordLen * CompilerUtility.WordSize);
+            ValueStackPointer -= wordLen;
         }
     }
 }
