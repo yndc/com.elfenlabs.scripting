@@ -2,6 +2,11 @@
 
 An interpreted language designed for Unity DOTS. 
 
+- Interpreted 
+- Static typing
+- No garbage collection
+- 
+
 ## Quickstart 
 
 ### Variables 
