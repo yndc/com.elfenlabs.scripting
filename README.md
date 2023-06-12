@@ -187,7 +187,7 @@ function Add (Int a, Int b) returns Int
 var result = Add(1, 2)  // 
 ```
 
-Functions are first-class citizens, therefore it's possible to store functions in variables. Functions have the type signature `(<args>) -> <return type>`
+Functions are first-class members, therefore it's possible to store functions in variables. Functions have the type signature `(<args>) -> <return type>`
 
 ```
 function AddOne (Int x) returns Int   
@@ -205,6 +205,17 @@ foreach operation in operations
     number = operation(number)
     
 Print(number)       // Prints 8
+```
+
+### Closures
+
+Variables are not captured by reference, therefore it's not possible to modify variables outside of the function scope. 
+
+```
+var val = 10 
+
+function IncrementVal 
+    val = val + 1   // Compile error! 
 ```
 
 ## Control Flow 
