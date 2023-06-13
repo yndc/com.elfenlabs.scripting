@@ -218,6 +218,29 @@ function IncrementVal
     val = val + 1   // Compile error! 
 ```
 
+### Evaluate 
+
+You can use `evaluate` to write **IIFE**s (Immediately Invoked Function Expression). This is useful to compute variable value. 
+
+```
+var value = 10
+var absoluteValue = evaluate 
+    if value < 0 then 
+        return -value
+    return value
+```
+
+Another example to count the number of odd numbers in a span of numbers:
+```
+var numbers = { 1, 4, 7, 3, 8, 8, 9, 3, 1, 6 }
+var oddCount = evaluate
+    var result = 0
+    foreach var number in numbers with index i
+        if number % 2 == 0 then 
+            result = result + 1
+    return result
+```
+
 ## Control Flow 
 
 ### If Statements
