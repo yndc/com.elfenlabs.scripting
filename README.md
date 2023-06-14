@@ -207,16 +207,9 @@ foreach operation in operations
 Print(number)       // Prints 8
 ```
 
-### Closures
+### Closures Support
 
-Variables are not captured by reference, therefore it's not possible to modify variables outside of the function scope. 
-
-```
-var val = 10 
-
-function IncrementVal 
-    val = val + 1   // Compile error! 
-```
+Closures are not supported and there are no plans to support it. This might change in the future. 
 
 ### Evaluate 
 
