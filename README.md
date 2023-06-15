@@ -58,15 +58,16 @@ var str = String    // Same as an empty string ("")
 var bool = Bool     // Same as false
 ```
 
-#### Reference Types
+#### Resource Types
 
-A reference type can be created with the `create` keyword.
+Resource types are data types that lives in the heap. 
+A resource type can be created with the `create` keyword.
 
 ```
 var refInt = create 12      // A Ref Int
 var value = refInt.Unwrap   // Get a copy of the value wrapped inside
 
-destroy refInt              // Destroys refInt, the memory is freed
+delete refInt               // Destroys refInt, the memory is freed
 
 print refInt.Value          // Error: refInt has been destroyed
 ```
