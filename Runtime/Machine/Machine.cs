@@ -6,14 +6,13 @@ namespace Elfenlabs.Scripting
 {
     public unsafe partial struct Machine : INativeDisposable
     {
-        public int ValueStackPointer;
         public float YieldDuration;
         public float YieldStartTime;
         public NativeList<int> Values;
         public NativeList<Frame> Frames;
         public Program Program;
         public ExecutionState State;
-        int* stackPtr;
+        int* valuesPtr;
 
         Instruction* instructionPtr;
         int* constantsPtr;
@@ -26,11 +25,11 @@ namespace Elfenlabs.Scripting
         {
             Values = new NativeList<int>(initialStackCapacity, allocator);
             Frames = new NativeList<Frame>(10, allocator);
-            ValueStackPointer = 0;
             YieldDuration = 0f;
             YieldStartTime = 0f;
             State = ExecutionState.Running;
-            stackPtr = Values.GetUnsafePtr();
+            valuesPtr = Values.GetUnsafePtr();
+            frameValuesPtr = Values.GetUnsafePtr();
             instructionPtr = null;
             constantsPtr = null;
             current = default;
@@ -45,7 +44,6 @@ namespace Elfenlabs.Scripting
         public unsafe void Boot(Program program)
         {
             Program = program;
-            ValueStackPointer = 0;
             State = ExecutionState.Running;
 
             currentChunkIndex = program.EntryPoint;

@@ -7,13 +7,13 @@ namespace Elfenlabs.Scripting
     {
         public T ReadStackAs<T>() where T : unmanaged
         {
-            return *(T*)stackPtr;
+            return *(T*)valuesPtr;
         }
 
         public NativeArray<int> GetStackSnapshot(Allocator allocator)
         {
-            var snapshot = new NativeArray<int>(ValueStackPointer, allocator);
-            UnsafeUtility.MemCpy(snapshot.GetUnsafePtr(), stackPtr, ValueStackPointer * sizeof(int));
+            var snapshot = new NativeArray<int>(GetStackWordLength(), allocator);
+            UnsafeUtility.MemCpy(snapshot.GetUnsafePtr(), frameValuesPtr, (int)(valuesPtr - Values.GetUnsafePtr()) * sizeof(int));
             return snapshot;
         }
     }

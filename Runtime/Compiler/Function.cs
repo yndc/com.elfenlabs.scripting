@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
 using UnityEngine;
+using static Unity.Entities.SystemBaseDelegates;
 
 namespace Elfenlabs.Scripting
 {
@@ -13,6 +14,7 @@ namespace Elfenlabs.Scripting
         public ValueType[] ParameterTypes;
         public ByteCodeBuilder Builder;
         public ByteCode ByteCode;
+        public ushort Offset;
         public byte ParameterWordLength => (byte)ParameterTypes.Sum(x => x.WordLength);
         public Function(string name, ValueType returnType, params ValueType[] parameterTypes)
         {
@@ -29,7 +31,8 @@ namespace Elfenlabs.Scripting
         {
             var function = new Function(name, returnType, parameterTypes)
             {
-                Index = (ushort)functions.Count
+                Index = (ushort)functions.Count,
+                Offset = (ushort)currentScope.WordLength,
             };
             functions.Add(function);
             currentScope.DeclareFunction(function);
@@ -90,6 +93,13 @@ namespace Elfenlabs.Scripting
             return type;
         }
 
+        ValueType ConsumeFunctionCall(Function function)
+        {
+            ConsumeFunctionCallParameters(function);
+            builder.Add(new Instruction(InstructionType.Call, function.Index, function.ParameterWordLength));
+            return function.ReturnType;
+        }
+
         void ConsumeFunctionCallParameters(Function function)
         {
             var parameters = new List<ValueType>();
@@ -136,12 +146,17 @@ namespace Elfenlabs.Scripting
                 }
                 else
                 {
-                    throw CreateException(current.Value, "Expected new-line after return statement");
+                    throw CreateException(current.Value, "This function isn't supposed to return anything. Expected new-line after return statement");
                 }
             }
 
             ConsumeExpression();
             builder.Add(new Instruction(InstructionType.Return, currentFunction.ReturnType.WordLength));
+        }
+
+        ValueType ConsumeFunctionPointer(Function function)
+        {
+            throw CreateException(current.Value, "Function pointers are not supported yet");
         }
     }
 }

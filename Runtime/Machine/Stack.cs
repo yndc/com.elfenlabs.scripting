@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using TreeEditor;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Elfenlabs.Scripting
@@ -6,13 +7,31 @@ namespace Elfenlabs.Scripting
     public unsafe partial struct Machine
     {
         /// <summary>
+        /// Get the values stack size in words
+        /// </summary>
+        /// <returns></returns>
+        public int GetStackWordLength()
+        {
+            return (int)(valuesPtr - Values.GetUnsafePtr());
+        }
+
+        /// <summary>
+        /// Asserts that the values stack has at least the certain length. The value stack will be extended if needed.
+        /// </summary>
+        /// <param name="words"></param>
+        public void AssertValueStackWordLength(int additionalWords)
+        {
+            Values.ResizeUninitialized(GetStackWordLength() + additionalWords);
+        }
+
+        /// <summary>
         /// Removes a value from the stack without returning it
         /// </summary>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe void Remove(int wordLen = 1)
         {
-            ValueStackPointer -= wordLen;
+            valuesPtr -= wordLen;
         }
 
         /// <summary>
@@ -23,8 +42,8 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe T Pop<T>(byte wordLen = 1) where T : unmanaged
         {
-            ValueStackPointer -= wordLen;
-            var value = *(T*)(stackPtr + ValueStackPointer);
+            valuesPtr -= wordLen;
+            var value = *(T*)valuesPtr;
             return value;
         }
 
@@ -36,7 +55,7 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe ref T Peek<T>(int wordLen = 1) where T : unmanaged
         {
-            var ptr = (T*)(stackPtr + ValueStackPointer - wordLen);
+            var ptr = (T*)(valuesPtr - wordLen);
             return ref *ptr;
         }
 
@@ -74,9 +93,9 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe void LoadConstant(ushort offset, byte wordLen)
         {
-            Values.ResizeUninitialized(ValueStackPointer + wordLen);
-            UnsafeUtility.MemCpy(stackPtr + ValueStackPointer, constantsPtr + offset, wordLen * CompilerUtility.WordSize);
-            ValueStackPointer += wordLen;
+            AssertValueStackWordLength(wordLen);
+            UnsafeUtility.MemCpy(valuesPtr, constantsPtr + offset, wordLen * CompilerUtility.WordSize);
+            valuesPtr += wordLen;
         }
 
         /// <summary>
@@ -87,9 +106,9 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe void LoadVariable(ushort offset, byte wordLen)
         {
-            Values.ResizeUninitialized(ValueStackPointer + wordLen);
-            UnsafeUtility.MemCpy(stackPtr + ValueStackPointer, stackPtr + offset, wordLen * CompilerUtility.WordSize);
-            ValueStackPointer += wordLen;
+            AssertValueStackWordLength(wordLen);
+            UnsafeUtility.MemCpy(valuesPtr, frameValuesPtr + offset, wordLen * CompilerUtility.WordSize);
+            valuesPtr += wordLen;
         }
 
         /// <summary>
@@ -100,8 +119,8 @@ namespace Elfenlabs.Scripting
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         unsafe void StoreVariable(ushort offset, byte wordLen)
         {
-            UnsafeUtility.MemCpy(stackPtr + offset, stackPtr + ValueStackPointer - wordLen, wordLen * CompilerUtility.WordSize);
-            ValueStackPointer -= wordLen;
+            UnsafeUtility.MemCpy(frameValuesPtr + offset, valuesPtr - wordLen, wordLen * CompilerUtility.WordSize);
+            valuesPtr -= wordLen;
         }
     }
 }

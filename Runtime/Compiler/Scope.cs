@@ -73,11 +73,8 @@ namespace Elfenlabs.Scripting
 
             while (true)
             {
-                var indent = ConsumeIndents();
-                if (indent < depth)
-                {
+                if (!TryConsumeIndents(depth))
                     return;
-                }
 
                 ConsumeStatement();
             }
@@ -94,12 +91,33 @@ namespace Elfenlabs.Scripting
             currentScope = currentScope.Parent;
         }
 
-        int ConsumeIndents()
+        bool TryConsumeIndents(int count)
         {
-            var count = 0;
-            while (MatchAdvance(TokenType.Indent))
-                count++;
-            return count;
+            var cursor = current;
+            for (int i = 0; i < count; i++)
+            {
+                if (LookAhead(i)?.Type != TokenType.Indent)
+                    return false;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                Consume(TokenType.Indent, "Expected indent");
+            }
+
+            return true;
+        }
+
+        Token LookAhead(int offset)
+        {
+            var token = current;
+            for (int i = 0; i < offset; i++)
+            {
+                if (token.Next == null)
+                    return null;
+                token = token.Next;
+            }
+            return token.Value;
         }
     }
 }

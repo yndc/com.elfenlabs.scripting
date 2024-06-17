@@ -6,6 +6,16 @@ namespace Elfenlabs.Scripting.Tests
     public class ExpressionTests
     {
         [Test]
+        public void Unary()
+        {
+            var stack = CompilerUtility.Debug(@"
+                -5
+            ");
+
+            Assert.AreEqual(-5, stack[0]);
+        }
+        
+        [Test]
         public void Precedence()
         {
             var stack = CompilerUtility.Debug(@"

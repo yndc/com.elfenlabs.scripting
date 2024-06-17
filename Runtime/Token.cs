@@ -43,7 +43,7 @@ namespace Elfenlabs.Scripting
         EOF
     }
 
-    public struct Token
+    public class Token
     {
         public TokenType Type;
         public string Value;

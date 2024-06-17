@@ -14,7 +14,11 @@ namespace Elfenlabs.Scripting
             UnityEngine.Debug.Log(Debug(module.Tokens));
             compiler.AddModule(module);
             var program = compiler.Build();
-            UnityEngine.Debug.Log(Debug(module.ByteCode));
+            foreach (var chunk in program.Chunks)
+            {
+                UnityEngine.Debug.Log($"-- Chunk");
+                UnityEngine.Debug.Log(Debug(chunk));
+            }
             var machine = new Machine(1024, Allocator.Temp);
             machine.Boot(program);
             machine.Run();
@@ -97,6 +101,9 @@ namespace Elfenlabs.Scripting
                     break;
                 case Format.OS:
                     text.Append(instruction.ArgShort);
+                    break;
+                case Format.OB:
+                    text.Append(instruction.ArgByte);
                     break;
                 case Format.OBS:
                     text.Append(instruction.ArgShort);

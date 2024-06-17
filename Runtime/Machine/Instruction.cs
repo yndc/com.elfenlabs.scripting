@@ -73,6 +73,7 @@ namespace Elfenlabs.Scripting
     {
         O,
         OS,
+        OB,
         OBS,
         OBBB,
         I,
@@ -188,6 +189,8 @@ namespace Elfenlabs.Scripting
             { InstructionType.Jump, Format.OS },
             { InstructionType.JumpIfFalse, Format.OS },
             { InstructionType.JumpIfTrue, Format.OS },
+            { InstructionType.Call, Format.OBS },
+            { InstructionType.Return, Format.OB },
             { InstructionType.LoadConstant, Format.OBS },
             { InstructionType.LoadVariable, Format.OBS },
             { InstructionType.StoreVariable, Format.OBS },

@@ -186,19 +186,18 @@ namespace Elfenlabs.Scripting
             // Check if it refers to a function
             if (currentScope.TryGetFunction(identifier, out var function))
             {
+
                 if (MatchAdvance(TokenType.LeftParentheses))
                 {
-                    ConsumeFunctionCallParameters(function);
-                    builder.Add(new Instruction(InstructionType.Call, function.Index, function.ParameterWordLength));
-                    return function.ReturnType;
+                    return ConsumeFunctionCall(function);
                 }
                 else
                 {
-                    // TODO: Add function pointer support
+                    return ConsumeFunctionPointer(function);
                 }
             }
 
-            throw CreateException(previous.Value, $"Unknown expression identifier {identifier}");
+            throw CreateException(previous.Value, $"Unknown identifier {identifier}");
         }
 
         ValueType ConsumeExpression(Handling handling)

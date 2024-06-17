@@ -12,7 +12,6 @@ namespace Elfenlabs.Scripting
         readonly List<Function> functions = new();
         Module module;
         Function currentFunction;
-        Function rootFunction;
         LinkedListNode<Token> current;
         LinkedListNode<Token> previous;
         ValueType lastValueType;
