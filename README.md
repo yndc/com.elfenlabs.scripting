@@ -2,6 +2,11 @@
 
 An interpreted language designed for Unity DOTS. 
 
+- Interpreted 
+- Static typing
+- No garbage collection
+- 
+
 ## Quickstart 
 
 ### Variables 
@@ -53,15 +58,16 @@ var str = String    // Same as an empty string ("")
 var bool = Bool     // Same as false
 ```
 
-#### Reference Types
+#### Resource Types
 
-A reference type can be created with the `create` keyword.
+Resource types are data types that lives in the heap. 
+A resource type can be created with the `create` keyword.
 
 ```
 var refInt = create 12      // A Ref Int
 var value = refInt.Unwrap   // Get a copy of the value wrapped inside
 
-destroy refInt              // Destroys refInt, the memory is freed
+delete refInt               // Destroys refInt, the memory is freed
 
 print refInt.Value          // Error: refInt has been destroyed
 ```
@@ -182,7 +188,7 @@ function Add (Int a, Int b) returns Int
 var result = Add(1, 2)  // 
 ```
 
-Functions are first-class citizens, therefore it's possible to store functions in variables. Functions have the type signature `(<args>) -> <return type>`
+Functions are first-class members, therefore it's possible to store functions in variables. Functions have the type signature `(<args>) -> <return type>`
 
 ```
 function AddOne (Int x) returns Int   
@@ -200,6 +206,33 @@ foreach operation in operations
     number = operation(number)
     
 Print(number)       // Prints 8
+```
+
+### Closures Support
+
+Closures are not supported and there are no plans to support it. This might change in the future. 
+
+### Evaluate 
+
+You can use `evaluate` to write **IIFE**s (Immediately Invoked Function Expression). This is useful to compute variable value. 
+
+```
+var value = 10
+var absoluteValue = evaluate 
+    if value < 0 then 
+        return -value
+    return value
+```
+
+Another example to count the number of odd numbers in a span of numbers:
+```
+var numbers = { 1, 4, 7, 3, 8, 8, 9, 3, 1, 6 }
+var oddCount = evaluate
+    var result = 0
+    foreach var number in numbers with index i
+        if number % 2 == 0 then 
+            result = result + 1
+    return result
 ```
 
 ## Control Flow 
