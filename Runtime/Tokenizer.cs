@@ -92,15 +92,16 @@ namespace Elfenlabs.Scripting
         void AddToken(TokenType type)
         {
             var oldCursor = tail;
+            var value = module.Source[oldCursor..head];
             if (head == tail) head++;
             head = Math.Min(head, module.Source.Length);
             tail = head;
             module.Tokens.AddLast(new Token
             {
                 Type = type,
-                Value = module.Source[oldCursor..head],
+                Value = value,
                 Line = line,
-                Column = GetColumn()
+                Column = GetColumn() - value.Length + 1
             });
         }
 
