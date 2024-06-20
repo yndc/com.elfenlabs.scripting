@@ -1,11 +1,10 @@
 # Elfenscript
 
-An interpreted language designed for Unity DOTS. 
+An interpreted language designed for game scripting.
 
 - Interpreted 
 - Static typing
 - No garbage collection
-- 
 
 ## Quickstart 
 
@@ -19,9 +18,9 @@ var a = 1
 
 Variable types are inferred by usage. 
 
-## Types 
+### Types 
 
-### Primitives
+#### Primitives
 
 Primitive type supported:
 - `Int` (32-bit)
@@ -72,16 +71,16 @@ delete refInt               // Destroys refInt, the memory is freed
 print refInt.Value          // Error: refInt has been destroyed
 ```
 
-### Compound Types
+#### Compound Types
 
-4 compount types are available to use: 
+Built-in compound types: 
 - Spans `T<n>`: Stack-allocated compile-time fixed-sized array  
-- Lists `T[]``: Heap-allocated dynamic-sized array
+- Lists `T[]`: Heap-allocated dynamic-sized array
 - Tuple `(T1, T2, ... Tn)`: Stack-allocated fixed group of values 
 - Map `[Tk] -> Tv`: Heap-allocated hash map
 - Functions `(T1, T2, ... Tn) -> TR`
 
-#### Spans
+##### Spans
 
 Spans are fixed-sized arrays allocated on the stack. 
 
@@ -100,7 +99,7 @@ var vector = { 10.0, 5.0 }
 var dot = Dot(vector) 
 ```
 
-#### Lists 
+##### Lists 
 
 Lists are dynamically-sized array allocated on the heap. 
 
@@ -136,21 +135,22 @@ Print(arr.Last())       // Prints "0"
 destroy arr
 ```
 
-#### Maps
+##### Maps
 
-#### Tuples
+##### Tuples
 
-#### Structs
+##### Structs
 
 Define a structure with the `structure` keyword.
 
 ```
 structure Data
-    Number Int
+    One Int
+    Two Float
     
 ```
 
-### Alias
+#### Alias
 
 Type can be aliased with the `alias` keyword for convenience.
 
@@ -177,15 +177,15 @@ function Distance(Character first, Character second) returns (Position, Float)
     return (delta, dist)
 ```
 
-## Functions 
+### Functions 
 
-Functions can be declared with the `function keyword: 
+Functions can be declared with the `function` keyword: 
 
 ```
 function Add (Int a, Int b) returns Int
     return a + b
     
-var result = Add(1, 2)  // 
+var result = Add(1, 2)
 ```
 
 Functions are first-class members, therefore it's possible to store functions in variables. Functions have the type signature `(<args>) -> <return type>`
@@ -208,11 +208,11 @@ foreach operation in operations
 Print(number)       // Prints 8
 ```
 
-### Closures Support
+#### Closures Support
 
 Closures are not supported and there are no plans to support it. This might change in the future. 
 
-### Evaluate 
+#### Evaluate 
 
 You can use `evaluate` to write **IIFE**s (Immediately Invoked Function Expression). This is useful to compute variable value. 
 
@@ -235,7 +235,7 @@ var oddCount = evaluate
     return result
 ```
 
-## Control Flow 
+### Control Flow 
 
 ### If Statements
 
@@ -346,9 +346,74 @@ foreach number in numbers with i
 debug numbers
 ```
 
-## Convention
+### Modules
 
-### Naming 
+All importable scripts requires module declaration at the top of the file. 
+
+```
+module MyLibrary
+
+function MyFunction returns Int 
+    return 10
+```
+
+Use the `use` keyword to import a module 
+
+```
+use MyLibrary
+
+log MyLibrary.MyFunction() // prints '10'
+```
+
+#### Scope
+
+Modules can be declared inside another module with the `.` in the identifier
+
+```
+module MyLibrary.OtherLib
+
+function MyFunction returns Int
+    return 20
+```
+
+```
+use MyLibrary
+use MyLibrary.OtherLib
+
+log MyLibrary.MyFunction()  // prints 10
+log OtherLib.MyFunction()   // prints 20
+```
+
+#### Alias
+
+Module imports can be aliased, this is optional however it is require if there is a module base name conflict.
+
+```
+module MyLibrary.Deep.OtherLib
+
+function MyFunction returns Int
+    return 30
+```
+
+```
+use MyLibrary
+use MyLibrary.OtherLib
+use MyLibrary.Deep.OtherLib     // compile error! conflicting imported module names
+```
+
+```
+use MyLibrary
+use MyLibrary.OtherLib
+use MyLibrary.Deep.OtherLib as DeepOtherLib
+
+log MyLibrary.MyFunction()      // prints 10
+log OtherLib.MyFunction()       // prints 20
+log DeepOtherLib.MyFunction()   // prints 30
+```
+
+### Convention
+
+#### Naming 
 
 All types and functions uses `PascalCase` such as `Int`, `Float`, `PlayerInventory`, `CalculateDistance` and so on. 
 
