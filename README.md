@@ -99,6 +99,16 @@ var vector = { 10.0, 5.0 }
 var dot = Dot(vector) 
 ```
 
+Common operators can be used for spans of the same type
+
+```
+var a = { 1, 2, 3 }
+var b = { 4, 5, 6 }
+
+var add = a + b     // { 5, 7, 9 }
+var sub = a - b     // { -3, -3, -3 }
+```
+
 ##### Lists 
 
 Lists are dynamically-sized array allocated on the heap. 
