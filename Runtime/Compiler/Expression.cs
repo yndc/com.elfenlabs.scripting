@@ -214,6 +214,16 @@ namespace Elfenlabs.Scripting
             // Check if it refers to a variable
             if (currentScope.TryGetVariable(identifier, out var variable))
             {
+                // Check if it uses the array access operator
+                if (MatchAdvance(TokenType.LeftBracket))
+                {
+                    if (variable.Type.Span == 0) throw CreateException(previous.Value, $"Variable {identifier} is not an array, you can't use the array accessor operator here '[]'");
+                    var indexValueType = ConsumeExpression();
+                    AssertValueTypeEqual(indexValueType, ValueType.Int);
+                    Consume(TokenType.RightBracket, "Expected ']' to close the array accessor operator");
+                    builder.Add(new Instruction(InstructionType.LoadVariableElement, variable.Position, variable.Type.WordLength));
+                    return variable.Type.ToElement();
+                }
                 builder.Add(new Instruction(InstructionType.LoadVariable, variable.Position, variable.Type.WordLength));
                 return variable.Type;
             }

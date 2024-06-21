@@ -45,6 +45,18 @@ namespace Elfenlabs.Scripting
             };
         }
 
+        public ValueType ToElement()
+        {
+            return new ValueType()
+            {
+                Name = Name,
+                Index = Index,
+                Span = 0,
+                WordLength = WordLength,
+                IsReference = IsReference
+            };
+        }
+
         public override int GetHashCode()
         {
             return HashCode.Combine(Index, Span);

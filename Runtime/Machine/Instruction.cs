@@ -28,6 +28,9 @@ namespace Elfenlabs.Scripting
         LoadVariable,       // <short>    - The index of the variable to load
                             // <byte>     - The number of words to load from the stack
 
+        LoadVariableElement,// <short>    - The index of the variable to load
+                            // <byte>     - The number of words to load from the stack
+
         StoreVariable,      // <short>    - The index of the variable to store
                             // <byte>     - The number of words to store from the stack
 
@@ -193,6 +196,7 @@ namespace Elfenlabs.Scripting
             { InstructionType.Return, Format.OB },
             { InstructionType.LoadConstant, Format.OBS },
             { InstructionType.LoadVariable, Format.OBS },
+            { InstructionType.LoadVariableElement, Format.OBS },
             { InstructionType.StoreVariable, Format.OBS },
             { InstructionType.Pop, Format.OS },
             { InstructionType.IntAdd, Format.O },

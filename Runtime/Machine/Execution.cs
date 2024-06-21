@@ -89,6 +89,9 @@ namespace Elfenlabs.Scripting
                     case InstructionType.LoadVariable:
                         LoadVariable(instruction.ArgShort, instruction.ArgByte1);
                         break;
+                    case InstructionType.LoadVariableElement:
+                        LoadVariableElement(instruction.ArgShort, instruction.ArgByte1);
+                        break;
                     case InstructionType.StoreVariable:
                         StoreVariable(instruction.ArgShort, instruction.ArgByte1);
                         break;

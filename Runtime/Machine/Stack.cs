@@ -112,6 +112,20 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
+        /// Pushes a variable element value onto the stack using index on the top of the stack.
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="wordLen"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void LoadVariableElement(ushort offset, byte wordLen)
+        {
+            AssertValueStackWordLength(wordLen);
+            var index = Pop<int>();
+            UnsafeUtility.MemCpy(valuesPtr, frameValuesPtr + offset + index, wordLen * CompilerUtility.WordSize);
+            valuesPtr += wordLen;
+        }
+
+        /// <summary>
         /// Store the stack value onto a variable
         /// </summary>
         /// <param name="offset"></param>
