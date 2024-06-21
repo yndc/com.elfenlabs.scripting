@@ -40,6 +40,10 @@ namespace Elfenlabs.Scripting
             AddSymbol("/", TokenType.Slash);
             AddSymbol("(", TokenType.LeftParentheses);
             AddSymbol(")", TokenType.RightParentheses);
+            AddSymbol("{", TokenType.LeftBrace);
+            AddSymbol("}", TokenType.RightBrace);
+            AddSymbol("[", TokenType.LeftBracket);
+            AddSymbol("]", TokenType.RightBracket);
             AddSymbol(">", TokenType.Greater);
             AddSymbol("<", TokenType.Less);
             AddSymbol("==", TokenType.EqualEqual);

@@ -6,6 +6,8 @@ namespace Elfenlabs.Scripting
 
         // Single character tokens
         LeftParentheses, RightParentheses,
+        LeftBrace, RightBrace,
+        LeftBracket, RightBracket,
         Comma, Dot,
         Minus, Plus, Slash, Asterisk,
 

@@ -208,6 +208,7 @@ namespace Elfenlabs.Scripting
                 Handling.Unary => ConsumeExpressionUnary(),
                 Handling.Binary => ConsumeExpressionBinary(),
                 Handling.Literal => ConsumeExpressionLiteral(),
+                Handling.Composite => ConsumeExpressionComposite(),
                 Handling.Identifier => ConsumeExpressionIdentifier(),
                 _ => ValueType.Void,
             };

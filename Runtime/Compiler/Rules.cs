@@ -34,6 +34,7 @@ namespace Elfenlabs.Scripting
         Unary,
         Binary,
         Literal,
+        Composite,
         Identifier,
         And
     }
@@ -58,6 +59,10 @@ namespace Elfenlabs.Scripting
             // Grouping
             { TokenType.LeftParentheses,        new ParseRule(Handling.Group) },
             { TokenType.RightParentheses,       new ParseRule() },
+            { TokenType.LeftBrace,              new ParseRule(Handling.Composite) },
+            { TokenType.RightBrace,             new ParseRule() },
+            { TokenType.LeftBracket,            new ParseRule(Handling.Composite) },
+            { TokenType.RightBracket,           new ParseRule() },
 
             // Operators
             { TokenType.Minus,                  new ParseRule(Handling.Unary, Handling.Binary, Precedence.Term) },
