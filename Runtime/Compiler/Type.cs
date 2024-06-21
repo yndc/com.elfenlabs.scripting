@@ -2,6 +2,15 @@ using System;
 
 namespace Elfenlabs.Scripting
 {
+    public enum ValueTypePrimitive : int
+    {
+        Void,
+        Bool,
+        Int,
+        Float,
+        String,
+    }
+
     public class ValueType : IEquatable<ValueType>
     {
         public string Name;
@@ -61,11 +70,11 @@ namespace Elfenlabs.Scripting
             return !(left == right);
         }
 
-        public static ValueType Void => new() { Index = 0, Name = "Void", WordLength = 0 };
-        public static ValueType Bool => new() { Index = 1, Name = "Bool", WordLength = 1 };
-        public static ValueType Int => new() { Index = 2, Name = "Int", WordLength = 1 };
-        public static ValueType Float => new() { Index = 3, Name = "Float", WordLength = 1 };
-        public static ValueType String => new() { Index = 4, Name = "String", WordLength = 1 };
+        public static ValueType Void => new() { Index = (int)ValueTypePrimitive.Void, Name = "Void", WordLength = 0 };
+        public static ValueType Bool => new() { Index = (int)ValueTypePrimitive.Bool, Name = "Bool", WordLength = 1 };
+        public static ValueType Int => new() { Index = (int)ValueTypePrimitive.Int, Name = "Int", WordLength = 1 };
+        public static ValueType Float => new() { Index = (int)ValueTypePrimitive.Float, Name = "Float", WordLength = 1 };
+        public static ValueType String => new() { Index = (int)ValueTypePrimitive.String, Name = "String", WordLength = 1 };
     }
 
     public partial class Compiler

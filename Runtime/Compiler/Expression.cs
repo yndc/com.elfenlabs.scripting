@@ -32,6 +32,20 @@ namespace Elfenlabs.Scripting
             return lastValueType;
         }
 
+        ValueType ConsumeExpression(Handling handling)
+        {
+            return handling switch
+            {
+                Handling.Group => ConsumeExpressionGroup(),
+                Handling.Unary => ConsumeExpressionUnary(),
+                Handling.Binary => ConsumeExpressionBinary(),
+                Handling.Literal => ConsumeExpressionLiteral(),
+                Handling.Composite => ConsumeExpressionComposite(),
+                Handling.Identifier => ConsumeExpressionIdentifier(),
+                _ => ValueType.Void,
+            };
+        }
+
         ValueType ConsumeExpressionGroup()
         {
             var valueType = ConsumeExpression();
@@ -172,7 +186,28 @@ namespace Elfenlabs.Scripting
             // Check if it refers to a type, replace it as the default value for that type
             if (types.TryGetValue(identifier, out ValueType valueType))
             {
-                builder.AddConstant(0);
+                switch (current.Value.Type)
+                {
+                    case TokenType.Less:
+                        Consume(TokenType.Less);
+                        var spanSizeToken = Consume(TokenType.Integer, "Expected span size after '<'");
+                        Consume(TokenType.Greater, "Expected '>' after span size");
+                        valueType = valueType.ToSpan(int.Parse(spanSizeToken.Value));
+                        break;
+                }
+
+                switch (valueType.Index)
+                {
+                    case (int)PrimitiveType.Int:
+                        builder.AddConstant(0);
+                        for (int i = 1; i < valueType.Span; i++) builder.AddConstant(0);
+                        break;
+                    case (int)PrimitiveType.Float:
+                        builder.AddConstant(0f);
+                        for (int i = 1; i < valueType.Span; i++) builder.AddConstant(0f);
+                        break;
+                }
+
                 return valueType;
             }
 
@@ -198,20 +233,6 @@ namespace Elfenlabs.Scripting
             }
 
             throw CreateException(previous.Value, $"Unknown identifier {identifier}");
-        }
-
-        ValueType ConsumeExpression(Handling handling)
-        {
-            return handling switch
-            {
-                Handling.Group => ConsumeExpressionGroup(),
-                Handling.Unary => ConsumeExpressionUnary(),
-                Handling.Binary => ConsumeExpressionBinary(),
-                Handling.Literal => ConsumeExpressionLiteral(),
-                Handling.Composite => ConsumeExpressionComposite(),
-                Handling.Identifier => ConsumeExpressionIdentifier(),
-                _ => ValueType.Void,
-            };
         }
     }
 }
