@@ -93,7 +93,7 @@ namespace Elfenlabs.Scripting
             if (TryScanIdentifier())
                 return;
 
-            throw NewException("Unidentified character");
+            throw NewException($"Unidentified character: '{module.Source[tail]}'");
         }
 
         void AddToken(TokenType type)
@@ -109,7 +109,7 @@ namespace Elfenlabs.Scripting
                 Value = value,
                 Line = line,
                 Position = position,
-                Column = GetColumn() - value.Length + 1
+                Column = GetColumn() - value.Length
             });
         }
 
@@ -503,7 +503,7 @@ namespace Elfenlabs.Scripting
 
         int GetColumn()
         {
-            return tail - lastLineCharCum;
+            return tail - lastLineCharCum + 1;
         }
 
         Location GetLocation()
