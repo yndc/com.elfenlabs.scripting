@@ -8,30 +8,36 @@ namespace Elfenlabs.Scripting
     {
         public static int[] Debug(string sourceCode)
         {
+            var log = new StringBuilder();
             var module = new Module(sourceCode);
             var compiler = new Compiler();
+
             new Tokenizer().Tokenize(module);
             UnityEngine.Debug.Log(Debug(module.Tokens));
             compiler.AddModule(module);
             var program = compiler.Build();
-            foreach (var chunk in program.Chunks)
+            for (var i = 0; i < program.Chunks.Length; i++)
             {
-                UnityEngine.Debug.Log($"-- Chunk");
-                UnityEngine.Debug.Log(Debug(chunk));
+                log.AppendLine("-- Chunk " + i);
+                log.AppendLine(Debug(program.Chunks[i]));
             }
+
             var machine = new Machine(1024, Allocator.Temp);
             machine.Boot(program);
             machine.Run();
+
             var stack = machine.GetStackSnapshot(Allocator.Temp);
             var snapshot = stack.ToArray();
-            UnityEngine.Debug.Log("-- Stack:");
+            log.AppendLine("Stack");
             for (var i = 0; i < snapshot.Length; i++)
             {
-                UnityEngine.Debug.Log(snapshot[i]);
+                log.AppendLine(snapshot[i].ToString());
             }
 
             machine.Dispose();
             stack.Dispose();
+
+            UnityEngine.Debug.Log(log.ToString());
 
             return snapshot;
         }
@@ -72,14 +78,14 @@ namespace Elfenlabs.Scripting
         {
             var text = new StringBuilder();
             var constants = code.Constants;
-            text.Append("-- Constants:\n");
+            text.Append("Constants\n");
             for (var i = 0; i < constants.Length; i++)
             {
                 text.Append(constants[i]);
                 text.Append("\t");
                 if ((i + 1) % 4 == 0) text.Append("\n");
             }
-            text.Append("\n-- Instructions:\n");
+            text.Append("\nInstructions\n");
             for (var ip = 0; ip < code.Instructions.Length; ip++)
             {
                 var instruction = code.Instructions[ip];
