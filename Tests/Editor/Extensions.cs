@@ -1,7 +1,7 @@
 using System.Linq;
 using System;
 
-namespace Elfenlabs.Strings
+namespace Elfenlabs.Scripting.Tests
 {
     static class Extensions
     {

@@ -47,6 +47,8 @@ namespace Elfenlabs.Scripting
 
             }
 
+            Debug.Log(previous);
+
             throw CreateException(previous.Value, $"Unknown statement identifier {identifier}");
         }
     }

@@ -6,30 +6,24 @@ namespace Elfenlabs.Scripting
     {
         public CompilerException CreateException(Token token, string message)
         {
-            return new CompilerException(module, token, message);
+            return new CompilerException(token, message);
         }
     }
 
     public class CompilerException : System.Exception
     {
-        public Module Module { get; set; }
         public Token Token { get; set; }
 
         public override string Message
         {
             get
             {
-                return $@"
-                    line: {Token.Line}, col: {Token.Column}
-                    {CompilerUtility.GenerateSourcePointer(Module, Token.Location, Token.Length)}:
-                    {base.Message}  
-                ".AutoTrim();
+                return $"{base.Message} at line {Token.Line}\n{CompilerUtility.GenerateCodeTokenPointer(Token, 3)}";
             }
         }
 
-        public CompilerException(Module module, Token token, string message) : base(message)
+        public CompilerException(Token token, string message) : base(message)
         {
-            Module = module;
             Token = token;
         }
     }

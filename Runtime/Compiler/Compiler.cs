@@ -88,7 +88,7 @@ namespace Elfenlabs.Scripting
             }
             else
                 throw CreateException(current.Value, error
-                    ?? string.Format("Expected token {0} but get {1}", type.ToString(), current.Value.Type.ToString()));
+                    ?? string.Format("Expected token {0} but get '{1}'", type.ToString(), current.Value.Type.ToString()));
         }
 
         void Advance()

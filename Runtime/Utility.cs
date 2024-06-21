@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text;
 using Unity.Collections.LowLevel.Unsafe;
 
 namespace Elfenlabs.Scripting
@@ -45,38 +47,56 @@ namespace Elfenlabs.Scripting
             return (byteLength + WordSize - 1) / WordSize;
         }
 
-        public static string GenerateSourcePointer(Module module, Location location, int length = 1)
+        public static string GetLineString(Module module, int line)
         {
-            var iterator = 0;
-            var lineStart = -1;
-            var lineEnd = -1;
-            for (var line = 0; line < location.Line; line++)
+            var cursor = 0;
+            for (var l = 1; l < line; l++)
             {
-                while (iterator < module.Source.Length)
+                while (cursor < module.Source.Length)
                 {
-                    var c = module.Source[iterator];
-                    if (c == '\n')
+                    if (module.Source[cursor] == '\n')
                     {
-                        if (line < location.Line - 1)
-                            break;
-
-                        if (lineStart < 0)
-                            lineStart = iterator + 1;
-                        else
-                        {
-                            lineEnd = iterator;
-                            goto next;
-                        }
+                        cursor++;
+                        break;
                     }
-                    iterator++;
+                    cursor++;
                 }
             }
 
-        next:
+            var lineStart = cursor;
+            while (cursor < module.Source.Length)
+            {
+                if (module.Source[cursor] == '\n')
+                    break;
+                cursor++;
+            }
+            var lineEnd = cursor;
 
-            var lineSource = module.Source.Substring(lineStart, lineEnd - lineStart);
-            var linePointer = new string(' ', location.Column - 1) + new string('^', length);
-            return lineSource + "\n" + linePointer;
+            if (lineEnd < 0)
+                return string.Empty;
+            var lineSource = module.Source[lineStart..lineEnd];
+            return lineSource;
+        }
+
+        public static string GenerateLinePointer(int col, int length = 1)
+        {
+            return new string(' ', col - 1) + new string('^', Math.Max(1, length));
+        }
+
+        public static string GenerateCodeTokenPointer(Token token, int previousLines = 0)
+        {
+            return GenerateCodeTokenPointer(token.Module, token.Line, token.Column, token.Length, previousLines);
+        }
+
+        public static string GenerateCodeTokenPointer(Module module, int line, int col, int length = 1, int previousLines = 0)
+        {
+            var sb = new StringBuilder();
+            for (var i = Math.Max(1, line - previousLines); i <= line; i++)
+            {
+                sb.AppendLine($"{i,-4} | " + GetLineString(module, i));
+            }
+            sb.AppendLine(new string(' ', 7) + GenerateLinePointer(col, length));
+            return sb.ToString();
         }
     }
 }

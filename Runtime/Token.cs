@@ -45,8 +45,10 @@ namespace Elfenlabs.Scripting
 
     public class Token
     {
+        public Module Module;
         public TokenType Type;
         public string Value;
+        public int Position;
         public int Line;
         public int Column;
 
@@ -54,6 +56,6 @@ namespace Elfenlabs.Scripting
         public int Length => Value.Length;
 
         public static Token Invalid => new Token { Type = TokenType.Error, Value = "Invalid token" };
-        public static Token TerminatorFromNewline(Token newline) => new Token { Type = TokenType.StatementTerminator, Value = "", Line = newline.Line, Column = newline.Column };
+        public static Token TerminatorFromNewline(Token newline) => new() { Type = TokenType.StatementTerminator, Value = "", Line = newline.Line, Column = newline.Column };
     }
 }

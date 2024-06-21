@@ -12,7 +12,7 @@ namespace Elfenlabs.Scripting.Tests
                     return a + b
     
                 var result = Add(3, 5) 
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(8, stack[0]);
         }
@@ -27,7 +27,7 @@ namespace Elfenlabs.Scripting.Tests
                     return number / divisor
     
                 var result = SafeDiv(10, 5) 
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(2, stack[0]);
         }
@@ -42,7 +42,7 @@ namespace Elfenlabs.Scripting.Tests
                 function Div (Int x, Int y) returns Int
                     return x / y
                 var d = Div(c, b)               // 2
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(4, stack.Length);
             Assert.AreEqual(1, stack[0]);
@@ -63,7 +63,7 @@ namespace Elfenlabs.Scripting.Tests
                 var d = 4
                 var e = Div(d, b)               // 2
                 var result = a + b + c + d + e  // 12
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(6, stack.Length);
             Assert.AreEqual(1, stack[0]);

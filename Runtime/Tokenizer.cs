@@ -66,13 +66,20 @@ namespace Elfenlabs.Scripting
 
         void ScanNextToken()
         {
+            if (TryScanIndent())
+                return;
+
             SkipWhitespace();
+            SkipComments();
 
             if (Peek() == '\0')
             {
                 AddToken(TokenType.EOF);
                 return;
             }
+
+            if (TryScanNewLine())
+                return;
 
             if (TryScanLiteralNumeric())
                 return;
@@ -91,18 +98,50 @@ namespace Elfenlabs.Scripting
 
         void AddToken(TokenType type)
         {
-            var oldCursor = tail;
-            var value = module.Source[oldCursor..head];
-            if (head == tail) head++;
-            head = Math.Min(head, module.Source.Length);
+            var value = module.Source[tail..head];
+            var position = tail;
             tail = head;
+
             module.Tokens.AddLast(new Token
             {
+                Module = module,
                 Type = type,
                 Value = value,
                 Line = line,
+                Position = position,
                 Column = GetColumn() - value.Length + 1
             });
+        }
+
+        bool TryScanIndent()
+        {
+            if (PeekSlice(4) == "    ") // 4 spaces is treated as an indent
+            {
+                AdvanceHead(4);
+                AddToken(TokenType.Indent);
+                return true;
+            }
+
+            if (Peek() == '\t') // Tab is treated as an indent
+            {
+                AdvanceHead();
+                AddToken(TokenType.Indent);
+                return true;
+            }
+            return false;
+        }
+
+        bool TryScanNewLine()
+        {
+            if (Peek() == '\n')
+            {
+                AdvanceHead();
+                AddToken(TokenType.NewLine);
+                line++;
+                lastLineCharCum = head;
+                return true;
+            }
+            return false;
         }
 
         bool TryScanLiteralString()
@@ -110,7 +149,7 @@ namespace Elfenlabs.Scripting
             if (Peek() != '\'')
                 return false;
 
-            Skip(1); // Skip the first '''
+            AdvanceTail(1); // Skip the first '''
 
             while (Peek() != '\'')
             {
@@ -123,7 +162,7 @@ namespace Elfenlabs.Scripting
 
             AddToken(TokenType.String);
 
-            Skip(1); // Skip the last '''
+            AdvanceTail(1); // Skip the last '''
 
             return true;
         }
@@ -184,15 +223,15 @@ namespace Elfenlabs.Scripting
             // Prioritize matching the longest symbol
             for (int length = 1; length < longestSymbolLength; length++)
             {
-                if (Peek() == '\0')
-                    break;
-
                 var str = CurrentSlice();
                 if (symbols.TryGetValue(str, out var match))
                 {
                     longestMatch = match;
                     longestMatchLength = length;
                 }
+
+                if (Peek() == '\0')
+                    break;
 
                 AdvanceHead();
             }
@@ -249,9 +288,9 @@ namespace Elfenlabs.Scripting
             return module.Source[tail..head];
         }
 
-        void Skip(int length = 1)
+        void AdvanceTail(int length = 1)
         {
-            tail += 1;
+            tail += length;
             head = Math.Max(head, tail);
         }
 
@@ -276,32 +315,14 @@ namespace Elfenlabs.Scripting
                 var c = Peek();
                 switch (c)
                 {
-                    case '\n':
-                        AddToken(TokenType.NewLine);
-                        line++;
-                        lastLineCharCum = tail;
-                        Skip();
-                        break;
-                    case '\t':
-                        AddToken(TokenType.Indent);
-                        Skip();
-                        break;
                     case ' ':
-                        if (PeekSlice(4) == "    ") // 4 spaces is treated as an indent
-                        {
-                            AdvanceHead(4);
-                            AddToken(TokenType.Indent);
-                            continue;
-                        }
-                        Skip();
-                        break;
                     case '\r':
-                        Skip();
+                        AdvanceTail();
                         break;
                     case '/':
                         if (Peek(1) == '/')
                         {
-                            while (Peek() != '\n' && Peek() != '\0') Skip();
+                            while (Peek() != '\n' && Peek() != '\0') AdvanceTail();
                         }
                         else
                         {
@@ -311,6 +332,14 @@ namespace Elfenlabs.Scripting
                     default:
                         return;
                 }
+            }
+        }
+
+        void SkipComments()
+        {
+            if (PeekSlice(2) == "//")
+            {
+                while (Peek() != '\n' && Peek() != '\0') AdvanceTail();
             }
         }
 
@@ -331,8 +360,10 @@ namespace Elfenlabs.Scripting
         /// </summary>
         void CleanFormatting()
         {
+            module.Tokens.AddBefore(module.Tokens.Last, new Token { Type = TokenType.NewLine });
+
             // First pass: normalize base indentation
-            NormalizeIndentation();
+            //NormalizeIndentation();
 
             // Second pass: remove redundant newlines and replace relevant newlines with terminators
             RemoveRedundantNewLines();
@@ -382,24 +413,20 @@ namespace Elfenlabs.Scripting
         void RemoveRedundantNewLines()
         {
             var lineHasContent = false;
-            for (var node = module.Tokens.First; node.Next != null; node = node.Next)
+            for (var node = module.Tokens.First; node != null; node = node.Next)
             {
                 var token = node.Value;
-                switch (token.Type)
+                if (token.Type == TokenType.NewLine)
                 {
-                    case TokenType.Indent:
-                        break;
-                    case TokenType.EOF:
-                    case TokenType.NewLine:
-                        if (!lineHasContent)
-                            node = RemoveNode(node);
-                        else
-                            node.Value = Token.TerminatorFromNewline(token);
-                        lineHasContent = false;
-                        break;
-                    default:
-                        lineHasContent = true;
-                        break;
+                    if (!lineHasContent)
+                        node = RemoveNode(node);
+                    else
+                        node.Value = Token.TerminatorFromNewline(token);
+                    lineHasContent = false;
+                }
+                else
+                {
+                    lineHasContent = true;
                 }
             }
         }
@@ -410,7 +437,7 @@ namespace Elfenlabs.Scripting
         void RemoveRedundantIndents()
         {
             var isNewLine = true;
-            for (var node = module.Tokens.First; node.Next != null; node = node.Next)
+            for (var node = module.Tokens.First; node != null; node = node.Next)
             {
                 var token = node.Value;
                 switch (token.Type)
@@ -488,8 +515,7 @@ namespace Elfenlabs.Scripting
         {
             var prev = node.Previous;
             module.Tokens.Remove(node);
-            prev ??= module.Tokens.First;
-            return prev;
+            return prev ?? module.Tokens.First;
         }
 
         TokenizerException NewException(string message)
@@ -512,14 +538,14 @@ namespace Elfenlabs.Scripting
         {
             get
             {
-                return $@"
-                    line: {Location.Line}, col: {Location.Column}
-                    {CompilerUtility.GenerateSourcePointer(Module, Location)}
-                    {base.Message}  
-                ".AutoTrim();
+                return $"{base.Message} at line {Location.Line}\n{CompilerUtility.GenerateCodeTokenPointer(Module, Location.Line, Location.Column, 1, 3)}";
             }
         }
 
-        public TokenizerException(Module module, Location location, string message) : base(message) { }
+        public TokenizerException(Module module, Location location, string message) : base(message)
+        {
+            Module = module;
+            Location = location;
+        }
     }
 }

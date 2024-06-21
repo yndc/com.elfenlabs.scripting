@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Unity.Collections;
 
 namespace Elfenlabs.Scripting.Tests
 {
@@ -10,7 +9,7 @@ namespace Elfenlabs.Scripting.Tests
         {
             var stack = CompilerUtility.Debug(@"
                 -5
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(-5, stack[0]);
         }
@@ -20,7 +19,7 @@ namespace Elfenlabs.Scripting.Tests
         {
             var stack = CompilerUtility.Debug(@"
                 (8 - 1 + 3) * 6 - ((3 + 7) * 2) - 24 / 2 + 1 + (((2 - 5 * 4) / 2) + 1 * 100) * 2 - 5 + 5 * 2
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(216, stack[0]);
         }

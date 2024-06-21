@@ -14,7 +14,7 @@ namespace Elfenlabs.Scripting.Tests
                     a = a + 1
                 
                 a = a + 2
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(8, stack[0]);
         }
@@ -29,7 +29,7 @@ namespace Elfenlabs.Scripting.Tests
                     a = a + 1
                 
                 a = a + 2
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(2, stack[0]);
         }
@@ -46,7 +46,7 @@ namespace Elfenlabs.Scripting.Tests
                     a = a * a
                 
                 a = a + 1
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(26, stack[0]);
         }
@@ -63,7 +63,7 @@ namespace Elfenlabs.Scripting.Tests
                     a = 1000
 
                 a = a + 1
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(7, stack[0]);
         }

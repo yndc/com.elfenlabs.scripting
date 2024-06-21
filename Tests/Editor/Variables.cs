@@ -11,7 +11,7 @@ namespace Elfenlabs.Scripting.Tests
                 var a = 1 - 20          // -19
                 var b = 2 + (-a * 2)    // 40
                 var c = a + b           // 21
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(-19, stack[0]);
             Assert.AreEqual(40, stack[1]);
@@ -26,7 +26,7 @@ namespace Elfenlabs.Scripting.Tests
                 var b = 2
                 a = a + b
                 b = a + 10 + a + b
-            ");
+            ".NormalizeMultiline());
 
             Assert.AreEqual(3, stack[0]);
             Assert.AreEqual(18, stack[1]);
