@@ -8,14 +8,14 @@ namespace Elfenlabs.Scripting.Tests
         public void Spans()
         {
             var stack = CompilerUtility.Debug(@"
-                var ints = { 1, 2, 3 }
-                var floats = { 1.0, 2.0, 3.0 }
+                var a = { 1, 2, 3 }
+                var b = { 1.0, 2.0, 3.0 }
 
                 // initializing empty spans
-                var zeroes = Int<64>
+                var z = Int<64>
 
                 // spans from expressions
-                var ints2 = { ints[0] + 10, ints[1] / 2, 5 }
+                var c = { a.0 + 10, a.1 / 2, 5 * a.2 }
             ".NormalizeMultiline());
 
             Assert.AreEqual(-19, stack[0]);

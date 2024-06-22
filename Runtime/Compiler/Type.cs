@@ -21,6 +21,12 @@ namespace Elfenlabs.Scripting
 
         public bool IsSpan => Span > 0;
 
+        public bool IsStruct => false;
+
+        public bool IsArray => false;
+
+        public bool IsTuple => false;
+
         public ValueType ToRef()
         {
             return new ValueType()
@@ -40,7 +46,7 @@ namespace Elfenlabs.Scripting
                 Name = Name,
                 Index = Index,
                 Span = span,
-                WordLength = WordLength,
+                WordLength = (byte)(WordLength * span),
                 IsReference = IsReference
             };
         }
@@ -52,7 +58,7 @@ namespace Elfenlabs.Scripting
                 Name = Name,
                 Index = Index,
                 Span = 0,
-                WordLength = WordLength,
+                WordLength = (byte)(WordLength / Span),
                 IsReference = IsReference
             };
         }

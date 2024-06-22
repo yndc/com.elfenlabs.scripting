@@ -109,6 +109,13 @@ var add = a + b     // { 5, 7, 9 }
 var sub = a - b     // { -3, -3, -3 }
 ```
 
+Span members can be accessed with the dot accessor operator `.` and their index number. This implies there is no way to access span members programmatically like arrays.
+
+```
+var a = { 1, 2, 3 }
+var b = a.0 - a.1 + a.2 * a.1
+```
+
 ##### Lists 
 
 Lists are dynamically-sized array allocated on the heap. 

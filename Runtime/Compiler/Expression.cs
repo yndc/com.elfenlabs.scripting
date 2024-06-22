@@ -215,15 +215,48 @@ namespace Elfenlabs.Scripting
             if (currentScope.TryGetVariable(identifier, out var variable))
             {
                 // Check if it uses the array access operator
-                if (MatchAdvance(TokenType.LeftBracket))
+                //if (MatchAdvance(TokenType.LeftBracket))
+                //{
+                //    if (variable.Type.Span == 0) throw CreateException(previous.Value, $"Variable {identifier} is not an array, you can't use the array accessor operator here '[]'");
+                //    var indexValueType = ConsumeExpression();
+                //    AssertValueTypeEqual(indexValueType, ValueType.Int);
+                //    Consume(TokenType.RightBracket, "Expected ']' to close the array accessor operator");
+                //    builder.Add(new Instruction(InstructionType.LoadVariableElement, variable.Position, variable.Type.WordLength));
+                //    return variable.Type.ToElement();
+                //}
+
+                // Check if it uses the member access operator
+                if (MatchAdvance(TokenType.Dot))
                 {
-                    if (variable.Type.Span == 0) throw CreateException(previous.Value, $"Variable {identifier} is not an array, you can't use the array accessor operator here '[]'");
-                    var indexValueType = ConsumeExpression();
-                    AssertValueTypeEqual(indexValueType, ValueType.Int);
-                    Consume(TokenType.RightBracket, "Expected ']' to close the array accessor operator");
-                    builder.Add(new Instruction(InstructionType.LoadVariableElement, variable.Position, variable.Type.WordLength));
-                    return variable.Type.ToElement();
+                    if (variable.Type.IsSpan)
+                    {
+                        var elementType = variable.Type.ToElement();
+                        var indexToken = Consume(TokenType.Integer, "Expected integer after '.'");
+                        var index = int.Parse(indexToken.Value);
+                        if (index >= variable.Type.Span)
+                            throw CreateException(indexToken, $"Index {index} is out of bounds for span {variable.Type}");
+                        builder.Add(
+                            new Instruction(
+                                InstructionType.LoadVariable,
+                                (ushort)(variable.Position + index),
+                                elementType.WordLength
+                            )
+                        );
+                        return elementType;
+                    }
+
+                    //if (variable.Type.IsStruct)
+                    //{
+                    //    var member = Consume(TokenType.Identifier, "Expected identifier after '.'");
+                    //    if (!variable.Type.TryGetMember(member.Value, out var memberType))
+                    //    {
+                    //        throw CreateException(member.Value, $"Unknown member {member.Value} in variable {identifier}");
+                    //    }
+                    //    builder.Add(new Instruction(InstructionType.LoadVariableMember, variable.Position, variable.Type.WordLength, memberType.Position, memberType.WordLength));
+                    //    return memberType;
+                    //}
                 }
+
                 builder.Add(new Instruction(InstructionType.LoadVariable, variable.Position, variable.Type.WordLength));
                 return variable.Type;
             }
