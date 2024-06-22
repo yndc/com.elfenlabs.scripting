@@ -16,6 +16,12 @@ namespace Elfenlabs.Scripting.Tests
 
                 // spans from expressions
                 var c = { a.0 + 10, a.1 / 2, 5 * a.2 }
+
+                // spans as function arguments
+                function mul(Int<3> vector) returns Int 
+                    return vector.0 * vector.1 * vector.2
+
+                var d = mul({ mul(a), mul(c) })
             ".NormalizeMultiline());
 
             Assert.AreEqual(-19, stack[0]);

@@ -364,7 +364,14 @@ namespace Elfenlabs.Scripting
         /// </summary>
         void CleanFormatting()
         {
-            module.Tokens.AddBefore(module.Tokens.Last, new Token { Type = TokenType.NewLine });
+            module.Tokens.AddBefore(module.Tokens.Last, new Token 
+            { 
+                Type = TokenType.NewLine, 
+                Module = module, 
+                Position = module.Tokens.Last.Value.Position,
+                Column = module.Tokens.Last.Value.Column,
+                Line = module.Tokens.Last.Value.Line
+            });
 
             // First pass: normalize base indentation
             //NormalizeIndentation();

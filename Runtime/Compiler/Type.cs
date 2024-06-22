@@ -88,6 +88,13 @@ namespace Elfenlabs.Scripting
             return !(left == right);
         }
 
+        public override string ToString()
+        {
+            if (IsSpan)
+                return $"{Name}<{Span}>";
+            return Name;
+        }
+
         public static ValueType Void => new() { Index = (int)ValueTypePrimitive.Void, Name = "Void", WordLength = 0 };
         public static ValueType Bool => new() { Index = (int)ValueTypePrimitive.Bool, Name = "Bool", WordLength = 1 };
         public static ValueType Int => new() { Index = (int)ValueTypePrimitive.Int, Name = "Int", WordLength = 1 };
@@ -99,9 +106,18 @@ namespace Elfenlabs.Scripting
     {
         public ValueType ConsumeType()
         {
-            var identifier = Consume(TokenType.Identifier, $"Expected type name but get {current.Value.Type}").Value;
-            var type = GetType(identifier) ?? throw new Exception($"Unknown type {identifier}");
-            return type;
+            var typeName = Consume(TokenType.Identifier, $"Expected type name but get {current.Value.Type}").Value;
+            var type = GetType(typeName) ?? throw new Exception($"Unknown type {typeName}");
+            switch (current.Value.Type)
+            {
+                case TokenType.Less:
+                    Consume(TokenType.Less);
+                    var spanSizeToken = Consume(TokenType.Integer, "Expected span size after '<'");
+                    Consume(TokenType.Greater, "Expected '>' after span size");
+                    return type.ToSpan(int.Parse(spanSizeToken.Value));
+                default:
+                    return type;
+            }
         }
 
         public ValueType GetType(string identifier)
