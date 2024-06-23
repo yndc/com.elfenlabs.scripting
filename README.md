@@ -27,7 +27,7 @@ Primitive type supported:
 - `Float` (single-precision 32-bit)
 - `Byte` (8 bit)
 - `Bool`
-- `Null` for reference types
+- References
 
 Literal values are parsed by these rules:
 
@@ -40,9 +40,6 @@ var int2 = -23
 var float1 = 34.2
 var float2 = 0.0
 
-// Strings are quoted with single-quote character
-var str = 'Hello world!'
-
 // Booleans uses the usual true and false values
 var bool1 = true
 var bool2 = false
@@ -53,14 +50,42 @@ All variable declaration requires an initial value. You can use the value type a
 ```
 var int = Int       // Same as 0
 var float = Float   // Same as 0.0
-var str = String    // Same as an empty string ("")
 var bool = Bool     // Same as false
 ```
 
+##### References 
+
+References are built-in pointers for data that lives in the heap.
+
+A reference can be created with the `create` keyword.
+
+A reference of a variable can be passed using the `ref` keyword
+
+```
+function Duplicate(ref Int value) returns nothing
+    value = value * 2
+
+var a = 10 
+Duplicate(ref a)    // a is now 20 
+
+// Reference can be stored in a variable
+var refToA = ref a
+Duplicate(refToA)    // a is now 40
+```
+
+###### Lifetimes
+
+###### Strings
+
+Strings can only be allocated on the heap.
+
+// Strings are quoted with single-quote character
+var str = 'Hello world!'
+
+
+
 #### Resource Types
 
-Resource types are data types that lives in the heap. 
-A resource type can be created with the `create` keyword.
 
 ```
 var refInt = create 12      // A Ref Int
@@ -79,6 +104,17 @@ Built-in compound types:
 - Tuple `(T1, T2, ... Tn)`: Stack-allocated fixed group of values 
 - Map `[Tk] -> Tv`: Heap-allocated hash map
 - Functions `(T1, T2, ... Tn) -> TR`
+
+##### Structs
+
+Structs are user-defined data structures.
+
+```
+structure Data
+    One Int
+    Two Float
+    
+```
 
 ##### Spans
 
@@ -131,9 +167,6 @@ var len = numbers.Length()
 var first = numbers.First()
 var middle = numbers[1]   
 var last = numbers.Last()
-
-// Lists need to be destroyed after use to prevent memory leaks 
-destroy numbers
 ```
 
 Lists are reference types, and therefore passed by reference 
@@ -156,15 +189,10 @@ destroy arr
 
 ##### Tuples
 
-##### Structs
-
-Define a structure with the `structure` keyword.
+Tuples are anonymous structs, identified by ordered type signature of its members.
 
 ```
-structure Data
-    One Int
-    Two Float
-    
+var 
 ```
 
 #### Alias
@@ -192,6 +220,34 @@ function Distance(Character first, Character second) returns (Position, Float)
     var delta = Math.Abs(first.Position - second.Position)
     var dist = Math.Distance(first.Position, second.Position)
     return (delta, dist)
+```
+
+#### Sharing
+
+All variables are allocated exclusively for one process.
+
+In a multithreading environment and as a scripting language, other processes or external code might want to access the same data concurrently.
+
+This can be achieved by marking variables with the `shared` keyword. Shared variables is allocated on a special heap that can be accessed by multiple processes. They are like built-in references wrapped with a mutex.
+
+```
+// Global shared variable, not recommended
+shared var sharedInt = 10
+
+// sharedInt read-only mutex lock
+var a = sharedInt   // This line will read lock the 'sharedInt' and unlock it after assignment is successful
+// sharedInt read-only mutex release
+
+// sharedInt read-write mutex lock
+sharedInt = sharedInt + 10
+// sharedInt read-write mutex release
+```
+
+The shared attribute is treated as a data type, hence a function can accept `shared` parameter:
+
+```
+function Increment(shared Int x) returns nothing
+    x = x + 1
 ```
 
 ### Functions 
