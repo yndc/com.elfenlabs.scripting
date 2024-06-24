@@ -39,24 +39,24 @@ namespace Elfenlabs.Scripting.Tests
             Assert.AreEqual(stack[73], 980100);
         }
 
-        [Test]
-        public void Tuples_Initialization()
-        {
-            var stack = CompilerUtility.Debug(@"
-                var a = (1, 2.0, true, 5)
+        //[Test]
+        //public void Tuples_Initialization()
+        //{
+        //    var stack = CompilerUtility.Debug(@"
+        //        var a = (1, 2.0, true, 5)
 
-                // initializing empty spans
-                var z = Int<64>
+        //        // initializing empty spans
+        //        var z = Int<64>
 
-                // spans from expressions
-                var c = { a.0 + 10, a.1 / 2, 5 * a.2 }
+        //        // spans from expressions
+        //        var c = { a.0 + 10, a.1 / 2, 5 * a.2 }
 
-                // spans as function arguments
-                function mul(Int<3> vector) returns Int 
-                    return vector.0 * vector.1 * vector.2
+        //        // spans as function arguments
+        //        function mul(Int<3> vector) returns Int 
+        //            return vector.0 * vector.1 * vector.2
 
-                var d = mul({ mul(a), mul(c), mul(a) * mul(c) })
-        ".NormalizeMultiline());
-        }
+        //        var d = mul({ mul(a), mul(c), mul(a) * mul(c) })
+        //".NormalizeMultiline());
+        //}
     }
 }

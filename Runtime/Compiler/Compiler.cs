@@ -49,7 +49,9 @@ namespace Elfenlabs.Scripting
             current = module.Tokens.First;
 
             while (!MatchAdvance(TokenType.EOF))
+            {
                 ConsumeDeclaration();
+            }
         }
 
         public Program Build()
@@ -64,19 +66,6 @@ namespace Elfenlabs.Scripting
                 Chunks = chunks,
                 EntryPoint = 0
             };
-        }
-
-        void ConsumeDeclaration()
-        {
-            switch (current.Value.Type)
-            {
-                case TokenType.Variable:
-                    ConsumeStatementVariableDeclaration();
-                    break;
-                default:
-                    ConsumeStatement();
-                    break;
-            }
         }
 
         Token Consume(TokenType type, string error = null)
