@@ -3,6 +3,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Elfenlabs.Scripting
 {
@@ -66,6 +67,30 @@ namespace Elfenlabs.Scripting
                 constants.ResizeUninitialized(constants.Length + wordLength);
                 UnsafeUtility.MemCpy(constants.GetUnsafePtr() + offset, ptr, wordLength * sizeof(int));
                 Add(new Instruction(InstructionType.LoadConstant, offset, (byte)wordLength));
+                return offset;
+            }
+        }
+
+        public ushort AddConstant(string value)
+        {
+            var offset = (ushort)constants.Length;
+            var wordLength = CompilerUtility.GetWordLength(value.Length) + 1;
+            constants.ResizeUninitialized(constants.Length + wordLength);
+
+            // Set the first word as the length of the string
+            constants.GetUnsafePtr()[offset] = value.Length;
+
+            // Copy the string to the constant buffer
+            var bytes = Encoding.UTF8.GetBytes(value);
+            fixed (byte* ptr = bytes)
+            {
+                // Offset by 1 to skip the length
+                UnsafeUtility.MemCpy((byte*)constants.GetUnsafePtr() + offset * sizeof(int) + sizeof(int), ptr, bytes.Length);
+                
+                var conPtr = constants.GetUnsafePtr();
+                var a = CompilerUtility.ToString(constants.GetUnsafePtr() + offset);
+                
+                Add(new Instruction(InstructionType.HeapLoadConstant, offset, (byte)wordLength));
                 return offset;
             }
         }

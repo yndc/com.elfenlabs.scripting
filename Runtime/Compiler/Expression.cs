@@ -174,6 +174,9 @@ namespace Elfenlabs.Scripting
                 case TokenType.True:
                     builder.AddConstant(1);
                     return ValueType.Bool;
+                case TokenType.String:
+                    builder.AddConstant(str);
+                    return ValueType.String;
                 default:
                     throw CreateException(previous.Value, $"Unknown literal {str} of type {previous.Value.Type}");
             };

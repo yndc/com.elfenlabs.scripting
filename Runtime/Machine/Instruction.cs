@@ -31,11 +31,26 @@ namespace Elfenlabs.Scripting
         LoadVariableElement,// <short>    - The index of the variable to load
                             // <byte>     - The number of words to load from the stack
 
+        LoadHeap,           // <short>    - The index of the heap to load
+                            // <byte>     - The number of words to load from the heap   
+
         StoreVariable,      // <short>    - The index of the variable to store
                             // <byte>     - The number of words to store from the stack
 
+        StoreHeap,          // <short>    - The index of the heap to store
+                            // <byte>     - The number of words to store from the stack
+
+        WriteHeap,          // <short>    - The index of the heap to write
+                            // <byte>     - The number of words to write from the stack
+
         Pop,                // <short>    - The number of words to pop from the stack
 
+        // --------------------------------
+        // Heap operations
+        // --------------------------------
+
+        HeapLoadConstant,   // <short>    - The index of the constant to store
+                            // <byte>     - The number of words to store from the constant
 
         // --------------------------------
         // Value operations
@@ -199,6 +214,10 @@ namespace Elfenlabs.Scripting
             { InstructionType.LoadVariableElement, Format.OBS },
             { InstructionType.StoreVariable, Format.OBS },
             { InstructionType.Pop, Format.OS },
+            { InstructionType.LoadHeap, Format.OBS },
+            { InstructionType.StoreHeap, Format.OBS },
+            { InstructionType.WriteHeap, Format.OBS },
+            { InstructionType.HeapLoadConstant, Format.OBS},
             { InstructionType.IntAdd, Format.O },
             { InstructionType.IntSubstract, Format.O },
             { InstructionType.IntMultiply, Format.O },

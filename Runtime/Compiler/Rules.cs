@@ -77,6 +77,7 @@ namespace Elfenlabs.Scripting
             { TokenType.Float,                  new ParseRule(Handling.Literal) },
             { TokenType.False,                  new ParseRule(Handling.Literal) },
             { TokenType.True,                   new ParseRule(Handling.Literal) },
+            { TokenType.String,                 new ParseRule(Handling.Literal) },
 
             // Structural
             { TokenType.StatementTerminator,    new ParseRule() },

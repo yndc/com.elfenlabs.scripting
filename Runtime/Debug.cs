@@ -1,3 +1,5 @@
+using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Collections;
@@ -24,8 +26,9 @@ namespace Elfenlabs.Scripting
 
             var machine = new Machine(1024, Allocator.Temp);
             machine.Boot(program);
-            machine.Run();
+            machine.Execute();
 
+            // Snapshot the stack
             var stack = machine.GetStackSnapshot(Allocator.Temp);
             var snapshot = stack.ToArray();
             log.AppendLine("Stack");
@@ -33,6 +36,13 @@ namespace Elfenlabs.Scripting
             {
                 log.AppendLine(snapshot[i].ToString());
             }
+            log.AppendLine();
+
+            // Snapshot the heap
+            var heap = machine.GetHeapSnapshot(Allocator.Temp);
+            var heapSnapshot = heap.ToArray();
+            log.AppendLine("Heap");
+            log.AppendLine(GenerateHexString(heapSnapshot));
 
             machine.Dispose();
             stack.Dispose();
@@ -135,6 +145,26 @@ namespace Elfenlabs.Scripting
                     break;
             }
             text.Append("\n");
+
+            return text.ToString();
+        }
+
+        public static unsafe string ToString(void* ptr)
+        {
+            return Encoding.UTF8.GetString((byte*)ptr + sizeof(int), *(int*)ptr);
+        }
+
+        public static unsafe string GenerateHexString(byte[] bytes, int wrap = 8)
+        {
+            var text = new StringBuilder();
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                text.Append(bytes[i].ToString("X2"));
+                if ((i + 1) % wrap == 0)
+                    text.Append("\n");
+                else
+                    text.Append(" ");
+            }
 
             return text.ToString();
         }

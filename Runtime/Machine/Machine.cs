@@ -6,18 +6,12 @@ namespace Elfenlabs.Scripting
 {
     public unsafe partial struct Machine : INativeDisposable
     {
-        public float YieldDuration;
-        public float YieldStartTime;
-        public NativeList<int> Values;
-        public NativeList<Frame> Frames;
         public Program Program;
         public ExecutionState State;
-        int* valuesPtr;
 
         Instruction* instructionPtr;
-        int* constantsPtr;
 
-        Frame current;
+        Frame currentFrame;
 
         int currentChunkIndex;
 
@@ -25,14 +19,14 @@ namespace Elfenlabs.Scripting
         {
             Values = new NativeList<int>(initialStackCapacity, allocator);
             Frames = new NativeList<Frame>(10, allocator);
-            YieldDuration = 0f;
-            YieldStartTime = 0f;
+            heap = new Arena(256, allocator);
             State = ExecutionState.Running;
-            valuesPtr = Values.GetUnsafePtr();
+            heapPtr = heap.GetUnsafePtr();
+            stackHeadPtr = Values.GetUnsafePtr();
             frameValuesPtr = Values.GetUnsafePtr();
             instructionPtr = null;
             constantsPtr = null;
-            current = default;
+            currentFrame = default;
             Program = default;
             currentChunkIndex = 0;
         }

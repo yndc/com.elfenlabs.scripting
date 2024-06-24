@@ -22,7 +22,7 @@ namespace Elfenlabs.Scripting
         void Call(ushort chunkIndex, byte parametersWordLength)
         {
             // Include the parameters in the new frame
-            var newFrameValuesPtr = valuesPtr - parametersWordLength;
+            var newFrameValuesPtr = stackHeadPtr - parametersWordLength;
 
             // Save the current frame
             Frames.Add(new Frame
@@ -40,6 +40,10 @@ namespace Elfenlabs.Scripting
             constantsPtr = (int*)chunk.Constants.GetUnsafePtr();
         }
 
+        /// <summary>
+        /// Return from a function call
+        /// </summary>
+        /// <param name="returnWordLength"></param>
         void Return(byte returnWordLength)
         {
             // Get the last call frame
@@ -49,13 +53,13 @@ namespace Elfenlabs.Scripting
             // Copy the return value to the caller stack
             UnsafeUtility.MemCpy(
                 frame.ValuesPtr,
-                valuesPtr - returnWordLength,
+                stackHeadPtr - returnWordLength,
                 returnWordLength * CompilerUtility.WordSize);
 
             // Restore the frame state
             instructionPtr = frame.InstructionPtr;
             constantsPtr = frame.ConstantsPtr;
-            valuesPtr = frame.ValuesPtr + returnWordLength;
+            stackHeadPtr = frame.ValuesPtr + returnWordLength;
             frameValuesPtr = frame.FrameValuesPtr;
         }
 
@@ -66,7 +70,7 @@ namespace Elfenlabs.Scripting
                 ConstantsPtr = constantsPtr,
                 InstructionPtr = instructionPtr,
                 FrameValuesPtr = frameValuesPtr,
-                ValuesPtr = valuesPtr
+                ValuesPtr = stackHeadPtr
             };
         }
 

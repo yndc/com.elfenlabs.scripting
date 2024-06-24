@@ -25,27 +25,11 @@ namespace Elfenlabs.Scripting
             return instruction;
         }
 
-        public unsafe bool Run(EnvironmentState state = default)
-        {
-            switch (State)
-            {
-                case ExecutionState.Halt:
-                    return true;
-                case ExecutionState.Yield:
-                    if (state.Time - YieldStartTime > YieldDuration)
-                    {
-                        State = ExecutionState.Running;
-                        goto case ExecutionState.Running;
-                    }
-                    return false;
-                case ExecutionState.Running:
-                    return Execute(state);
-            }
-
-            return true;
-        }
-
-        unsafe bool Execute(EnvironmentState env)
+        /// <summary>
+        /// Executes the program until it halts
+        /// </summary>
+        /// <returns></returns>
+        public unsafe bool Execute()
         {
             while (true)
             {
@@ -56,11 +40,6 @@ namespace Elfenlabs.Scripting
                     case InstructionType.Halt:
                         State = ExecutionState.Halt;
                         return true;
-                    case InstructionType.Yield:
-                        State = ExecutionState.Yield;
-                        YieldStartTime = env.Time;
-                        YieldDuration = instruction.ArgShort;
-                        return false;
                     case InstructionType.Jump:
                         instructionPtr += instruction.ArgShort;
                         break;
@@ -92,8 +71,20 @@ namespace Elfenlabs.Scripting
                     case InstructionType.LoadVariableElement:
                         LoadVariableElement(instruction.ArgShort, instruction.ArgByte1);
                         break;
+                    case InstructionType.LoadHeap:
+                        LoadHeap(instruction.ArgShort, instruction.ArgByte1);
+                        break;
                     case InstructionType.StoreVariable:
                         StoreVariable(instruction.ArgShort, instruction.ArgByte1);
+                        break;
+                    case InstructionType.StoreHeap:
+                        StoreHeap(instruction.ArgByte1);
+                        break;
+                    case InstructionType.WriteHeap:
+                        WriteHeap(instruction.ArgShort, instruction.ArgByte1);
+                        break;
+                    case InstructionType.HeapLoadConstant:
+                        HeapLoadConstant(instruction.ArgShort, instruction.ArgByte1);
                         break;
                     case InstructionType.Pop:
                         Remove(instruction.ArgShort);
