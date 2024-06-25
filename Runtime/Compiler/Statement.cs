@@ -15,9 +15,6 @@ namespace Elfenlabs.Scripting
                     ConsumeStatementIdentifier();
                     Consume(TokenType.StatementTerminator, "Expected new-line after statement");
                     break;
-                case TokenType.Function:
-                    ConsumeFunctionDeclaration();
-                    break;
                 case TokenType.Return:
                     ConsumeStatementReturn();
                     Consume(TokenType.StatementTerminator, "Expected new-line after statement");

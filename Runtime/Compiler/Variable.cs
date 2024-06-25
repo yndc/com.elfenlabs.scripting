@@ -49,7 +49,7 @@ namespace Elfenlabs.Scripting
             var evaluationType = ConsumeExpression();
 
             if (evaluationType != variable.Type)
-                throw CreateException(current.Value, $"Cannot assign {evaluationType.Name} to {variable.Type.Name}");
+                throw CreateException(current.Value, $"Cannot assign {evaluationType.Identifier} type to {variable.Type.Identifier}");
 
             builder.Add(new Instruction(
                 InstructionType.StoreVariable,

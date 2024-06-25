@@ -58,12 +58,12 @@ namespace Elfenlabs.Scripting
             return ref instructions.ElementAt(index);
         }
 
-        public ushort AddConstant(int[] value)
+        public ushort AddConstant(byte[] value)
         {
-            fixed (int* ptr = value)
+            fixed (byte* ptr = value)
             {
                 var offset = (ushort)constants.Length;
-                var wordLength = value.Length;
+                var wordLength = CompilerUtility.GetWordLength(value.Length);
                 constants.ResizeUninitialized(constants.Length + wordLength);
                 UnsafeUtility.MemCpy(constants.GetUnsafePtr() + offset, ptr, wordLength * sizeof(int));
                 Add(new Instruction(InstructionType.LoadConstant, offset, (byte)wordLength));

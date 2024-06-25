@@ -33,7 +33,7 @@ namespace Elfenlabs.Scripting
                 else if (valueType != elementValueType)
                     throw CreateException(
                         previous.Value,
-                        $"All elements in a span must be of the same type. Expected type is {valueType.Name} but get {valueType.Name}");
+                        $"All elements in a span must be of the same type. Expected type is {valueType.Identifier} but get {valueType.Identifier}");
 
                 count++;
 
@@ -51,7 +51,7 @@ namespace Elfenlabs.Scripting
                 }
             }
 
-            return valueType.ToSpan(count);
+            return new SpanValueType(valueType, count);
         }
     }
 }

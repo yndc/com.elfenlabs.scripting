@@ -27,6 +27,8 @@ namespace Elfenlabs.Scripting
 
     public partial class Compiler
     {
+        readonly List<Function> functions = new();
+
         Function RegisterFunction(string name, ValueType returnType, params ValueType[] parameterTypes)
         {
             var function = new Function(name, returnType, parameterTypes)

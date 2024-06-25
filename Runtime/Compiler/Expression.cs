@@ -60,10 +60,10 @@ namespace Elfenlabs.Scripting
             switch (op)
             {
                 case TokenType.Minus:
-                    switch ((PrimitiveType)valueType.Index)
+                    switch (valueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntNegate)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatNegate)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntNegate)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatNegate)); break;
                         default: throw CreateException(previous.Value, $"Invalid type {valueType} for symbol {TokenType.Minus}");
                     }
                     break;
@@ -87,31 +87,31 @@ namespace Elfenlabs.Scripting
             {
                 // Arithmetic
                 case TokenType.Plus:
-                    switch ((PrimitiveType)lhsValueType.Index)
+                    switch (lhsValueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntAdd)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatAdd)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntAdd)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatAdd)); break;
                     }
                     break;
                 case TokenType.Minus:
-                    switch ((PrimitiveType)lhsValueType.Index)
+                    switch (lhsValueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntSubstract)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatSubstract)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntSubstract)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatSubstract)); break;
                     }
                     break;
                 case TokenType.Slash:
-                    switch ((PrimitiveType)lhsValueType.Index)
+                    switch (lhsValueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntDivide)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatDivide)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntDivide)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatDivide)); break;
                     }
                     break;
                 case TokenType.Asterisk:
-                    switch ((PrimitiveType)lhsValueType.Index)
+                    switch (lhsValueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntMultiply)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatMultiply)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntMultiply)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatMultiply)); break;
                     }
                     break;
 
@@ -123,31 +123,31 @@ namespace Elfenlabs.Scripting
                     builder.Add(new Instruction(InstructionType.Equal));
                     return ValueType.Bool;
                 case TokenType.Greater:
-                    switch ((PrimitiveType)lhsValueType.Index)
+                    switch (lhsValueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntGreaterThan)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatGreaterThan)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntGreaterThan)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatGreaterThan)); break;
                     }
                     return ValueType.Bool;
                 case TokenType.GreaterEqual:
-                    switch ((PrimitiveType)lhsValueType.Index)
+                    switch (lhsValueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntGreaterThanEqual)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatGreaterThanEqual)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntGreaterThanEqual)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatGreaterThanEqual)); break;
                     }
                     return ValueType.Bool;
                 case TokenType.Less:
-                    switch ((PrimitiveType)lhsValueType.Index)
+                    switch (lhsValueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntLessThan)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatLessThan)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntLessThan)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatLessThan)); break;
                     }
                     return ValueType.Bool;
                 case TokenType.LessEqual:
-                    switch ((PrimitiveType)lhsValueType.Index)
+                    switch (lhsValueType.Identifier)
                     {
-                        case PrimitiveType.Int: builder.Add(new Instruction(InstructionType.IntLessThanEqual)); break;
-                        case PrimitiveType.Float: builder.Add(new Instruction(InstructionType.FloatLessThanEqual)); break;
+                        case "Int": builder.Add(new Instruction(InstructionType.IntLessThanEqual)); break;
+                        case "Float": builder.Add(new Instruction(InstructionType.FloatLessThanEqual)); break;
                     }
                     return ValueType.Bool;
 
@@ -182,6 +182,10 @@ namespace Elfenlabs.Scripting
             };
         }
 
+        /// <summary>
+        /// Consume identifiers in expressions
+        /// </summary>
+        /// <returns></returns>
         ValueType ConsumeExpressionIdentifier()
         {
             var identifier = previous.Value.Value;
@@ -195,21 +199,11 @@ namespace Elfenlabs.Scripting
                         Consume(TokenType.Less);
                         var spanSizeToken = Consume(TokenType.Integer, "Expected span size after '<'");
                         Consume(TokenType.Greater, "Expected '>' after span size");
-                        valueType = valueType.ToSpan(int.Parse(spanSizeToken.Value));
+                        valueType = new SpanValueType(valueType, int.Parse(spanSizeToken.Value));
                         break;
                 }
 
-                switch (valueType.Index)
-                {
-                    case (int)PrimitiveType.Int:
-                        builder.AddConstant(0);
-                        for (int i = 1; i < valueType.Span; i++) builder.AddConstant(0);
-                        break;
-                    case (int)PrimitiveType.Float:
-                        builder.AddConstant(0f);
-                        for (int i = 1; i < valueType.Span; i++) builder.AddConstant(0f);
-                        break;
-                }
+                builder.AddConstant(valueType.GenerateDefaultValue());
 
                 return valueType;
             }
@@ -231,21 +225,17 @@ namespace Elfenlabs.Scripting
                 // Check if it uses the member access operator
                 if (MatchAdvance(TokenType.Dot))
                 {
-                    if (variable.Type.IsSpan)
+                    switch (variable.Type)
                     {
-                        var elementType = variable.Type.ToElement();
-                        var indexToken = Consume(TokenType.Integer, "Expected integer after '.'");
-                        var index = int.Parse(indexToken.Value);
-                        if (index >= variable.Type.Span)
-                            throw CreateException(indexToken, $"Index {index} is out of bounds for span {variable.Type}");
-                        builder.Add(
-                            new Instruction(
-                                InstructionType.LoadVariable,
-                                (ushort)(variable.Position + index),
-                                elementType.WordLength
-                            )
-                        );
-                        return elementType;
+                        case SpanValueType spanValueType:
+                            var indexToken = Consume(TokenType.Integer, "Expected integer after '.'");
+                            var index = int.Parse(indexToken.Value);
+                            if (index >= spanValueType.Length)
+                                throw CreateException(indexToken, $"Index {index} is out of bounds for span {spanValueType}");
+                            builder.Add(new Instruction(InstructionType.LoadVariable, (ushort)(variable.Position + index), spanValueType.Element.WordLength));
+                            return spanValueType.Element;
+                        default:
+                            throw CreateException(previous.Value, $"The member accessor operator '.' can only be used for spans, structs, or module. {identifier} is not one of them.");
                     }
 
                     //if (variable.Type.IsStruct)

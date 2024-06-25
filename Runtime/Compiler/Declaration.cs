@@ -9,6 +9,12 @@ namespace Elfenlabs.Scripting
                 case TokenType.Variable:
                     ConsumeStatementVariableDeclaration();
                     break;
+                case TokenType.Function:
+                    ConsumeFunctionDeclaration();
+                    break;
+                case TokenType.Structure:
+                    ConsumeStructureDeclaration();
+                    break;
                 default:
                     ConsumeStatement();
                     break;

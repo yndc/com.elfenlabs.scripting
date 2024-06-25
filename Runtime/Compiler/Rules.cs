@@ -18,15 +18,6 @@ namespace Elfenlabs.Scripting
         Primary
     }
 
-    public enum PrimitiveType : int
-    {
-        Void,
-        Bool,
-        Int,
-        Float,
-        String,
-    }
-
     public enum Handling
     {
         None,

@@ -8,8 +8,6 @@ namespace Elfenlabs.Scripting
 {
     public partial class Compiler
     {
-        readonly Dictionary<string, ValueType> types;
-        readonly List<Function> functions = new();
         Module module;
         Function currentFunction;
         LinkedListNode<Token> current;
@@ -22,15 +20,7 @@ namespace Elfenlabs.Scripting
 
         public Compiler()
         {
-            // Add built-in types
-            types = new Dictionary<string, ValueType>
-            {
-                { "Void",   ValueType.Void },
-                { "Bool",   ValueType.Bool },
-                { "Int",    ValueType.Int },
-                { "Float",  ValueType.Float },
-                { "String", ValueType.String }
-            };
+            RegisterBuiltInTypes();
         }
 
         public void AddModule(Module module)
@@ -118,7 +108,7 @@ namespace Elfenlabs.Scripting
                 throw CreateException(previous.Value, string.Format(
                     "Expected value type {0} to be any of {1}",
                     string.Join(", ", set.Select(x => x.ToString()).ToArray()),
-                    type.Name));
+                    type.Identifier));
         }
 
         void AssertValueTypeEqual(ValueType lhs, ValueType rhs)
@@ -126,7 +116,7 @@ namespace Elfenlabs.Scripting
             if (lhs != rhs)
                 throw CreateException(previous.Value, string.Format(
                     "Expected value type {0} but received {1}",
-                    lhs.Name, rhs.Name));
+                    lhs.Identifier, rhs.Identifier));
         }
     }
 }

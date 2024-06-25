@@ -1,71 +1,87 @@
 using System;
+using System.Collections.Generic;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 
 namespace Elfenlabs.Scripting
 {
-    public enum ValueTypePrimitive : int
+    public class Path : IEquatable<Path>
     {
-        Void,
-        Bool,
-        Int,
-        Float,
-        String,
-    }
+        public string[] Steps;
 
-    public class ValueType : IEquatable<ValueType>
-    {
-        public string Name;
-        public int Index;
-        public int Span;
-        public byte WordLength;
-        public bool IsReference;
-
-        public bool IsSpan => Span > 0;
-
-        public bool IsStruct => false;
-
-        public bool IsArray => false;
-
-        public bool IsTuple => false;
-
-        public ValueType ToRef()
+        public string Name
         {
-            return new ValueType()
-            {
-                Name = Name,
-                Index = Index,
-                Span = Span,
-                WordLength = WordLength,
-                IsReference = true
-            };
+            get => Steps[Steps.Length - 1];
+            set => Steps[Steps.Length - 1] = value;
         }
 
-        public ValueType ToSpan(int span)
+        public Path(string fullyQualifiedPath)
         {
-            return new ValueType()
-            {
-                Name = Name,
-                Index = Index,
-                Span = span,
-                WordLength = (byte)(WordLength * span),
-                IsReference = IsReference
-            };
+            Steps = fullyQualifiedPath.Split('.');
         }
 
-        public ValueType ToElement()
+        public bool Equals(Path other)
         {
-            return new ValueType()
+            for (int i = 0; i < Steps.Length; i++)
             {
-                Name = Name,
-                Index = Index,
-                Span = 0,
-                WordLength = (byte)(WordLength / Span),
-                IsReference = IsReference
-            };
+                var path = Steps[i];
+                if (path != other.Steps[i])
+                    return false;
+            }
+            return true;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Index, Span);
+            return Steps.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return string.Join(".", Steps);
+        }
+
+        public static implicit operator string(Path path) { return path.ToString(); }
+    }
+
+    /// <summary>
+    /// Description of a value type
+    /// </summary>
+    public class ValueType : IEquatable<ValueType>
+    {
+        /// <summary>
+        /// Unique fully-qualified identifier for this type
+        /// </summary>
+        public Path Identifier;
+
+        /// <summary>
+        /// Size of this type in words (usually 4 bytes)
+        /// </summary>
+        public byte WordLength;
+
+        public ValueType(Path identifier, byte wordLength)
+        {
+            Identifier = identifier;
+            WordLength = wordLength;
+        }
+
+        public ValueType(string fullyQualifiedPath, byte wordLength)
+        {
+            Identifier = new Path(fullyQualifiedPath);
+            WordLength = wordLength;
+        }
+
+        /// <summary>
+        /// Generates default byte array for this type
+        /// </summary>
+        /// <returns></returns>
+        public byte[] GenerateDefaultValue()
+        {
+            return new byte[WordLength * sizeof(int)];
+        }
+
+        public override int GetHashCode()
+        {
+            return Identifier.GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -75,7 +91,7 @@ namespace Elfenlabs.Scripting
 
         public bool Equals(ValueType other)
         {
-            return Index == other.Index && Span == other.Span;
+            return Identifier.Equals(other.Identifier);
         }
 
         public static bool operator ==(ValueType left, ValueType right)
@@ -90,20 +106,38 @@ namespace Elfenlabs.Scripting
 
         public override string ToString()
         {
-            if (IsSpan)
-                return $"{Name}<{Span}>";
-            return Name;
+            return Identifier.ToString();
         }
 
-        public static ValueType Void => new() { Index = (int)ValueTypePrimitive.Void, Name = "Void", WordLength = 0 };
-        public static ValueType Bool => new() { Index = (int)ValueTypePrimitive.Bool, Name = "Bool", WordLength = 1 };
-        public static ValueType Int => new() { Index = (int)ValueTypePrimitive.Int, Name = "Int", WordLength = 1 };
-        public static ValueType Float => new() { Index = (int)ValueTypePrimitive.Float, Name = "Float", WordLength = 1 };
-        public static ValueType String => new() { Index = (int)ValueTypePrimitive.String, Name = "String", WordLength = 1 };
+        public static ValueType Void => new("Void", 0);
+        public static ValueType Bool => new("Bool", 1);
+        public static ValueType Int => new("Int", 1);
+        public static ValueType Float => new("Float", 1);
+        public static ValueType String => new("String", 1);
+    }
+
+    public class SpanValueType : ValueType
+    {
+        public ValueType Element;
+
+        public int Length;
+
+        public SpanValueType(ValueType element, int length) : base(new Path($"{element.Identifier.Name}<{length}>"), (byte)(element.WordLength * length))
+        {
+            Element = element;
+            Length = length;
+        }
+
+        public override string ToString()
+        {
+            return $"{Element}<{Length}>";
+        }
     }
 
     public partial class Compiler
     {
+        Dictionary<string, ValueType> types;
+
         public ValueType ConsumeType()
         {
             var typeName = Consume(TokenType.Identifier, $"Expected type name but get {current.Value.Type}").Value;
@@ -114,7 +148,7 @@ namespace Elfenlabs.Scripting
                     Consume(TokenType.Less);
                     var spanSizeToken = Consume(TokenType.Integer, "Expected span size after '<'");
                     Consume(TokenType.Greater, "Expected '>' after span size");
-                    return type.ToSpan(int.Parse(spanSizeToken.Value));
+                    return new SpanValueType(type, int.Parse(spanSizeToken.Value));
                 default:
                     return type;
             }
@@ -126,6 +160,18 @@ namespace Elfenlabs.Scripting
                 return type;
 
             return null;
+        }
+
+        void RegisterBuiltInTypes()
+        {
+            types = new Dictionary<string, ValueType>
+            {
+                { "Void",   ValueType.Void },
+                { "Bool",   ValueType.Bool },
+                { "Int",    ValueType.Int },
+                { "Float",  ValueType.Float },
+                { "String", ValueType.String }
+            };
         }
     }
 }
