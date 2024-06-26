@@ -16,7 +16,7 @@ namespace Elfenlabs.Scripting
         Scope globalScope;
         Scope currentScope;
 
-        ByteCodeBuilder builder => currentFunction.Builder;
+        ByteCodeBuilder codeBuilder => currentFunction.Builder;
 
         public Compiler()
         {
@@ -58,6 +58,12 @@ namespace Elfenlabs.Scripting
             };
         }
 
+        /// <summary>
+        /// Consume current token with type assertion
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="error"></param>
+        /// <returns></returns>
         Token Consume(TokenType type, string error = null)
         {
             if (current.Value.Type == type)
@@ -70,6 +76,17 @@ namespace Elfenlabs.Scripting
                     ?? string.Format("Expected token {0} but get '{1}'", type.ToString(), current.Value.Type.ToString()));
         }
 
+        /// <summary>
+        /// Rewind the current token
+        /// </summary>
+        void Rewind()
+        {
+            current = previous;
+        }
+
+        /// <summary>
+        /// Advances the current token ignoring it
+        /// </summary>
         void Advance()
         {
             if (current.Next != null)

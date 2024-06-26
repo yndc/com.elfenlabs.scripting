@@ -89,6 +89,12 @@ namespace Elfenlabs.Scripting
                     case InstructionType.Pop:
                         Remove(instruction.ArgShort);
                         break;
+                    case InstructionType.FillZero:
+                        FillZero(instruction.ArgShort);
+                        break;
+                    case InstructionType.WritePrevious:
+                        WritePrevious(instruction.ArgShort, instruction.ArgByte1);
+                        break;
 
                     // Integer arithmetic operations
                     case InstructionType.IntNegate:

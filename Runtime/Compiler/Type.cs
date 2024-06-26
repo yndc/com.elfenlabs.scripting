@@ -164,14 +164,20 @@ namespace Elfenlabs.Scripting
 
         void RegisterBuiltInTypes()
         {
-            types = new Dictionary<string, ValueType>
-            {
-                { "Void",   ValueType.Void },
-                { "Bool",   ValueType.Bool },
-                { "Int",    ValueType.Int },
-                { "Float",  ValueType.Float },
-                { "String", ValueType.String }
-            };
+            types = new Dictionary<string, ValueType>();
+            RegisterType(ValueType.Void);
+            RegisterType(ValueType.Bool);
+            RegisterType(ValueType.Int);
+            RegisterType(ValueType.Float);
+            RegisterType(ValueType.String);
+        }
+
+        void RegisterType(ValueType type)
+        {
+            if (types.ContainsKey(type.Identifier))
+                throw new Exception($"Type {type.Identifier} already exists");
+
+            types.Add(type.Identifier, type);
         }
     }
 }

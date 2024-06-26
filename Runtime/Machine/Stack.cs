@@ -154,5 +154,29 @@ namespace Elfenlabs.Scripting
             UnsafeUtility.MemCpy(frameValuesPtr + offset, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
             stackHeadPtr -= wordLen;
         }
+
+        /// <summary>
+        /// Fills the stack with zero values and moves the stack head
+        /// </summary>
+        /// <param name="wordLen"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void FillZero(ushort wordLen)
+        {
+            EnsureStackCapacity(wordLen);
+            UnsafeUtility.MemClear(stackHeadPtr, wordLen * CompilerUtility.WordSize);
+            stackHeadPtr += wordLen;
+        }
+
+        /// <summary>
+        /// Pop the stack value of the given word length and write it to the previous stack value with the given offset
+        /// Overlapping is undefined behavior
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="wordLen"></param>
+        unsafe void WritePrevious(ushort offset, byte wordLen)
+        {
+            UnsafeUtility.MemCpy(stackHeadPtr - offset - wordLen, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
+            stackHeadPtr -= wordLen;
+        }
     }
 }

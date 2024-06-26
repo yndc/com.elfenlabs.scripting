@@ -21,7 +21,7 @@ namespace Elfenlabs.Scripting
                     break;
                 default:
                     ConsumeExpression();
-                    builder.Add(new Instruction(InstructionType.Pop));
+                    codeBuilder.Add(new Instruction(InstructionType.Pop));
                     Consume(TokenType.StatementTerminator, "Expected new-line after statement");
                     break;
             }
@@ -44,9 +44,7 @@ namespace Elfenlabs.Scripting
 
             }
 
-            Debug.Log(previous);
-
-            throw CreateException(previous.Value, $"Unknown statement identifier {identifier}");
+            throw CreateException(current.Value, $"Unknown statement identifier {identifier}");
         }
     }
 }

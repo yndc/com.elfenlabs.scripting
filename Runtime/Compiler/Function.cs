@@ -98,7 +98,7 @@ namespace Elfenlabs.Scripting
         ValueType ConsumeFunctionCall(Function function)
         {
             ConsumeFunctionCallParameters(function);
-            builder.Add(new Instruction(InstructionType.Call, function.Index, function.ParameterWordLength));
+            codeBuilder.Add(new Instruction(InstructionType.Call, function.Index, function.ParameterWordLength));
             return function.ReturnType;
         }
 
@@ -143,7 +143,7 @@ namespace Elfenlabs.Scripting
             {
                 if (MatchAdvance(TokenType.StatementTerminator))
                 {
-                    builder.Add(new Instruction(InstructionType.Return, 0));
+                    codeBuilder.Add(new Instruction(InstructionType.Return, 0));
                     return;
                 }
                 else
@@ -153,7 +153,7 @@ namespace Elfenlabs.Scripting
             }
 
             ConsumeExpression();
-            builder.Add(new Instruction(InstructionType.Return, currentFunction.ReturnType.WordLength));
+            codeBuilder.Add(new Instruction(InstructionType.Return, currentFunction.ReturnType.WordLength));
         }
 
         ValueType ConsumeFunctionPointer(Function function)

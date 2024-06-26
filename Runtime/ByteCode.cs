@@ -2,7 +2,6 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Elfenlabs.Scripting

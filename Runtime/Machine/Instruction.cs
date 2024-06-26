@@ -45,6 +45,11 @@ namespace Elfenlabs.Scripting
 
         Pop,                // <short>    - The number of words to pop from the stack
 
+        FillZero,           // <short>    - The number of words to fill with zeros
+
+        WritePrevious,      // <short>    - The offset in words
+                            // <byte>     - The number of words to copy from the stack
+
         // --------------------------------
         // Heap operations
         // --------------------------------
@@ -214,6 +219,8 @@ namespace Elfenlabs.Scripting
             { InstructionType.LoadVariableElement, Format.OBS },
             { InstructionType.StoreVariable, Format.OBS },
             { InstructionType.Pop, Format.OS },
+            { InstructionType.FillZero, Format.OS },
+            { InstructionType.WritePrevious, Format.OBS },
             { InstructionType.LoadHeap, Format.OBS },
             { InstructionType.StoreHeap, Format.OBS },
             { InstructionType.WriteHeap, Format.OBS },

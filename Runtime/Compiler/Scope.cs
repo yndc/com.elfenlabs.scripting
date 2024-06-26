@@ -87,7 +87,7 @@ namespace Elfenlabs.Scripting
 
         void EndScope()
         {
-            builder.Add(new Instruction(InstructionType.Pop, currentScope.WordLength));
+            codeBuilder.Add(new Instruction(InstructionType.Pop, currentScope.WordLength));
             currentScope = currentScope.Parent;
         }
 

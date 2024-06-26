@@ -23,6 +23,8 @@ namespace Elfenlabs.Scripting.Tests
             var stack = CompilerUtility.Debug(@"
                 function SafeDiv (Int number, Int divisor) returns Int
                     if divisor == 0 then
+                        // asdasa
+                        
                         return 0
                     return number / divisor
     

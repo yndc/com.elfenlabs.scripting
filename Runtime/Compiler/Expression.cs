@@ -62,14 +62,14 @@ namespace Elfenlabs.Scripting
                 case TokenType.Minus:
                     switch (valueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntNegate)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatNegate)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntNegate)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatNegate)); break;
                         default: throw CreateException(previous.Value, $"Invalid type {valueType} for symbol {TokenType.Minus}");
                     }
                     break;
                 case TokenType.Bang:
                     AssertValueType(valueType, ValueType.Bool);
-                    builder.Add(new Instruction(InstructionType.BoolNegate)); break;
+                    codeBuilder.Add(new Instruction(InstructionType.BoolNegate)); break;
                 default: throw CreateException(previous.Value, $"Invalid unary symbol {op}");
             }
 
@@ -89,65 +89,65 @@ namespace Elfenlabs.Scripting
                 case TokenType.Plus:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntAdd)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatAdd)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntAdd)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatAdd)); break;
                     }
                     break;
                 case TokenType.Minus:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntSubstract)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatSubstract)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntSubstract)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatSubstract)); break;
                     }
                     break;
                 case TokenType.Slash:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntDivide)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatDivide)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntDivide)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatDivide)); break;
                     }
                     break;
                 case TokenType.Asterisk:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntMultiply)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatMultiply)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntMultiply)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatMultiply)); break;
                     }
                     break;
 
                 // Comparison
                 case TokenType.BangEqual:
-                    builder.Add(new Instruction(InstructionType.NotEqual));
+                    codeBuilder.Add(new Instruction(InstructionType.NotEqual));
                     return ValueType.Bool;
                 case TokenType.EqualEqual:
-                    builder.Add(new Instruction(InstructionType.Equal));
+                    codeBuilder.Add(new Instruction(InstructionType.Equal));
                     return ValueType.Bool;
                 case TokenType.Greater:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntGreaterThan)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatGreaterThan)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntGreaterThan)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatGreaterThan)); break;
                     }
                     return ValueType.Bool;
                 case TokenType.GreaterEqual:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntGreaterThanEqual)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatGreaterThanEqual)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntGreaterThanEqual)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatGreaterThanEqual)); break;
                     }
                     return ValueType.Bool;
                 case TokenType.Less:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntLessThan)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatLessThan)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntLessThan)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatLessThan)); break;
                     }
                     return ValueType.Bool;
                 case TokenType.LessEqual:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": builder.Add(new Instruction(InstructionType.IntLessThanEqual)); break;
-                        case "Float": builder.Add(new Instruction(InstructionType.FloatLessThanEqual)); break;
+                        case "Int": codeBuilder.Add(new Instruction(InstructionType.IntLessThanEqual)); break;
+                        case "Float": codeBuilder.Add(new Instruction(InstructionType.FloatLessThanEqual)); break;
                     }
                     return ValueType.Bool;
 
@@ -163,19 +163,19 @@ namespace Elfenlabs.Scripting
             switch (previous.Value.Type)
             {
                 case TokenType.Integer:
-                    builder.AddConstant(int.Parse(str));
+                    codeBuilder.AddConstant(int.Parse(str));
                     return ValueType.Int;
                 case TokenType.Float:
-                    builder.AddConstant(float.Parse(str));
+                    codeBuilder.AddConstant(float.Parse(str));
                     return ValueType.Float;
                 case TokenType.False:
-                    builder.AddConstant(0);
+                    codeBuilder.AddConstant(0);
                     return ValueType.Bool;
                 case TokenType.True:
-                    builder.AddConstant(1);
+                    codeBuilder.AddConstant(1);
                     return ValueType.Bool;
                 case TokenType.String:
-                    builder.AddConstant(str);
+                    codeBuilder.AddConstant(str);
                     return ValueType.String;
                 default:
                     throw CreateException(previous.Value, $"Unknown literal {str} of type {previous.Value.Type}");
@@ -193,17 +193,20 @@ namespace Elfenlabs.Scripting
             // Check if it refers to a type, replace it as the default value for that type
             if (types.TryGetValue(identifier, out ValueType valueType))
             {
-                switch (current.Value.Type)
+                // If it is a struct type and the next token is a left brace, it is a struct literal
+                if (valueType is StructureValueType && current.Value.Type == TokenType.LeftBrace)
                 {
-                    case TokenType.Less:
-                        Consume(TokenType.Less);
-                        var spanSizeToken = Consume(TokenType.Integer, "Expected span size after '<'");
-                        Consume(TokenType.Greater, "Expected '>' after span size");
-                        valueType = new SpanValueType(valueType, int.Parse(spanSizeToken.Value));
-                        break;
+                    ConsumeStructLiteral(valueType as StructureValueType);
                 }
 
-                builder.AddConstant(valueType.GenerateDefaultValue());
+                // Otherwise it is a default value
+                else
+                {
+                    Rewind();
+
+                    valueType = ConsumeType();
+                    codeBuilder.AddConstant(valueType.GenerateDefaultValue());
+                }
 
                 return valueType;
             }
@@ -232,8 +235,16 @@ namespace Elfenlabs.Scripting
                             var index = int.Parse(indexToken.Value);
                             if (index >= spanValueType.Length)
                                 throw CreateException(indexToken, $"Index {index} is out of bounds for span {spanValueType}");
-                            builder.Add(new Instruction(InstructionType.LoadVariable, (ushort)(variable.Position + index), spanValueType.Element.WordLength));
+                            codeBuilder.Add(new Instruction(InstructionType.LoadVariable, (ushort)(variable.Position + index), spanValueType.Element.WordLength));
                             return spanValueType.Element;
+                        case StructureValueType structureValueType:
+                            var member = Consume(TokenType.Identifier, "Expected identifier after '.'");
+                            if (!structureValueType.TryGetFieldByName(member.Value, out var field))
+                            {
+                                throw CreateException(current.Value, $"Unknown member {member} in variable {identifier} of type {structureValueType}");
+                            }
+                            codeBuilder.Add(new Instruction(InstructionType.LoadVariable, (ushort)(variable.Position + field.Offset), field.Type.WordLength));
+                            return field.Type;
                         default:
                             throw CreateException(previous.Value, $"The member accessor operator '.' can only be used for spans, structs, or module. {identifier} is not one of them.");
                     }
@@ -250,7 +261,7 @@ namespace Elfenlabs.Scripting
                     //}
                 }
 
-                builder.Add(new Instruction(InstructionType.LoadVariable, variable.Position, variable.Type.WordLength));
+                codeBuilder.Add(new Instruction(InstructionType.LoadVariable, variable.Position, variable.Type.WordLength));
                 return variable.Type;
             }
 

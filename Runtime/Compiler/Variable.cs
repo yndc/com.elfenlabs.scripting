@@ -51,7 +51,7 @@ namespace Elfenlabs.Scripting
             if (evaluationType != variable.Type)
                 throw CreateException(current.Value, $"Cannot assign {evaluationType.Identifier} type to {variable.Type.Identifier}");
 
-            builder.Add(new Instruction(
+            codeBuilder.Add(new Instruction(
                 InstructionType.StoreVariable,
                 variable.Position,
                 variable.Type.WordLength));

@@ -225,7 +225,7 @@ namespace Elfenlabs.Scripting
             var longestMatchLength = 0;
 
             // Prioritize matching the longest symbol
-            for (int length = 1; length < longestSymbolLength; length++)
+            for (int length = 1; length <= longestSymbolLength; length++)
             {
                 var str = CurrentSlice();
                 if (symbols.TryGetValue(str, out var match))
@@ -248,26 +248,6 @@ namespace Elfenlabs.Scripting
             }
 
             ResetHead();
-            return false;
-        }
-
-        bool TryScanStructure(out Token token)
-        {
-            token = Token.Invalid;
-
-            switch (Peek())
-            {
-                case '\n': AddToken(TokenType.NewLine); return true;
-                case '\t': AddToken(TokenType.Indent); return true;
-            }
-
-            if (PeekSlice(4) == "    ") // 4 spaces is treated as an indent
-            {
-                AdvanceHead(4);
-                AddToken(TokenType.Indent);
-                return true;
-            }
-
             return false;
         }
 
@@ -364,10 +344,10 @@ namespace Elfenlabs.Scripting
         /// </summary>
         void CleanFormatting()
         {
-            module.Tokens.AddBefore(module.Tokens.Last, new Token 
-            { 
-                Type = TokenType.NewLine, 
-                Module = module, 
+            module.Tokens.AddBefore(module.Tokens.Last, new Token
+            {
+                Type = TokenType.NewLine,
+                Module = module,
                 Position = module.Tokens.Last.Value.Position,
                 Column = module.Tokens.Last.Value.Column,
                 Line = module.Tokens.Last.Value.Line
@@ -377,7 +357,7 @@ namespace Elfenlabs.Scripting
             //NormalizeIndentation();
 
             // Second pass: remove redundant newlines and replace relevant newlines with terminators
-            RemoveRedundantNewLines();
+            RemoveEmptyLines();
 
             // Third pass: remove line wrapping
             //RemoveLineWrapping();
@@ -405,7 +385,7 @@ namespace Elfenlabs.Scripting
                     case TokenType.Indent:
                         if (lineDepth == baseDepth)
                             break;
-                        node = RemoveNode(node);
+                        node = Remove(node);
                         lineDepth++;
                         break;
                     case TokenType.EOF:
@@ -421,23 +401,36 @@ namespace Elfenlabs.Scripting
         /// <summary>
         /// Removes empty lines and replaces relevant newlines with terminators
         /// </summary>
-        void RemoveRedundantNewLines()
+        void RemoveEmptyLines()
         {
             var lineHasContent = false;
             for (var node = module.Tokens.First; node != null; node = node.Next)
             {
                 var token = node.Value;
-                if (token.Type == TokenType.NewLine)
+                switch (token.Type)
                 {
-                    if (!lineHasContent)
-                        node = RemoveNode(node);
-                    else
-                        node.Value = Token.TerminatorFromNewline(token);
-                    lineHasContent = false;
-                }
-                else
-                {
-                    lineHasContent = true;
+                    case TokenType.NewLine:
+                        if (!lineHasContent)
+                        {
+                            // Remove all line tokens
+                            //node = node.Previous;
+                            //while (node != module.Tokens.First && node.Value.Type != TokenType.StatementTerminator)
+                            //    node = Remove(node);
+                            for (var n = node.Previous; n != null && n.Value.Type != TokenType.StatementTerminator; n = Remove(n)) { }
+                            node = Remove(node);
+                        }
+                        else
+                        {
+                            node.Value.Type = TokenType.StatementTerminator;
+                            node.Value.Value = "";
+                        }
+                        lineHasContent = false;
+                        break;
+                    case TokenType.Indent:
+                        break;
+                    default:
+                        lineHasContent = true;
+                        break;
                 }
             }
         }
@@ -455,7 +448,7 @@ namespace Elfenlabs.Scripting
                 {
                     case TokenType.Indent:
                         if (!isNewLine)
-                            node = RemoveNode(node);
+                            node = Remove(node);
                         break;
                     case TokenType.StatementTerminator:
                         isNewLine = true;
@@ -481,7 +474,7 @@ namespace Elfenlabs.Scripting
                         if (node.Next.Value.Type == TokenType.Indent)
                         {
                             module.Tokens.Remove(node.Next);
-                            node = RemoveNode(node);
+                            node = Remove(node);
                         }
                         break;
                     default:
@@ -522,7 +515,12 @@ namespace Elfenlabs.Scripting
             return new Location { Line = line, Column = GetColumn() };
         }
 
-        LinkedListNode<Token> RemoveNode(LinkedListNode<Token> node)
+        /// <summary>
+        /// Removes the given token and returns the previous token
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        LinkedListNode<Token> Remove(LinkedListNode<Token> node)
         {
             var prev = node.Previous;
             module.Tokens.Remove(node);
