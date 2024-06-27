@@ -15,6 +15,9 @@ namespace Elfenlabs.Scripting
                 case TokenType.Structure:
                     ConsumeStructureDeclaration();
                     break;
+                case TokenType.External:
+                    ConsumeExternalDeclaration();
+                    break;
                 default:
                     ConsumeStatement();
                     break;

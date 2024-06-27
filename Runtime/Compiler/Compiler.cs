@@ -9,14 +9,14 @@ namespace Elfenlabs.Scripting
     public partial class Compiler
     {
         Module module;
-        Function currentFunction;
+        SubProgram currentSubProgram;
         LinkedListNode<Token> current;
         LinkedListNode<Token> previous;
         ValueType lastValueType;
         Scope globalScope;
         Scope currentScope;
 
-        ByteCodeBuilder codeBuilder => currentFunction.Builder;
+        ByteCodeBuilder CodeBuilder => currentSubProgram.Builder;
 
         public Compiler()
         {
@@ -32,9 +32,10 @@ namespace Elfenlabs.Scripting
             currentScope = globalScope;
 
             // Create root function in the global scope
-            var globalSubprogram = new Function("global", ValueType.Void);
-            functions.Add(globalSubprogram);
-            currentFunction = globalSubprogram;
+            var rootFunctionHeader = new FunctionHeader("root", ValueType.Void);
+            var rootSubProgram = new SubProgram(rootFunctionHeader);
+            subPrograms.Add(rootSubProgram);
+            currentSubProgram = rootSubProgram;
 
             current = module.Tokens.First;
 
@@ -46,15 +47,25 @@ namespace Elfenlabs.Scripting
 
         public Program Build()
         {
-            var chunks = new NativeArray<ByteCode>(functions.Count, Allocator.Persistent);
-            foreach (var function in functions)
+            var chunks = new NativeArray<ByteCode>(subPrograms.Count, Allocator.Persistent);
+            var functionBindings = new NativeArray<ExternalFunctionBinding>(externalFunctions.Count, Allocator.Persistent);
+            for (int i = 0; i < subPrograms.Count; i++)
             {
-                chunks[function.Index] = function.Builder.Build();
+                chunks[i] = subPrograms[i].Builder.Build();
+            }
+            for (int i = 0; i < externalFunctions.Count; i++)
+            {
+                functionBindings[i] = new ExternalFunctionBinding
+                {
+                    InputWordLen = externalFunctions[i].ParameterWordLength,
+                    OutputWordLen = externalFunctions[i].ReturnWordLength
+                };
             }
             return new Program
             {
                 Chunks = chunks,
-                EntryPoint = 0
+                EntryPoint = 0,
+                ExternalFunctions = functionBindings
             };
         }
 

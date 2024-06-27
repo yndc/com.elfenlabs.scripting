@@ -1,78 +1,147 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using Unity.Burst;
 using Unity.Collections;
-using UnityEngine;
 using static Unity.Entities.SystemBaseDelegates;
 
 namespace Elfenlabs.Scripting
 {
-    public class Function
+    public class FunctionHeader
     {
+        public class Parameter
+        {
+            public string Name;
+            public ValueType Type;
+            public Parameter(string name, ValueType type)
+            {
+                Name = name;
+                Type = type;
+            }
+        }
+
+        /// <summary>
+        /// Name of this function
+        /// </summary>
         public string Name;
-        public ushort Index;
+
+        /// <summary>
+        /// Return type of this function
+        /// </summary>
         public ValueType ReturnType;
-        public ValueType[] ParameterTypes;
-        public ByteCodeBuilder Builder;
-        public ByteCode ByteCode;
-        public ushort Offset;
-        public byte ParameterWordLength => (byte)ParameterTypes.Sum(x => x.WordLength);
-        public Function(string name, ValueType returnType, params ValueType[] parameterTypes)
+
+        /// <summary>
+        /// Parameters of this function
+        /// </summary>
+        public Parameter[] Parameters;
+
+        /// <summary>
+        /// Flags this function as an external function
+        /// </summary>
+        public bool IsExternal;
+
+        /// <summary>
+        /// The index of this function in the function table
+        /// </summary>
+        public ushort Index;
+
+        /// <summary>
+        /// Word length of all parameters combined
+        /// </summary>
+        public byte ParameterWordLength => (byte)Parameters.Sum(x => x.Type.WordLength);
+
+        /// <summary>
+        /// Word length of the return type
+        /// </summary>
+        public byte ReturnWordLength => (byte)(ParameterWordLength + ReturnType.WordLength);
+
+        public FunctionHeader(string name, ValueType returnType, params Parameter[] parameters)
         {
             Name = name;
             ReturnType = returnType;
-            ParameterTypes = parameterTypes;
+            Parameters = parameters;
+            Index = 0;
+        }
+    }
+
+    /// <summary>
+    /// User defined function, will be compiled to its own chunk byte code
+    /// </summary>
+    public class SubProgram
+    {
+        public FunctionHeader Header;
+        public ByteCodeBuilder Builder;
+        public ushort Offset;
+        public SubProgram(FunctionHeader function)
+        {
+            Header = function;
             Builder = new ByteCodeBuilder(Allocator.Persistent);
         }
     }
 
     public partial class Compiler
     {
-        readonly List<Function> functions = new();
+        readonly List<SubProgram> subPrograms = new();
+        readonly List<FunctionHeader> externalFunctions = new();
 
-        Function RegisterFunction(string name, ValueType returnType, params ValueType[] parameterTypes)
+        /// <summary>
+        /// Registers a new function in the current scope and assigns it an index
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="returnType"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        void RegisterSubProgram(SubProgram subProgram)
         {
-            var function = new Function(name, returnType, parameterTypes)
-            {
-                Index = (ushort)functions.Count,
-                Offset = (ushort)currentScope.WordLength,
-            };
-            functions.Add(function);
+            subProgram.Header.Index = (ushort)subPrograms.Count;
+            subPrograms.Add(subProgram);
+            currentScope.DeclareFunction(subProgram.Header);
+        }
+
+        /// <summary>
+        /// Registers a new external function in the current scope and assigns it an index
+        /// </summary>
+        /// <param name="function"></param>
+        void RegisterExternalFunction(FunctionHeader function)
+        {
+            function.Index = (ushort)externalFunctions.Count;
+            function.IsExternal = true;
+            externalFunctions.Add(function);
             currentScope.DeclareFunction(function);
-            return function;
         }
 
         void ConsumeFunctionDeclaration()
         {
-            Advance();
-
-            // Consume function name
-            Consume(TokenType.Identifier, "Expected function name");
-            var name = previous.Value.Value;
-
-            // A function lives on its own scope
-            var functionScope = currentScope.CreateChild();
-
-            var parameters = ConsumeFunctionDeclarationParameters(functionScope);
-            var returnType = MatchAdvance(TokenType.Returns) ? ConsumeType() : ValueType.Void;
-            Consume(TokenType.StatementTerminator, "Expected new-line after function header");
-            var function = RegisterFunction(name, returnType, parameters.ToArray());
-
-            // Consume function body
-            var previousFunction = currentFunction;
-            currentFunction = function;
-            currentScope = functionScope;
-            ConsumeBlock();
-            currentFunction = previousFunction;
-            currentScope = functionScope.Parent;
+            var external = previous?.Value.Type == TokenType.External;
+            var function = ConsumeFunctionDeclarationHeader();
+            if (external)
+                RegisterExternalFunction(function);
+            else
+            {
+                var subProgram = new SubProgram(function);
+                RegisterSubProgram(subProgram);
+                ConsumeFunctionBody(subProgram);
+            }
         }
 
-        List<ValueType> ConsumeFunctionDeclarationParameters(Scope functionScope)
+        FunctionHeader ConsumeFunctionDeclarationHeader()
+        {
+            Consume(TokenType.Function);
+            Consume(TokenType.Identifier, "Expected function name");
+            var name = previous.Value.Value;
+            var parameters = ConsumeFunctionDeclarationParameters();
+            var returnType = MatchAdvance(TokenType.Returns) ? ConsumeType() : ValueType.Void;
+            Consume(TokenType.StatementTerminator, "Expected new-line after function header");
+            return new FunctionHeader(name, returnType, parameters.ToArray());
+        }
+
+        List<FunctionHeader.Parameter> ConsumeFunctionDeclarationParameters()
         {
             Consume(TokenType.LeftParentheses, "Expected '(' before function parameters");
-            var parameters = new List<ValueType>();
+            var parameters = new List<FunctionHeader.Parameter>();
             while (true)
             {
-                parameters.Add(ConsumeFunctionDeclarationParameter(functionScope));
+                parameters.Add(ConsumeFunctionDeclarationParameter());
                 switch (current.Value.Type)
                 {
                     case TokenType.Comma:
@@ -87,28 +156,48 @@ namespace Elfenlabs.Scripting
             }
         }
 
-        ValueType ConsumeFunctionDeclarationParameter(Scope functionScope)
+        FunctionHeader.Parameter ConsumeFunctionDeclarationParameter()
         {
             var type = ConsumeType();
             var name = Consume(TokenType.Identifier, "Expected parameter name").Value;
-            functionScope.DeclareVariable(name, type);
-            return type;
+            return new FunctionHeader.Parameter(name, type);
         }
 
-        ValueType ConsumeFunctionCall(Function function)
+        void ConsumeFunctionBody(SubProgram subProgram)
         {
-            ConsumeFunctionCallParameters(function);
-            codeBuilder.Add(new Instruction(InstructionType.Call, function.Index, function.ParameterWordLength));
+            var functionScope = currentScope.CreateChild();
+            var previousFunction = currentSubProgram;
+
+            // Add all parameters as variables to the function scope
+            for (int i = 0; i < subProgram.Header.Parameters.Length; i++)
+            {
+                var p = subProgram.Header.Parameters[i];
+                functionScope.DeclareVariable(p.Name, p.Type);
+            }
+            currentSubProgram = subProgram;
+            currentScope = functionScope;
+            ConsumeBlock();
+            currentSubProgram = previousFunction;
+            currentScope = functionScope.Parent;
+        }
+
+        ValueType ConsumeFunctionCall(FunctionHeader function)
+        {
+            ConsumeFunctionCallParameters(function.Parameters);
+            if (function.IsExternal)
+                CodeBuilder.Add(new Instruction(InstructionType.CallExternal, function.Index));
+            else
+                CodeBuilder.Add(new Instruction(InstructionType.Call, function.Index, function.ParameterWordLength));
             return function.ReturnType;
         }
 
-        void ConsumeFunctionCallParameters(Function function)
+        void ConsumeFunctionCallParameters(FunctionHeader.Parameter[] functionParameters)
         {
-            var parameters = new List<ValueType>();
+            var callParameters = new List<ValueType>();
             var parseParameters = true;
             while (parseParameters)
             {
-                parameters.Add(ConsumeExpression());
+                callParameters.Add(ConsumeExpression());
                 switch (current.Value.Type)
                 {
                     case TokenType.Comma:
@@ -123,15 +212,15 @@ namespace Elfenlabs.Scripting
                 }
             }
 
-            if (parameters.Count != function.ParameterTypes.Length)
+            if (callParameters.Count != functionParameters.Length)
                 throw CreateException(current.Value,
-                    $"Expected {function.ParameterTypes.Length} parameters, got {parameters.Count}");
+                    $"Expected {functionParameters.Length} parameters, got {callParameters.Count}");
 
-            for (int i = 0; i < parameters.Count; i++)
+            for (int i = 0; i < callParameters.Count; i++)
             {
-                if (parameters[i] != function.ParameterTypes[i])
+                if (callParameters[i] != functionParameters[i].Type)
                     throw CreateException(current.Value,
-                        $"Expected parameter of type {function.ParameterTypes[i]} but got {parameters[i]}");
+                        $"Expected parameter of type {functionParameters[i]} but got {callParameters[i]}");
             }
         }
 
@@ -139,11 +228,11 @@ namespace Elfenlabs.Scripting
         {
             Advance();
 
-            if (currentFunction.ReturnType == ValueType.Void)
+            if (currentSubProgram.Header.ReturnType == ValueType.Void)
             {
                 if (MatchAdvance(TokenType.StatementTerminator))
                 {
-                    codeBuilder.Add(new Instruction(InstructionType.Return, 0));
+                    CodeBuilder.Add(new Instruction(InstructionType.Return, 0));
                     return;
                 }
                 else
@@ -153,10 +242,10 @@ namespace Elfenlabs.Scripting
             }
 
             ConsumeExpression();
-            codeBuilder.Add(new Instruction(InstructionType.Return, currentFunction.ReturnType.WordLength));
+            CodeBuilder.Add(new Instruction(InstructionType.Return, currentSubProgram.Header.ReturnType.WordLength));
         }
 
-        ValueType ConsumeFunctionPointer(Function function)
+        ValueType ConsumeFunctionPointer(FunctionHeader function)
         {
             throw CreateException(current.Value, "Function pointers are not supported yet");
         }

@@ -55,6 +55,11 @@ namespace Elfenlabs.Scripting
                             Call(instruction.ArgShort, instruction.ArgByte1);
                             break;
                         }
+                    case InstructionType.CallExternal:
+                        {
+                            CallExternal(instruction.ArgShort);
+                            break;
+                        }
                     case InstructionType.Return:
                         {
                             Return(instruction.ArgByte);

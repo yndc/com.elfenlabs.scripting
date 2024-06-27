@@ -21,7 +21,7 @@ namespace Elfenlabs.Scripting
                     break;
                 default:
                     ConsumeExpression();
-                    codeBuilder.Add(new Instruction(InstructionType.Pop));
+                    CodeBuilder.Add(new Instruction(InstructionType.Pop));
                     Consume(TokenType.StatementTerminator, "Expected new-line after statement");
                     break;
             }
@@ -39,9 +39,14 @@ namespace Elfenlabs.Scripting
             }
 
             // Check if it refers to a function
-            if (currentScope.TryGetFunction(identifier, out Function function))
+            if (currentScope.TryGetFunction(identifier, out FunctionHeader function))
             {
-
+                Advance();
+                if (MatchAdvance(TokenType.LeftParentheses))
+                {
+                    ConsumeFunctionCall(function);
+                    return;
+                }
             }
 
             throw CreateException(current.Value, $"Unknown statement identifier {identifier}");

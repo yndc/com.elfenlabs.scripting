@@ -8,7 +8,7 @@ namespace Elfenlabs.Scripting
     {
         public Scope Parent;
         public Dictionary<string, Variable> Variables = new();
-        public Dictionary<string, Function> Functions = new();
+        public Dictionary<string, FunctionHeader> Functions = new();
         public int Depth;
         public ushort WordLength;
 
@@ -29,7 +29,7 @@ namespace Elfenlabs.Scripting
             return variable.Position;
         }
 
-        public Function DeclareFunction(Function function)
+        public FunctionHeader DeclareFunction(FunctionHeader function)
         {
             if (!Functions.TryAdd(function.Name, function))
                 throw new Exception($"Function {function.Name} already declared in this scope");
@@ -48,7 +48,7 @@ namespace Elfenlabs.Scripting
             return false;
         }
 
-        public bool TryGetFunction(string name, out Function function)
+        public bool TryGetFunction(string name, out FunctionHeader function)
         {
             if (Functions.TryGetValue(name, out function))
                 return true;
@@ -87,7 +87,7 @@ namespace Elfenlabs.Scripting
 
         void EndScope()
         {
-            codeBuilder.Add(new Instruction(InstructionType.Pop, currentScope.WordLength));
+            CodeBuilder.Add(new Instruction(InstructionType.Pop, currentScope.WordLength));
             currentScope = currentScope.Parent;
         }
 

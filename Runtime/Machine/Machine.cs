@@ -1,6 +1,8 @@
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Burst;
+using static Elfenlabs.Scripting.Machine;
 
 namespace Elfenlabs.Scripting
 {
@@ -19,6 +21,7 @@ namespace Elfenlabs.Scripting
         {
             Values = new NativeList<int>(initialStackCapacity, allocator);
             Frames = new NativeList<Frame>(10, allocator);
+            ExternalFunctions = new NativeArray<FunctionPointer<ExternalFunction>>();
             heap = new Arena(256, allocator);
             State = ExecutionState.Running;
             heapPtr = heap.GetUnsafePtr();
@@ -39,12 +42,15 @@ namespace Elfenlabs.Scripting
         {
             Program = program;
             State = ExecutionState.Running;
+            ExternalFunctions = new NativeArray<FunctionPointer<ExternalFunction>>(program.ExternalFunctions.Length, Allocator.Persistent);
 
             currentChunkIndex = program.EntryPoint;
 
             var chunk = program.Chunks[program.EntryPoint];
             instructionPtr = (Instruction*)chunk.Instructions.GetUnsafePtr();
             constantsPtr = (int*)chunk.Constants.GetUnsafePtr();
+
+            ExternalFunctions[0] = BurstCompiler.CompileFunctionPointer<ExternalFunction>(IO.Print);
         }
 
         public void Dispose()

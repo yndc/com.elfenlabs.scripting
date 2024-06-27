@@ -58,6 +58,12 @@ namespace Elfenlabs.Scripting
                             // <byte>     - The number of words to store from the constant
 
         // --------------------------------
+        // External operations
+        // --------------------------------
+
+        CallExternal,       // <short>    - The index of the external function to call
+
+        // --------------------------------
         // Value operations
         // --------------------------------
 
@@ -225,6 +231,7 @@ namespace Elfenlabs.Scripting
             { InstructionType.StoreHeap, Format.OBS },
             { InstructionType.WriteHeap, Format.OBS },
             { InstructionType.HeapLoadConstant, Format.OBS},
+            { InstructionType.CallExternal, Format.OS},
             { InstructionType.IntAdd, Format.O },
             { InstructionType.IntSubstract, Format.O },
             { InstructionType.IntMultiply, Format.O },

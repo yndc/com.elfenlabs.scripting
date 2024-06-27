@@ -219,7 +219,7 @@ namespace Elfenlabs.Scripting
     public unsafe partial struct Machine
     {
         Arena heap;
-        int* heapPtr;
+        public int* heapPtr;
 
         /// <summary>
         /// Asserts that the heap has at least the certain length. The heap will be extended if needed. heapPtr will be updated.

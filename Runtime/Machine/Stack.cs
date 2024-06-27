@@ -9,7 +9,7 @@ namespace Elfenlabs.Scripting
     {
         public NativeList<int> Values;
         public NativeList<Frame> Frames;
-        int* stackHeadPtr;
+        public int* stackHeadPtr;
         int* constantsPtr;
 
         /// <summary>

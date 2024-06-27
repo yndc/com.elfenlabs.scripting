@@ -14,15 +14,15 @@ namespace Elfenlabs.Scripting
             Ignore(TokenType.StatementTerminator);
 
             // Jump to the else block if the condition is false
-            var jumpToElseInstructionIndex = codeBuilder.Add(new Instruction(InstructionType.JumpIfFalse, 0));
+            var jumpToElseInstructionIndex = CodeBuilder.Add(new Instruction(InstructionType.JumpIfFalse, 0));
 
             // Begin the statement block
             BeginScope();
             ConsumeBlock();
             EndScope();
-            var jumpToEndInstructionIndex = codeBuilder.Add(new Instruction(InstructionType.Jump, 0));
+            var jumpToEndInstructionIndex = CodeBuilder.Add(new Instruction(InstructionType.Jump, 0));
 
-            codeBuilder.Patch(jumpToElseInstructionIndex).ArgShort = (ushort)(codeBuilder.InstructionCount - jumpToElseInstructionIndex - 1);
+            CodeBuilder.Patch(jumpToElseInstructionIndex).ArgShort = (ushort)(CodeBuilder.InstructionCount - jumpToElseInstructionIndex - 1);
 
             if (MatchAdvance(TokenType.Else))
             {
@@ -32,7 +32,7 @@ namespace Elfenlabs.Scripting
                 EndScope();
             }
 
-            codeBuilder.Patch(jumpToEndInstructionIndex).ArgShort = (ushort)(codeBuilder.InstructionCount - jumpToEndInstructionIndex - 1);
+            CodeBuilder.Patch(jumpToEndInstructionIndex).ArgShort = (ushort)(CodeBuilder.InstructionCount - jumpToEndInstructionIndex - 1);
         }
     }
 }

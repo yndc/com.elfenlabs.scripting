@@ -111,7 +111,7 @@ namespace Elfenlabs.Scripting
 
             // Add the default value for the structure first for the layout
             // Then we compute each field value and only then we write the fields one by one
-            codeBuilder.Add(new Instruction(InstructionType.FillZero, (ushort)type.WordLength));
+            CodeBuilder.Add(new Instruction(InstructionType.FillZero, (ushort)type.WordLength));
 
             var literalFields = new List<StructureValueType.Field>();
             var assignedFields = new HashSet<StructureValueType.Field>();
@@ -140,7 +140,7 @@ namespace Elfenlabs.Scripting
             if (expressionType != field.Type)
                 throw CreateException(previous.Value, $"Cannot assign {expressionType.Identifier} to {field.Type.Identifier}");
 
-            codeBuilder.Add(new Instruction(InstructionType.WritePrevious, (ushort)(type.WordLength - field.Offset), field.Type.WordLength));
+            CodeBuilder.Add(new Instruction(InstructionType.WritePrevious, (ushort)(type.WordLength - field.Offset), field.Type.WordLength));
 
             return field;
         }
