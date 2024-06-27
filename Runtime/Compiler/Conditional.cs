@@ -4,14 +4,14 @@ namespace Elfenlabs.Scripting
     {
         public void ConsumeStatementIf()
         {
-            Advance(); // Consume 'if'
+            Skip(); // Consume 'if'
 
             // The condition expression
             ConsumeExpression();
             Consume(TokenType.Then, "Expected 'then' after condition");
 
             // Ignore the next statement terminator 
-            Ignore(TokenType.StatementTerminator);
+            Skip(TokenType.StatementTerminator);
 
             // Jump to the else block if the condition is false
             var jumpToElseInstructionIndex = CodeBuilder.Add(new Instruction(InstructionType.JumpIfFalse, 0));
@@ -26,7 +26,7 @@ namespace Elfenlabs.Scripting
 
             if (MatchAdvance(TokenType.Else))
             {
-                Ignore(TokenType.StatementTerminator);
+                Skip(TokenType.StatementTerminator);
                 BeginScope();
                 ConsumeBlock();
                 EndScope();

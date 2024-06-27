@@ -41,7 +41,7 @@ namespace Elfenlabs.Scripting
             // Check if it refers to a function
             if (currentScope.TryGetFunction(identifier, out FunctionHeader function))
             {
-                Advance();
+                Skip();
                 if (MatchAdvance(TokenType.LeftParentheses))
                 {
                     ConsumeFunctionCall(function);

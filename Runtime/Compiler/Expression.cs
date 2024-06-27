@@ -11,7 +11,7 @@ namespace Elfenlabs.Scripting
 
         ValueType ConsumeExpressionForward(Precedence minimumPrecedence)
         {
-            Advance();
+            Skip();
 
             var prefixRule = GetRule(previous.Value.Type).Prefix;
             if (prefixRule == Handling.None)
@@ -24,7 +24,7 @@ namespace Elfenlabs.Scripting
 
             while (GetRule(current.Value.Type).Precedence >= minimumPrecedence)
             {
-                Advance();
+                Skip();
                 var infixRule = GetRule(previous.Value.Type).Infix;
                 lastValueType = ConsumeExpression(infixRule);
             }
@@ -248,17 +248,6 @@ namespace Elfenlabs.Scripting
                         default:
                             throw CreateException(previous.Value, $"The member accessor operator '.' can only be used for spans, structs, or module. {identifier} is not one of them.");
                     }
-
-                    //if (variable.Type.IsStruct)
-                    //{
-                    //    var member = Consume(TokenType.Identifier, "Expected identifier after '.'");
-                    //    if (!variable.Type.TryGetMember(member.Value, out var memberType))
-                    //    {
-                    //        throw CreateException(member.Value, $"Unknown member {member.Value} in variable {identifier}");
-                    //    }
-                    //    builder.Add(new Instruction(InstructionType.LoadVariableMember, variable.Position, variable.Type.WordLength, memberType.Position, memberType.WordLength));
-                    //    return memberType;
-                    //}
                 }
 
                 CodeBuilder.Add(new Instruction(InstructionType.LoadVariable, variable.Position, variable.Type.WordLength));

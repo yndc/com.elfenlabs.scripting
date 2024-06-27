@@ -11,7 +11,7 @@ namespace Elfenlabs.Scripting
     {
         void ConsumeStatementVariableDeclaration()
         {
-            Advance();
+            Skip();
             Consume(TokenType.Identifier, "Expected variable name");
             var variableName = previous.Value.Value;
 
@@ -27,7 +27,7 @@ namespace Elfenlabs.Scripting
 
         void ConsumeStatementVariable(Variable variable)
         {
-            Advance();
+            Skip();
 
             switch (current.Value.Type)
             {
@@ -44,7 +44,7 @@ namespace Elfenlabs.Scripting
 
         void ConsumeStatementVariableAssignment(Variable variable)
         {
-            Advance();
+            Skip();
 
             var evaluationType = ConsumeExpression();
 

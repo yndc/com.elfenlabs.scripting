@@ -85,6 +85,17 @@ namespace Elfenlabs.Scripting
         readonly List<FunctionHeader> externalFunctions = new();
 
         /// <summary>
+        /// Registers built in functions
+        /// </summary>
+        void RegisterBuiltInFunctions()
+        {
+            // Print (string) -> void
+            RegisterExternalFunction(new FunctionHeader(
+                "print", ValueType.Void, new FunctionHeader.Parameter("value", ValueType.String)
+            ));
+        }
+
+        /// <summary>
         /// Registers a new function in the current scope and assigns it an index
         /// </summary>
         /// <param name="name"></param>
@@ -110,6 +121,9 @@ namespace Elfenlabs.Scripting
             currentScope.DeclareFunction(function);
         }
 
+        /// <summary>
+        /// Parses function declaration
+        /// </summary>
         void ConsumeFunctionDeclaration()
         {
             var external = previous?.Value.Type == TokenType.External;
@@ -145,10 +159,10 @@ namespace Elfenlabs.Scripting
                 switch (current.Value.Type)
                 {
                     case TokenType.Comma:
-                        Advance();
+                        Skip();
                         continue;
                     case TokenType.RightParentheses:
-                        Advance();
+                        Skip();
                         return parameters;
                     default:
                         throw CreateException(current.Value, "Expected ',' or ')' after function parameter");
@@ -201,10 +215,10 @@ namespace Elfenlabs.Scripting
                 switch (current.Value.Type)
                 {
                     case TokenType.Comma:
-                        Advance();
+                        Skip();
                         continue;
                     case TokenType.RightParentheses:
-                        Advance();
+                        Skip();
                         parseParameters = false;
                         break;
                     default:
@@ -226,7 +240,7 @@ namespace Elfenlabs.Scripting
 
         void ConsumeStatementReturn()
         {
-            Advance();
+            Skip();
 
             if (currentSubProgram.Header.ReturnType == ValueType.Void)
             {

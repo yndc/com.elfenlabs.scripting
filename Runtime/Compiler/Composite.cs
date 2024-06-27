@@ -40,10 +40,10 @@ namespace Elfenlabs.Scripting
                 switch (current.Value.Type)
                 {
                     case TokenType.Comma:
-                        Advance();
+                        Skip();
                         continue;
                     case TokenType.RightBrace:
-                        Advance();
+                        Skip();
                         parseElements = false;
                         break;
                     default:

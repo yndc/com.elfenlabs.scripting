@@ -107,7 +107,7 @@ namespace Elfenlabs.Scripting
         void ConsumeStructLiteral(StructureValueType type)
         {
             Consume(TokenType.LeftBrace);
-            Ignore(TokenType.StatementTerminator);
+            Skip(TokenType.StatementTerminator);
 
             // Add the default value for the structure first for the layout
             // Then we compute each field value and only then we write the fields one by one
@@ -117,10 +117,10 @@ namespace Elfenlabs.Scripting
             var assignedFields = new HashSet<StructureValueType.Field>();
             while (current.Value.Type != TokenType.RightBrace)
             {
-                Ignore(TokenType.Indent);
+                Skip(TokenType.Indent);
                 var field = ConsumeStructLiteralField(type, assignedFields);
                 literalFields.Add(field);
-                Ignore(TokenType.StatementTerminator);
+                Skip(TokenType.StatementTerminator);
             }
 
             Consume(TokenType.RightBrace);

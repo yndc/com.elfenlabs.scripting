@@ -36,15 +36,21 @@ namespace Elfenlabs.Scripting
             var rootSubProgram = new SubProgram(rootFunctionHeader);
             subPrograms.Add(rootSubProgram);
             currentSubProgram = rootSubProgram;
+            //RegisterBuiltInFunctions();
 
             current = module.Tokens.First;
 
+            // Consume all declarations until end of file
             while (!MatchAdvance(TokenType.EOF))
             {
                 ConsumeDeclaration();
             }
         }
 
+        /// <summary>
+        /// Builds the program from the given modules
+        /// </summary>
+        /// <returns></returns>
         public Program Build()
         {
             var chunks = new NativeArray<ByteCode>(subPrograms.Count, Allocator.Persistent);
@@ -79,7 +85,7 @@ namespace Elfenlabs.Scripting
         {
             if (current.Value.Type == type)
             {
-                Advance();
+                Skip();
                 return previous.Value;
             }
             else
@@ -96,9 +102,9 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
-        /// Advances the current token ignoring it
+        /// Skips the current token regardless of type
         /// </summary>
-        void Advance()
+        void Skip()
         {
             if (current.Next != null)
             {
@@ -107,27 +113,23 @@ namespace Elfenlabs.Scripting
             }
         }
 
+        /// <summary>
+        /// Skips the current token if it matches the given type
+        /// </summary>
+        /// <param name="type"></param>
+        void Skip(TokenType type)
+        {
+            if (current.Value.Type == type)
+                Skip();
+        }
+
         bool MatchAdvance(TokenType type)
         {
             if (current.Value.Type != type)
                 return false;
 
-            Advance();
+            Skip();
             return true;
-        }
-
-        void Ignore(TokenType type)
-        {
-            if (current.Value.Type == type)
-                Advance();
-        }
-
-        void Expect(TokenType type, int count, string error = null)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                Consume(type, error);
-            }
         }
 
         void AssertValueType(ValueType type, params ValueType[] set)
@@ -145,6 +147,28 @@ namespace Elfenlabs.Scripting
                 throw CreateException(previous.Value, string.Format(
                     "Expected value type {0} but received {1}",
                     lhs.Identifier, rhs.Identifier));
+        }
+
+        void ConsumeDeclaration()
+        {
+            switch (current.Value.Type)
+            {
+                case TokenType.Variable:
+                    ConsumeStatementVariableDeclaration();
+                    break;
+                case TokenType.Function:
+                    ConsumeFunctionDeclaration();
+                    break;
+                case TokenType.Structure:
+                    ConsumeStructureDeclaration();
+                    break;
+                case TokenType.External:
+                    ConsumeExternalDeclaration();
+                    break;
+                default:
+                    ConsumeStatement();
+                    break;
+            }
         }
     }
 }
