@@ -85,10 +85,6 @@ namespace Elfenlabs.Scripting
             {
                 // Offset by 1 to skip the length
                 UnsafeUtility.MemCpy((byte*)constants.GetUnsafePtr() + offset * sizeof(int) + sizeof(int), ptr, bytes.Length);
-                
-                var conPtr = constants.GetUnsafePtr();
-                var a = CompilerUtility.ToString(constants.GetUnsafePtr() + offset);
-                
                 Add(new Instruction(InstructionType.HeapLoadConstant, offset, (byte)wordLength));
                 return offset;
             }
