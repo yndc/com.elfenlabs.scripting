@@ -371,38 +371,6 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
-        /// Removes indentation that is not at the base level
-        /// </summary>
-        void NormalizeIndentation()
-        {
-            var baseDepth = GetBaseIndentation();
-
-            if (baseDepth == 0)
-                return;
-
-            var lineDepth = 0;
-            for (var node = module.Tokens.First; node.Next != null; node = node.Next)
-            {
-                var token = node.Value;
-                switch (token.Type)
-                {
-                    case TokenType.Indent:
-                        if (lineDepth == baseDepth)
-                            break;
-                        node = Remove(node);
-                        lineDepth++;
-                        break;
-                    case TokenType.EOF:
-                    case TokenType.NewLine:
-                        lineDepth = 0;
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
         /// Removes empty lines and replaces relevant newlines with terminators
         /// </summary>
         void RemoveEmptyLines()
@@ -459,7 +427,10 @@ namespace Elfenlabs.Scripting
                 {
                     case TokenType.Indent:
                         if (!isNewLine)
-                            node = Remove(node);
+                        {
+                            node = node.Previous;
+                            module.Tokens.Remove(node.Next);
+                        }
                         break;
                     case TokenType.StatementTerminator:
                         isNewLine = true;
@@ -469,51 +440,6 @@ namespace Elfenlabs.Scripting
                         break;
                 }
             }
-        }
-
-        /// <summary>
-        /// Removes line wrapping on expressions
-        /// </summary>
-        void RemoveLineWrapping()
-        {
-            for (var node = module.Tokens.First; node.Next != null; node = node.Next)
-            {
-                var token = node.Value;
-                switch (token.Type)
-                {
-                    case TokenType.StatementTerminator:
-                        if (node.Next.Value.Type == TokenType.Indent)
-                        {
-                            module.Tokens.Remove(node.Next);
-                            node = Remove(node);
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        int GetBaseIndentation()
-        {
-            var baseDepth = 0;
-            foreach (var token in module.Tokens)
-            {
-                switch (token.Type)
-                {
-                    case TokenType.Indent:
-                        baseDepth++;
-                        continue;
-                    case TokenType.EOF:
-                    case TokenType.NewLine:
-                        baseDepth = 0;
-                        continue;
-                    default:
-                        return baseDepth;
-                }
-            }
-
-            return 0;
         }
 
         int GetColumn()
