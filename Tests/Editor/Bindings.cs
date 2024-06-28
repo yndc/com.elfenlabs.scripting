@@ -8,7 +8,7 @@ namespace Elfenlabs.Scripting.Tests
         public void FunctionBinding()
         {
             var stack = CompilerUtility.Debug(@"
-                    external function Print(String message)
+                    // external function Print(String message)
 
                     Print('Hello World')
                 

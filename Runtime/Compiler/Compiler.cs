@@ -33,7 +33,7 @@ namespace Elfenlabs.Scripting
             var rootSubProgram = new SubProgram(rootFunctionHeader);
             subPrograms.Add(rootSubProgram);
             currentSubProgram = rootSubProgram;
-            //RegisterBuiltInFunctions();
+            RegisterBuiltInFunctions();
 
             current = module.Tokens.First;
 

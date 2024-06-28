@@ -91,7 +91,7 @@ namespace Elfenlabs.Scripting
         {
             // Print (string) -> void
             RegisterExternalFunction(new FunctionHeader(
-                "print", ValueType.Void, new FunctionHeader.Parameter("value", ValueType.String)
+                "Print", ValueType.Void, new FunctionHeader.Parameter("value", ValueType.String)
             ));
         }
 
