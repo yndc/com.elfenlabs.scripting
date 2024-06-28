@@ -1,10 +1,16 @@
 # Elfenscript
 
-An interpreted language designed for game scripting.
+An interpreted language with static typing designed for game scripting.
 
-- Interpreted 
-- Static typing
-- No garbage collection
+### Goals 
+
+#### Language
+
+Imperative paradigm for ease of learning, reading, and typing. Alphabetical keywords rather than symbols. One way to do something, less syntactic sugars.
+
+#### Runtime
+
+As performant as possible for an interpreted language without resorting to JIT (for portability & distribution restrictions. Hello, iOS). Easy for the host application to add external functions. Frictionless data providing and retrieval from the host application
 
 ## Quickstart 
 
@@ -16,9 +22,9 @@ Declare variables with the `var` keyword.
 var a = 1
 ```
 
-Variable types are inferred by usage. 
+The language has static typings but variable types are inferred by usage. 
 
-### Types 
+### Types
 
 #### Primitives
 
@@ -82,10 +88,7 @@ Strings can only be allocated on the heap.
 // Strings are quoted with single-quote character
 var str = 'Hello world!'
 
-
-
 #### Resource Types
-
 
 ```
 var refInt = create 12      // A Ref Int
@@ -281,10 +284,6 @@ foreach operation in operations
 Print(number)       // Prints 8
 ```
 
-#### Closures Support
-
-Closures are not supported and there are no plans to support it. This might change in the future. 
-
 #### Evaluate 
 
 You can use `evaluate` to write **IIFE**s (Immediately Invoked Function Expression). This is useful to compute variable value. 
@@ -378,33 +377,68 @@ The branches are evaluated from top to bottom.
 
 ### Loops 
 
-To create an infinite loop, use the `loop` keyword. `break` and `continue` can be used to break out of loops.
+The language supports `while` loops for general-purpose looping and `for` loop for arrays and iterables. 
 
 ```
-var counter = 0
-loop 
-    Print(counter)
-    if counter > 5
+var x = 1
+while x < 1000000
+    x = x * x
+
+Print(x)
+```
+
+`for` loop for arrays:
+
+```
+var strings = ["one", "two", "three"]
+for str in strings
+    Print(str)
+```
+
+Add `range` to loop with index
+
+```
+var strings = ["one", "two", "three"]
+for str, i in range strings
+    Print('{i}: {str}')
+```
+
+Loop with a specified index range 
+
+```
+for i in range 10
+    Print(i)
+```
+
+```
+for i in range 5 - 10 to 10 * 2
+    Print(i)    // prints from -5 to 20
+```
+
+```
+var head = 5
+var tail = 10
+for i in range head to tail
+    Print(i)
+```
+
+`break` and `continue` can be used to control loop flows.
+
+```
+var i = 0
+var evenSum = 0
+while true
+    if i % 2 == 0
+        evenSum = evenSum + i
+    else 
+        continue
+
+    if i == 50 
         break
-    counter = counter + 1 
-```
+    
+    i = i + 1
 
-Add a condition to a loop with `while`:
-
-```
-var counter = 0
-var n = 5
-loop while counter <= n 
-    Print(counter)
-    counter = counter + 1
-```
-
-Loop a specific number of times with `loop <Int> times`
-
-```
-var n = 5
-loop n times with counter
-    Print(counter)
+print(evenSum)
 ```
 
 #### Foreach 
@@ -413,7 +447,7 @@ loop n times with counter
 
 ```
 var numbers = {1, 2, 3, 4, 5} 
-foreach number in numbers with i 
+foreach number, i in numbers 
     numbers[i] = numbers[i] * 2 
     
 debug numbers
