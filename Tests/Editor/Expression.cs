@@ -23,5 +23,16 @@ namespace Elfenlabs.Scripting.Tests
 
             Assert.AreEqual(216, stack[0]);
         }
+
+        [Test]
+        public void Increment()
+        {
+            var stack = CompilerUtility.Debug(@"
+                var a = 5
+                a++
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(stack[0], 6);
+        }
     }
 }

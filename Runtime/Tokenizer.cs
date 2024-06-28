@@ -33,6 +33,8 @@ namespace Elfenlabs.Scripting
             AddSymbol("external", TokenType.External);
             AddSymbol("global", TokenType.Global);
             AddSymbol("var", TokenType.Variable);
+            AddSymbol("module", TokenType.Module);
+            AddSymbol("use", TokenType.Module);
             AddSymbol("+", TokenType.Plus);
             AddSymbol("-", TokenType.Minus);
             AddSymbol("=", TokenType.Equal);
@@ -50,6 +52,8 @@ namespace Elfenlabs.Scripting
             AddSymbol("!=", TokenType.BangEqual);
             AddSymbol(">=", TokenType.GreaterEqual);
             AddSymbol("<=", TokenType.LessEqual);
+            AddSymbol("++", TokenType.Increment);
+            AddSymbol("--", TokenType.Decrement);
             AddSymbol("!", TokenType.Bang);
             AddSymbol(",", TokenType.Comma);
             AddSymbol(".", TokenType.Dot);

@@ -67,5 +67,22 @@ namespace Elfenlabs.Scripting.Tests
 
             Assert.AreEqual(7, stack[0]);
         }
+
+        [Test]
+        public void SimpleLoop()
+        {
+            var stack = CompilerUtility.Debug(@"
+                var a = 5
+
+                if a > 0 then
+                    a = a + 1
+                else
+                    a = 1000
+
+                a = a + 1
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(7, stack[0]);
+        }
     }
 }

@@ -8,10 +8,10 @@ namespace Elfenlabs.Scripting
 {
     public static partial class CompilerUtility
     {
-        public static int[] Debug(string sourceCode)
+        public static int[] Debug(params string[] sources)
         {
             var log = new StringBuilder();
-            var module = new Module(sourceCode);
+            var module = new Module(sources[0]);
             var compiler = new Compiler();
 
             new Tokenizer().Tokenize(module);

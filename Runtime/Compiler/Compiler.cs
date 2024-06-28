@@ -8,7 +8,6 @@ namespace Elfenlabs.Scripting
 {
     public partial class Compiler
     {
-        Module module;
         SubProgram currentSubProgram;
         LinkedListNode<Token> current;
         LinkedListNode<Token> previous;
@@ -25,8 +24,6 @@ namespace Elfenlabs.Scripting
 
         public void AddModule(Module module)
         {
-            this.module = module;
-
             // Create global scope 
             globalScope = new Scope();
             currentScope = globalScope;

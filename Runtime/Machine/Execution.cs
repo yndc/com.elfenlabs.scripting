@@ -132,6 +132,24 @@ namespace Elfenlabs.Scripting
                             value /= other;
                             break;
                         }
+                    case InstructionType.IntModulo:
+                        {
+                            ref var value = ref Binary<int>(out var other);
+                            value %= other;
+                            break;
+                        }
+                    case InstructionType.IntIncrement:
+                        {
+                            ref var value = ref Unary<int>();
+                            value++;
+                            break;
+                        }
+                    case InstructionType.IntDecrement:
+                        {
+                            ref var value = ref Unary<int>();
+                            value--;
+                            break;
+                        }
 
                     // Float arithmetic operations
                     case InstructionType.FloatNegate:

@@ -16,6 +16,7 @@ namespace Elfenlabs.Scripting
         Equal, EqualEqual,
         Greater, GreaterEqual,
         Less, LessEqual,
+        Increment, Decrement,
 
         // Literals
         Identifier, String, Integer, Float,
@@ -31,6 +32,8 @@ namespace Elfenlabs.Scripting
         Returns,
         Global,
         Variable,
+        Module,
+        Use,
 
         // Formatting
         NewLine, Indent,

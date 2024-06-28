@@ -182,10 +182,6 @@ namespace Elfenlabs.Scripting
             };
         }
 
-        /// <summary>
-        /// Consume identifiers in expressions
-        /// </summary>
-        /// <returns></returns>
         ValueType ConsumeExpressionIdentifier()
         {
             var identifier = previous.Value.Value;
@@ -251,6 +247,20 @@ namespace Elfenlabs.Scripting
                 }
 
                 CodeBuilder.Add(new Instruction(InstructionType.LoadVariable, variable.Position, variable.Type.WordLength));
+
+                // Handles increment and decrement operators
+                if (MatchAdvance(TokenType.Increment))
+                {
+                    CodeBuilder.Add(new Instruction(InstructionType.IntIncrement));
+                    CodeBuilder.Add(new Instruction(InstructionType.StoreVariable, variable.Position, variable.Type.WordLength));
+                }
+
+                if (MatchAdvance(TokenType.Decrement))
+                {
+                    CodeBuilder.Add(new Instruction(InstructionType.IntDecrement));
+                    CodeBuilder.Add(new Instruction(InstructionType.StoreVariable, variable.Position, variable.Type.WordLength));
+                }
+
                 return variable.Type;
             }
 
