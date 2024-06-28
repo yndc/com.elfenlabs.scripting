@@ -406,34 +406,41 @@ namespace Elfenlabs.Scripting
         /// Removes empty lines and replaces relevant newlines with terminators
         /// </summary>
         void RemoveEmptyLines()
-        {
+        {            
             var lineHasContent = false;
-            for (var node = module.Tokens.First; node != null; node = node.Next)
+            var node = module.Tokens.First;
+            while (node != null)
             {
                 var token = node.Value;
                 switch (token.Type)
                 {
                     case TokenType.NewLine:
+                        node = node.Next;
                         if (!lineHasContent)
                         {
-                            // Remove all line tokens
-                            //node = node.Previous;
-                            //while (node != module.Tokens.First && node.Value.Type != TokenType.StatementTerminator)
-                            //    node = Remove(node);
-                            for (var n = node.Previous; n != null && n.Value.Type != TokenType.StatementTerminator; n = Remove(n)) { }
-                            node = Remove(node);
+                            // Remove all tokens in this line
+                            var deleteNode = node.Previous;
+                            while (deleteNode != null && deleteNode.Value.Type != TokenType.StatementTerminator)
+                            {
+                                var nextDeleteNode = deleteNode.Previous;
+                                module.Tokens.Remove(deleteNode);
+                                deleteNode = nextDeleteNode;
+                            }
                         }
                         else
                         {
-                            node.Value.Type = TokenType.StatementTerminator;
-                            node.Value.Value = "";
+                            // Replace newline with statement terminator
+                            node.Previous.Value.Type = TokenType.StatementTerminator;
+                            node.Previous.Value.Value = "";
                         }
                         lineHasContent = false;
                         break;
                     case TokenType.Indent:
+                        node = node.Next;
                         break;
                     default:
                         lineHasContent = true;
+                        node = node.Next;
                         break;
                 }
             }
