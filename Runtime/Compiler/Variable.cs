@@ -37,6 +37,12 @@ namespace Elfenlabs.Scripting
                 case TokenType.Dot:
                     //ConsumeStatementVariableMember();
                     break;
+                case TokenType.Increment:
+                    ConsumeVariableIncrement(variable);
+                    break;
+                case TokenType.Decrement:
+                    ConsumeVariableDecrement(variable);
+                    break;
                 default:
                     throw CreateException(current.Value, "Expected operator after variable");
             }
@@ -55,6 +61,24 @@ namespace Elfenlabs.Scripting
                 InstructionType.StoreVariable,
                 variable.Position,
                 variable.Type.WordLength));
+        }
+
+        void ConsumeVariableIncrement(Variable variable)
+        {
+            if (MatchAdvance(TokenType.Increment))
+            {
+                AssertValueType(variable.Type, ValueType.Int);
+                CodeBuilder.Add(new Instruction(InstructionType.VariableIncrement, variable.Position));
+            }
+        }
+
+        void ConsumeVariableDecrement(Variable variable)
+        {
+            if (MatchAdvance(TokenType.Decrement))
+            {
+                AssertValueType(variable.Type, ValueType.Int);
+                CodeBuilder.Add(new Instruction(InstructionType.VariableDecrement, variable.Position));
+            }
         }
     }
 }

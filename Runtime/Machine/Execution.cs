@@ -100,6 +100,16 @@ namespace Elfenlabs.Scripting
                     case InstructionType.WritePrevious:
                         WritePrevious(instruction.ArgShort, instruction.ArgByte1);
                         break;
+                    case InstructionType.VariableIncrement:
+                        {
+                            frameValuesPtr[instruction.ArgShort]++;
+                            break;
+                        }
+                    case InstructionType.VariableDecrement:
+                        {
+                            frameValuesPtr[instruction.ArgShort]--;
+                            break;
+                        }
 
                     // Integer arithmetic operations
                     case InstructionType.IntNegate:
@@ -136,18 +146,6 @@ namespace Elfenlabs.Scripting
                         {
                             ref var value = ref Binary<int>(out var other);
                             value %= other;
-                            break;
-                        }
-                    case InstructionType.IntIncrement:
-                        {
-                            ref var value = ref Unary<int>();
-                            value++;
-                            break;
-                        }
-                    case InstructionType.IntDecrement:
-                        {
-                            ref var value = ref Unary<int>();
-                            value--;
                             break;
                         }
 

@@ -47,7 +47,7 @@ namespace Elfenlabs.Scripting
 
         public override bool Equals(object obj)
         {
-            return base.Equals(obj);
+            return Equals(obj as ValueType);
         }
 
         public bool Equals(ValueType other)

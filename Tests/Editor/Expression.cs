@@ -34,5 +34,17 @@ namespace Elfenlabs.Scripting.Tests
 
             Assert.AreEqual(stack[0], 6);
         }
+
+        [Test]
+        public void IncrementOrder()
+        {
+            var stack = CompilerUtility.Debug(@"
+                var a = 5
+                var b = a++ + 1 + a++
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(stack[0], 7);
+            Assert.AreEqual(stack[1], 12);
+        }
     }
 }
