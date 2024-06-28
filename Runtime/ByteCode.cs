@@ -119,7 +119,7 @@ namespace Elfenlabs.Scripting
 
         void AssertEndWithHalt()
         {
-            if (instructions[^1].Type != InstructionType.Halt)
+            if (instructions.Length == 0 || instructions[^1].Type != InstructionType.Halt)
             {
                 instructions.Add(new Instruction(InstructionType.Halt));
             }
