@@ -8,6 +8,10 @@ The bytecode VM should be as performant as possible for an interpreted language 
 
 ## Quickstart 
 
+```
+Print(`Hello, world!`)
+```
+
 ### Variables 
 
 Declare variables with the `var` keyword.
@@ -127,8 +131,8 @@ var arr = create Int[]
 arr.Add(1)
 AddZero(arr)
 
-Print(arr.Length())     // Prints "2" 
-Print(arr.Last())       // Prints "0"
+Print(arr.Length())     // Prints 2
+Print(arr.Last())       // Prints 0
 
 destroy arr
 ```
@@ -158,10 +162,27 @@ structure Data
 
 #### Strings
 
-Strings can only be allocated on the heap.
+Strings can only be allocated on the heap. Literal strings are quoted with backtick ``` character. The default encoding is UTF8.
 
-// Strings are quoted with single-quote character
-var str = 'Hello world!'
+```
+var str = `Hello, world!`
+```
+
+##### Formatting
+
+String can be formatted with `{}` inside the literal.
+
+```
+var number = 10
+Print(`The number is {10}`)
+```
+
+Escaping the `{}` characters can be done by using double braces `{{`:
+
+```
+var name = `Jason`
+Print(`{{ "name": "{name}" }}`) // Prints '{ "name": "Jason" }'
+```
 
 #### Channels
 
@@ -175,7 +196,7 @@ intChan.Push(2)
 intChan.Push(3)
 
 for messages in intChan
-    Print("Received: {intChan.Receive()}")
+    Print(`Received: {intChan.Receive()}`)
 
 intChan.Close()
 ```
@@ -195,11 +216,11 @@ structure Character
     CurrentPosition Position
     
 var char1 = Character
-    Name = 'One'
+    Name = `One`
     CurrentPosition = {1, 2}
     
 var char2 = Character 
-    Name = 'Two'
+    Name = `Two`
     CurrentPosition = {-4, 10} 
 
 // Returns the delta cell position and distance
@@ -236,7 +257,7 @@ var refSpan = ref pos as Float<3>
 
 refTuple.1 = 100.0
 
-Print(pos.X)    // Prints '100.0'
+Print(pos.X)    // Prints 100.0
 ```
 
 #### Sharing
@@ -404,7 +425,7 @@ Print(x)
 `for` loop for arrays:
 
 ```
-var strings = ["one", "two", "three"]
+var strings = [`one`, `two`, `three`]
 for str in strings
     Print(str)
 ```
@@ -412,9 +433,9 @@ for str in strings
 Add `range` to loop with index
 
 ```
-var strings = ["one", "two", "three"]
+var strings = [`one`, `two`, `three`]
 for str, i in range strings
-    Print('{i}: {str}')
+    Print(`{i}: {str}`)
 ```
 
 Loop with a specified index range 
@@ -471,7 +492,7 @@ Use the `use` keyword to import a module
 ```
 use MyLibrary
 
-log MyLibrary.MyFunction() // prints '10'
+log MyLibrary.MyFunction() // prints 10
 ```
 
 #### Scope

@@ -18,13 +18,13 @@ namespace Elfenlabs.Scripting.Tests
                     Float Height
 
                 var a = Person {
-                    Name = 'John'
+                    Name = `John`
                     Age = 30
                     Height = 1.8
                 }
 
                 var b = Person {
-                    Name = 'Jane'
+                    Name = `Jane`
                     Age = 25
                     Height = 1.6
                 }

@@ -154,12 +154,12 @@ namespace Elfenlabs.Scripting
 
         bool TryScanLiteralString()
         {
-            if (Peek() != '\'')
+            if (Peek() != '`')
                 return false;
 
-            AdvanceTail(1); // Skip the first '''
+            AdvanceTail(1); // Skip the first '`'
 
-            while (Peek() != '\'')
+            while (Peek() != '`')
             {
                 AdvanceHead();
                 if (Peek() == '\0')
@@ -170,7 +170,7 @@ namespace Elfenlabs.Scripting
 
             AddToken(TokenType.String);
 
-            AdvanceTail(1); // Skip the last '''
+            AdvanceTail(1); // Skip the last '`'
 
             return true;
         }

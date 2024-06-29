@@ -10,7 +10,7 @@ namespace Elfenlabs.Scripting.Tests
         public void Initialization()
         {
             var stack = CompilerUtility.Debug(@"
-                var str = 'Hello, World!'
+                var str = `Hello, World!`
             ".NormalizeMultiline());
 
             Assert.AreEqual(stack[0], 0);

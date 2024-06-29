@@ -10,7 +10,7 @@ namespace Elfenlabs.Scripting.Tests
             var stack = CompilerUtility.Debug(@"
                     // external function Print(String message)
 
-                    Print('Hello World')
+                    Print(`Hello World`)
                 
                 ".NormalizeMultiline());
 
