@@ -2,15 +2,9 @@
 
 An interpreted language with static typing designed for game scripting.
 
-### Goals 
+Easy to learn, read, and type. Uses alphabetical keywords rather than symbols. One way to do something, less syntactic sugars.
 
-#### Language
-
-Imperative paradigm for ease of learning, reading, and typing. Alphabetical keywords rather than symbols. One way to do something, less syntactic sugars.
-
-#### Runtime
-
-As performant as possible for an interpreted language without resorting to JIT (for portability & distribution restrictions. Hello, iOS). Easy for the host application to add external functions. Frictionless data providing and retrieval from the host application
+The bytecode VM should be as performant as possible for an interpreted language without resorting to JIT for portability & distribution restrictions. Adding external functions, providing, and receiving data should be frictionless.
 
 ## Quickstart 
 
@@ -59,47 +53,8 @@ var float = Float   // Same as 0.0
 var bool = Bool     // Same as false
 ```
 
-##### References 
 
-References are built-in pointers for data that lives in the heap.
-
-A reference can be created with the `create` keyword.
-
-A reference of a variable can be passed using the `ref` keyword
-
-```
-function Duplicate(ref Int value) returns nothing
-    value = value * 2
-
-var a = 10 
-Duplicate(ref a)    // a is now 20 
-
-// Reference can be stored in a variable
-var refToA = ref a
-Duplicate(refToA)    // a is now 40
-```
-
-###### Lifetimes
-
-###### Strings
-
-Strings can only be allocated on the heap.
-
-// Strings are quoted with single-quote character
-var str = 'Hello world!'
-
-#### Resource Types
-
-```
-var refInt = create 12      // A Ref Int
-var value = refInt.Unwrap   // Get a copy of the value wrapped inside
-
-delete refInt               // Destroys refInt, the memory is freed
-
-print refInt.Value          // Error: refInt has been destroyed
-```
-
-#### Compound Types
+#### Composites
 
 Built-in compound types: 
 - Spans `T<n>`: Stack-allocated compile-time fixed-sized array  
@@ -108,16 +63,6 @@ Built-in compound types:
 - Map `[Tk] -> Tv`: Heap-allocated hash map
 - Functions `(T1, T2, ... Tn) -> TR`
 
-##### Structs
-
-Structs are user-defined data structures.
-
-```
-structure Data
-    One Int
-    Two Float
-    
-```
 
 ##### Spans
 
@@ -197,6 +142,45 @@ Tuples are anonymous structs, identified by ordered type signature of its member
 ```
 var 
 ```
+
+
+##### Structs
+
+Structs are user-defined data structures.
+
+```
+structure Data
+    One Int
+    Two Float
+    
+```
+
+
+#### Strings
+
+Strings can only be allocated on the heap.
+
+// Strings are quoted with single-quote character
+var str = 'Hello world!'
+
+#### Channels
+
+Channel is a simple messaging structure to receive and publish messages (data). 
+
+```
+var intChan = new Channel<Int>(32)
+
+intChan.Push(1)
+intChan.Push(2)
+intChan.Push(3)
+
+for messages in intChan
+    Print("Received: {intChan.Receive()}")
+
+intChan.Close()
+```
+
+Channels can be exposed to the host application to allows two-way data communication.
 
 #### Alias
 
@@ -439,18 +423,6 @@ while true
     i = i + 1
 
 print(evenSum)
-```
-
-#### Foreach 
-
-`foreach` is a special keyword to iterate on collections such as spans and lists. 
-
-```
-var numbers = {1, 2, 3, 4, 5} 
-foreach number, i in numbers 
-    numbers[i] = numbers[i] * 2 
-    
-debug numbers
 ```
 
 ### Modules
