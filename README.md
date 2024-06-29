@@ -209,6 +209,36 @@ function Distance(Character first, Character second) returns (Position, Float)
     return (delta, dist)
 ```
 
+#### Casting
+
+Structures, tuples, and spans can be type-casted as long as they have the same element layout. Consider the following structure: 
+
+```
+structure Position
+    Float X
+    Float Y
+    Float Z
+```
+
+This structure can be casted into a span and tuple of the same layout with the `as` keyword.
+
+```
+var pos = Position { X = 1.0, Y = 2.0, Z = 3.0 }
+var tuple = pos as (Float, Float, Float)
+var span = pos as Float<3>
+```
+
+It is also possible to cast a reference of the variable, hence no copying is being done to the original `pos` variable and changes to `refTuple` and `refSpan` will apply to `pos` as they're the same exact value.
+
+```
+var refTuple = ref pos as (Float, Float, Float)
+var refSpan = ref pos as Float<3>
+
+refTuple.1 = 100.0
+
+Print(pos.X)    // Prints '100.0'
+```
+
 #### Sharing
 
 All variables are allocated exclusively for one process.
