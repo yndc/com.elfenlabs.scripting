@@ -82,6 +82,18 @@ namespace Elfenlabs.Scripting
         FloatModulo,
         FloatNegate,
         BoolNegate,
+
+        // --------------------------------
+        // Conversion operations
+        // --------------------------------
+        ConvertIntToFloat,
+        ConvertFloatToInt,
+        ConvertIntToString,
+        ConvertFloatToString,
+
+        // --------------------------------
+        // String operations
+        // --------------------------------
         StringConcatenate,
 
         // --------------------------------
@@ -241,6 +253,10 @@ namespace Elfenlabs.Scripting
             { InstructionType.IntDivide, Format.O },
             { InstructionType.IntModulo, Format.O },
             { InstructionType.IntNegate, Format.O },
+            { InstructionType.ConvertIntToFloat, Format.O },
+            { InstructionType.ConvertFloatToInt, Format.O },
+            { InstructionType.ConvertIntToString, Format.O },
+            { InstructionType.ConvertFloatToString, Format.O },
             { InstructionType.StringConcatenate, Format.O },
             { InstructionType.VariableIncrement, Format.O },
             { InstructionType.VariableDecrement, Format.O },

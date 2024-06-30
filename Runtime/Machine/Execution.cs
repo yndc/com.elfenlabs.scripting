@@ -148,6 +148,8 @@ namespace Elfenlabs.Scripting
                             value %= other;
                             break;
                         }
+
+                    // String operations
                     case InstructionType.StringConcatenate:
                         {
                             var rhsHeapIndex = Pop<int>();
@@ -291,6 +293,17 @@ namespace Elfenlabs.Scripting
                             break;
                         }
 
+                    // --------------------------------
+                    // Conversion operations
+                    // --------------------------------
+                    case InstructionType.ConvertIntToString:
+                        {
+                            var heapIndex = heap.Allocate(2);
+                            *(heapPtr + heapIndex) = 1;
+                            *(heapPtr + heapIndex + 1) = *(stackHeadPtr - 1);
+                            *(stackHeadPtr - 1) = heapIndex;
+                            break;
+                        }
                 }
             }
         }
