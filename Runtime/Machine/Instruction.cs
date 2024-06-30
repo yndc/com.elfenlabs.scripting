@@ -11,9 +11,9 @@ namespace Elfenlabs.Scripting
 
         Halt,
         Yield,
-        Jump,               // <short>    - The offset to jump to
-        JumpIfFalse,        // <short>    - The offset to jump to if the condition is false
-        JumpIfTrue,         // <short>    - The offset to jump to if the condition is true
+        Jump,               // <short>    - The instruction pointer offset to jump into
+        JumpCondition,      // <short>    - The instruction pointer offset to jump into 
+                            // <byte>     - The boolean value to check with the top of the stack
         Call,               // <short>    - The index of the function to call
                             // <byte>     - The number of words to push on the stack
         Return,             // <byte>     - The number of words to return
@@ -145,6 +145,17 @@ namespace Elfenlabs.Scripting
                 fixed (byte* ptr = Data) *(ushort*)(ptr + 2) = value;
             }
         }
+        public short ArgSignedShort
+        {
+            get
+            {
+                fixed (byte* ptr = Data) return *(short*)(ptr + 2);
+            }
+            set
+            {
+                fixed (byte* ptr = Data) *(short*)(ptr + 2) = value;
+            }
+        }
         public byte ArgByte => Data[2];
 
 
@@ -231,8 +242,7 @@ namespace Elfenlabs.Scripting
             { InstructionType.Halt, Format.O },
             { InstructionType.Yield, Format.OS },
             { InstructionType.Jump, Format.OS },
-            { InstructionType.JumpIfFalse, Format.OS },
-            { InstructionType.JumpIfTrue, Format.OS },
+            { InstructionType.JumpCondition, Format.OBS },
             { InstructionType.Call, Format.OBS },
             { InstructionType.Return, Format.OB },
             { InstructionType.LoadConstant, Format.OBS },

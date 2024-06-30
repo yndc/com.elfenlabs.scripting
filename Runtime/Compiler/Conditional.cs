@@ -14,7 +14,7 @@ namespace Elfenlabs.Scripting
             Skip(TokenType.StatementTerminator);
 
             // Jump to the else block if the condition is false
-            var jumpToElseInstructionIndex = CodeBuilder.Add(new Instruction(InstructionType.JumpIfFalse, 0));
+            var jumpToElseInstructionIndex = CodeBuilder.Add(new Instruction(InstructionType.JumpCondition, 0, 0));
 
             // Begin the statement block
             BeginScope();
@@ -22,7 +22,7 @@ namespace Elfenlabs.Scripting
             EndScope();
             var jumpToEndInstructionIndex = CodeBuilder.Add(new Instruction(InstructionType.Jump, 0));
 
-            CodeBuilder.Patch(jumpToElseInstructionIndex).ArgShort = (ushort)(CodeBuilder.InstructionCount - jumpToElseInstructionIndex - 1);
+            CodeBuilder.Patch(jumpToElseInstructionIndex).ArgSignedShort = (short)(CodeBuilder.InstructionCount - jumpToElseInstructionIndex - 1);
 
             if (MatchAdvance(TokenType.Else))
             {
@@ -32,7 +32,7 @@ namespace Elfenlabs.Scripting
                 EndScope();
             }
 
-            CodeBuilder.Patch(jumpToEndInstructionIndex).ArgShort = (ushort)(CodeBuilder.InstructionCount - jumpToEndInstructionIndex - 1);
+            CodeBuilder.Patch(jumpToEndInstructionIndex).ArgSignedShort = (short)(CodeBuilder.InstructionCount - jumpToEndInstructionIndex - 1);
         }
     }
 }

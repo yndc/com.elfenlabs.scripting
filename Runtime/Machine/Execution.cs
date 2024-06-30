@@ -41,13 +41,13 @@ namespace Elfenlabs.Scripting
                         State = ExecutionState.Halt;
                         return true;
                     case InstructionType.Jump:
-                        instructionPtr += instruction.ArgShort;
+                        instructionPtr += instruction.ArgSignedShort;
                         break;
-                    case InstructionType.JumpIfFalse:
+                    case InstructionType.JumpCondition:
                         {
                             var value = Pop<bool>();
-                            if (value == false)
-                                instructionPtr += instruction.ArgShort;
+                            if (value == *(bool*)&instruction.Data[1])
+                                instructionPtr += instruction.ArgSignedShort;
                             break;
                         }
                     case InstructionType.Call:
