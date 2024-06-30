@@ -9,7 +9,7 @@ namespace Elfenlabs.Scripting.Tests
         [Test]
         public void Initialization()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 structure Person
                     String Name
                     Int Age
@@ -34,13 +34,13 @@ namespace Elfenlabs.Scripting.Tests
                 
             ".NormalizeMultiline());
 
-            Assert.AreEqual(stack[0], 0);
+            Assert.AreEqual(result.Stack[0], 0);
         }
 
         [Test]
         public void Ooo()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 structure Coordinate
                     Int X
                     Int Y   
@@ -54,9 +54,9 @@ namespace Elfenlabs.Scripting.Tests
                 
             ".NormalizeMultiline());
 
-            Assert.AreEqual(stack[0], 1);
-            Assert.AreEqual(stack[1], 2);
-            Assert.AreEqual(stack[2], 3);
+            Assert.AreEqual(result.Stack[0], 1);
+            Assert.AreEqual(result.Stack[1], 2);
+            Assert.AreEqual(result.Stack[2], 3);
         }
     }
 }

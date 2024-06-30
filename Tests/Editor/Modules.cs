@@ -7,7 +7,7 @@ namespace Elfenlabs.Scripting.Tests
         [Test]
         public void SimpleImport()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 //module MyLibrary
 
                 function Add(Int a, Int b) returns Int

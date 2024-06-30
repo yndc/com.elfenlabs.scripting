@@ -9,7 +9,7 @@ namespace Elfenlabs.Scripting.Tests
         [Test]
         public void Spans_Initialization()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 var a = { 1, 2, 3 }
                 var b = { 1.0, 2.0, 3.0 }
 
@@ -26,23 +26,23 @@ namespace Elfenlabs.Scripting.Tests
                 var d = mul({ mul(a), mul(c), mul(a) * mul(c) })
             ".NormalizeMultiline());
 
-            Assert.AreEqual(stack[0], 1);
-            Assert.AreEqual(stack[1], 2);
-            Assert.AreEqual(stack[2], 3);
-            Assert.AreEqual(BitConverter.Int32BitsToSingle(stack[3]), 1f);
-            Assert.AreEqual(BitConverter.Int32BitsToSingle(stack[4]), 2f);
-            Assert.AreEqual(BitConverter.Int32BitsToSingle(stack[5]), 3f);
-            Assert.AreEqual(stack[6..70], Enumerable.Repeat(0, 64).ToArray());
-            Assert.AreEqual(stack[70], 11);
-            Assert.AreEqual(stack[71], 1);
-            Assert.AreEqual(stack[72], 15);
-            Assert.AreEqual(stack[73], 980100);
+            Assert.AreEqual(result.Stack[0], 1);
+            Assert.AreEqual(result.Stack[1], 2);
+            Assert.AreEqual(result.Stack[2], 3);
+            Assert.AreEqual(BitConverter.Int32BitsToSingle(result.Stack[3]), 1f);
+            Assert.AreEqual(BitConverter.Int32BitsToSingle(result.Stack[4]), 2f);
+            Assert.AreEqual(BitConverter.Int32BitsToSingle(result.Stack[5]), 3f);
+            Assert.AreEqual(result.Stack[6..70], Enumerable.Repeat(0, 64).ToArray());
+            Assert.AreEqual(result.Stack[70], 11);
+            Assert.AreEqual(result.Stack[71], 1);
+            Assert.AreEqual(result.Stack[72], 15);
+            Assert.AreEqual(result.Stack[73], 980100);
         }
 
         //[Test]
         //public void Tuples_Initialization()
         //{
-        //    var stack = CompilerUtility.Debug(@"
+        //    var result = CompilerUtility.Debug(@"
         //        var a = (1, 2.0, true, 5)
 
         //        // initializing empty spans

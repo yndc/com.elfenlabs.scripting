@@ -7,14 +7,14 @@ namespace Elfenlabs.Scripting.Tests
         [Test]
         public void FunctionBinding()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                     // external function Print(String message)
 
                     Print(`Hello World`)
                 
                 ".NormalizeMultiline());
 
-            Assert.AreEqual(stack[0], 0);
+            Assert.AreEqual(result.Stack[0], 0);
         }
     }
 }

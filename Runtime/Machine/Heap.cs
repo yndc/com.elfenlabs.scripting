@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
@@ -72,6 +73,25 @@ namespace Elfenlabs.Scripting
             emptyChunks.Add(new EmptyChunk { Index = index, WordLen = wordLen });
             if (wordLen > biggestEmptyChunk)
                 biggestEmptyChunk = wordLen;
+        }
+
+        /// <summary>
+        /// Get the data as a native array
+        /// </summary>
+        /// <param name="allocator"></param>
+        /// <returns></returns>
+        public NativeArray<int> ToNativeArray(Allocator allocator)
+        {
+            return container.ToArray(allocator);
+        }
+
+        /// <summary>
+        /// Convert the data to a managed array
+        /// </summary>
+        /// <returns></returns>
+        public int[] ToArray()
+        {
+            return container.ToArray();
         }
 
         /// <summary>
@@ -218,7 +238,7 @@ namespace Elfenlabs.Scripting
 
     public unsafe partial struct Machine
     {
-        Arena heap;
+        public Arena heap;
         public int* heapPtr;
 
         /// <summary>

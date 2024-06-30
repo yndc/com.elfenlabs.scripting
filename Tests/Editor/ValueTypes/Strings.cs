@@ -9,11 +9,22 @@ namespace Elfenlabs.Scripting.Tests
         [Test]
         public void Initialization()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 var str = `Hello, World!`
             ".NormalizeMultiline());
 
-            Assert.AreEqual(stack[0], 0);
+            Assert.AreEqual(Utility.GetStringFromHeap(result, 0), "Hello, World!");
+        }
+
+        [Test]
+        public void Formatting()
+        {
+            var result = CompilerUtility.Debug(@"
+                var name = `John`
+                var message = `Hello, AA!`
+            ".NormalizeMultiline());
+
+            Assert.AreEqual("Hello, John!", Utility.GetStringFromHeap(result, 1));
         }
     }
 }

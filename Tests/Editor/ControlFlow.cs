@@ -7,7 +7,7 @@ namespace Elfenlabs.Scripting.Tests
         [Test]
         public void IfTrue()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 var a = 5
 
                 if a > 0 then
@@ -16,13 +16,13 @@ namespace Elfenlabs.Scripting.Tests
                 a = a + 2
             ".NormalizeMultiline());
 
-            Assert.AreEqual(8, stack[0]);
+            Assert.AreEqual(8, result.Stack[0]);
         }
 
         [Test]
         public void IfFalse()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 var a = 0
 
                 if a > 0 then
@@ -31,13 +31,13 @@ namespace Elfenlabs.Scripting.Tests
                 a = a + 2
             ".NormalizeMultiline());
 
-            Assert.AreEqual(2, stack[0]);
+            Assert.AreEqual(2, result.Stack[0]);
         }
 
         [Test]
         public void IfElse()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 var a = 5
 
                 if a > 100 then
@@ -48,13 +48,13 @@ namespace Elfenlabs.Scripting.Tests
                 a = a + 1
             ".NormalizeMultiline());
 
-            Assert.AreEqual(26, stack[0]);
+            Assert.AreEqual(26, result.Stack[0]);
         }
 
         [Test]
         public void IfTrueSkipElse()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 var a = 5
 
                 if a > 0 then
@@ -65,13 +65,13 @@ namespace Elfenlabs.Scripting.Tests
                 a = a + 1
             ".NormalizeMultiline());
 
-            Assert.AreEqual(7, stack[0]);
+            Assert.AreEqual(7, result.Stack[0]);
         }
 
         [Test]
         public void SimpleLoop()
         {
-            var stack = CompilerUtility.Debug(@"
+            var result = CompilerUtility.Debug(@"
                 var a = 5
 
                 if a > 0 then
@@ -82,7 +82,7 @@ namespace Elfenlabs.Scripting.Tests
                 a = a + 1
             ".NormalizeMultiline());
 
-            Assert.AreEqual(7, stack[0]);
+            Assert.AreEqual(7, result.Stack[0]);
         }
     }
 }

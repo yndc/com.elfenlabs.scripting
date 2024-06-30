@@ -3,14 +3,27 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Unity.Collections;
+using System.Linq;
 
 namespace Elfenlabs.Scripting
 {
+    public class Snapshot
+    {
+        public int[] Stack;
+        public int[] Heap;
+        public Snapshot(Machine.Snapshot snapshot)
+        {
+            Stack = snapshot.Stack.ToArray();
+            Heap = snapshot.Heap.ToArray();
+            snapshot.Dispose();
+        }
+    }
+
     public static partial class CompilerUtility
     {
-        public static int[] Debug(params string[] sources)
+        public static Snapshot Debug(params string[] sources)
         {
-            var log = new StringBuilder();
+            var sb = new StringBuilder();
             var module = new Module(sources[0]);
             var compiler = new Compiler();
 
@@ -20,36 +33,29 @@ namespace Elfenlabs.Scripting
             var program = compiler.Build();
             for (var i = 0; i < program.Chunks.Length; i++)
             {
-                log.AppendLine("-- Chunk " + i);
-                log.AppendLine(Debug(program.Chunks[i]));
+                sb.AppendLine("-- Chunk " + i);
+                sb.AppendLine(Debug(program.Chunks[i]));
             }
 
             var machine = new Machine(1024, Allocator.Temp);
             machine.Boot(program);
             machine.Execute();
 
-            // Snapshot the stack
-            var stack = machine.GetStackSnapshot(Allocator.Temp);
-            var snapshot = stack.ToArray();
-            log.AppendLine("Stack");
-            for (var i = 0; i < snapshot.Length; i++)
+            var snapshot = machine.GetSnapshot(Allocator.Temp);
+            sb.AppendLine("Stack");
+            for (var i = 0; i < snapshot.Stack.Length; i++)
             {
-                log.AppendLine(snapshot[i].ToString());
+                sb.AppendLine(snapshot.Stack[i].ToString());
             }
-            log.AppendLine();
+            sb.AppendLine();
+            sb.AppendLine("Heap");
+            sb.AppendLine(GenerateHexString(snapshot.Heap.Select(i => (byte)i).ToArray()));
 
-            // Snapshot the heap
-            var heap = machine.GetHeapSnapshot(Allocator.Temp);
-            var heapSnapshot = heap.ToArray();
-            log.AppendLine("Heap");
-            log.AppendLine(GenerateHexString(heapSnapshot));
+            UnityEngine.Debug.Log(sb.ToString());
 
             machine.Dispose();
-            stack.Dispose();
 
-            UnityEngine.Debug.Log(log.ToString());
-
-            return snapshot;
+            return new Snapshot(snapshot);
         }
 
         /// <summary>
@@ -149,9 +155,12 @@ namespace Elfenlabs.Scripting
             return text.ToString();
         }
 
-        public static unsafe string ToString(void* ptr)
+        public static unsafe string ToString(int[] data)
         {
-            return Encoding.UTF8.GetString((byte*)ptr + sizeof(int), *(int*)ptr);
+            fixed (int* ptr = data)
+            {
+                return Encoding.UTF8.GetString((byte*)ptr, data.Length * sizeof(int));
+            }
         }
 
         public static unsafe string GenerateHexString(byte[] bytes, int wrap = 8)
