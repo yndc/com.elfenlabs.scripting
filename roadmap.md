@@ -6,9 +6,10 @@
 - [ ] Arrays
 - [ ] For loop 
 - [ ] For loop (arrays)
-- [ ] Type Alias
+- [ ] Type alias
 - [ ] Tuples
 - [ ] Type casting (tuples <> structs <> spans)
+- [ ] Type conversions
 - [ ] Modules
 - [ ] Type methods
 - [ ] Built-in methods

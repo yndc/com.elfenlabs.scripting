@@ -168,13 +168,13 @@ Strings can only be allocated on the heap. Literal strings are quoted with backt
 var str = `Hello, world!`
 ```
 
-##### Formatting
+##### Interpolation
 
 String can be formatted with `{}` inside the literal.
 
 ```
 var number = 10
-Print(`The number is {10}`)
+Print(`The number is {number + 5}`)
 ```
 
 Escaping the `{}` characters can be done by using double braces `{{`:
