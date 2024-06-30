@@ -1,14 +1,16 @@
 # Roadmap
 
-- [ ] String formatting
+- [x] String formatting
 - [ ] While loop
 - [ ] `break` and `continue`
 - [ ] Arrays
 - [ ] For loop 
 - [ ] For loop (arrays)
-- [ ] Alias
+- [ ] Type Alias
 - [ ] Tuples
 - [ ] Type casting (tuples <> structs <> spans)
 - [ ] Modules
-- [ ] Struct/type methods
+- [ ] Type methods
+- [ ] Built-in methods
+- [ ] Traits
 - [ ] Channels
