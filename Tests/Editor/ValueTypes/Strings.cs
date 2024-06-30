@@ -39,6 +39,20 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
+        public void InsideBraces()
+        {
+            var result = CompilerUtility.Debug(@"
+                structure Person
+                    String Name
+                    Int Age
+
+                var message = `Hello, {Person { Name = `Mark`, Age = 25 }}!`
+            ".NormalizeMultiline());
+
+            Assert.AreEqual("Hello, Steve!", Utility.GetStringFromHeap(result, 1));
+        }
+
+        [Test]
         public void NestedBraces()
         {
             var result = CompilerUtility.Debug(@"

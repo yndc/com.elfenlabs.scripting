@@ -9,7 +9,7 @@ namespace Elfenlabs.Scripting
     {
         Module module;
         readonly Dictionary<string, TokenType> symbols = new();
-        Stack<bool> stringInterpolationBraces = new();
+        Stack<bool> braceInterpolation = new();
         int longestSymbolLength = 0;
         int tail;
         int head;
@@ -87,9 +87,12 @@ namespace Elfenlabs.Scripting
 
             if (Peek() == '\0')
             {
-                AddToken(TokenType.EOF);
+                AdvanceToken(TokenType.EOF);
                 return;
             }
+
+            if (TryScanStringInterpolation())
+                return;
 
             if (TryScanNewLine())
                 return;
@@ -113,7 +116,7 @@ namespace Elfenlabs.Scripting
         /// Adds a token to the tokens chain
         /// </summary>
         /// <param name="type"></param>
-        void AddToken(TokenType type)
+        void AdvanceToken(TokenType type)
         {
             var value = module.Source[tail..head];
             var position = tail;
@@ -131,6 +134,28 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
+        /// Handles braces for string interpolation
+        /// </summary>
+        /// <returns></returns>
+        bool TryScanStringInterpolation()
+        {
+            if (Peek() == '{')
+                braceInterpolation.Push(false);
+            if (Peek() == '}')
+            {
+                var isStringInterpolation = braceInterpolation.Pop();
+                if (isStringInterpolation)
+                {
+                    AdvanceHead();
+                    AdvanceToken(TokenType.RightBrace);
+                    ScanLiteralString();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Try scanning for indents
         /// </summary>
         /// <returns></returns>
@@ -139,14 +164,14 @@ namespace Elfenlabs.Scripting
             if (PeekSlice(4) == "    ") // 4 spaces is treated as an indent
             {
                 AdvanceHead(4);
-                AddToken(TokenType.Indent);
+                AdvanceToken(TokenType.Indent);
                 return true;
             }
 
             if (Peek() == '\t') // Tab is treated as an indent
             {
                 AdvanceHead();
-                AddToken(TokenType.Indent);
+                AdvanceToken(TokenType.Indent);
                 return true;
             }
             return false;
@@ -161,7 +186,7 @@ namespace Elfenlabs.Scripting
             if (Peek() == '\n')
             {
                 AdvanceHead();
-                AddToken(TokenType.NewLine);
+                AdvanceToken(TokenType.NewLine);
                 line++;
                 lastLineCharCum = head;
                 return true;
@@ -183,31 +208,8 @@ namespace Elfenlabs.Scripting
             // Or a single '{' to indicate a string interpolation
 
             AdvanceTail(1); // Skip the first '`'
-            while (true)
-            {
-                var c = Peek();
-                switch (c)
-                {
-                    case '\0':
-                        throw NewException("Unterminated string");
-                    case '\n':
-                        line++;
-                        lastLineCharCum = head;
-                        break;
-                    case '{':
-                        if (Peek(1) == '{')
-                            break;
-                        AddToken(TokenType.String);
-                        AdvanceHead();
-                        AddToken(TokenType.LeftBrace);
-                        return true;
-                    case '`':
-                        AddToken(TokenType.String);
-                        AdvanceTail(1); // Skip the last '`'
-                        return true;
-                }
-                AdvanceHead();
-            }
+            ScanLiteralString();
+            return true;
         }
 
         bool TryScanLiteralNumeric()
@@ -233,9 +235,9 @@ namespace Elfenlabs.Scripting
             }
 
             if (isDecimal)
-                AddToken(TokenType.Float);
+                AdvanceToken(TokenType.Float);
             else
-                AddToken(TokenType.Integer);
+                AdvanceToken(TokenType.Integer);
 
             return true;
         }
@@ -252,7 +254,7 @@ namespace Elfenlabs.Scripting
                 AdvanceHead();
             } while (char.IsLetterOrDigit(Peek()) || Peek() == '_');
 
-            AddToken(TokenType.Identifier);
+            AdvanceToken(TokenType.Identifier);
             return true;
         }
 
@@ -282,13 +284,43 @@ namespace Elfenlabs.Scripting
             if (longestMatch != TokenType.Invalid)
             {
                 ResetHead(longestMatchLength);
-                AddToken(longestMatch);
+                AdvanceToken(longestMatch);
                 return true;
             }
 
             ResetHead();
             return false;
         }
+
+
+        void ScanLiteralString()
+        {
+            while (true)
+            {
+                var c = Peek();
+                switch (c)
+                {
+                    case '\0':
+                        throw NewException("Unterminated string");
+                    case '\n':
+                        line++;
+                        lastLineCharCum = head;
+                        break;
+                    case '`':
+                        AdvanceToken(TokenType.String);
+                        AdvanceTail(); // Skip the last '`'
+                        return;
+                    case '{':
+                        AdvanceToken(TokenType.String);
+                        AdvanceHead();
+                        AdvanceToken(TokenType.LeftBrace);
+                        braceInterpolation.Push(true);
+                        return;
+                }
+                AdvanceHead();
+            }
+        }
+
 
         char Peek(int offset = 0)
         {
@@ -409,7 +441,7 @@ namespace Elfenlabs.Scripting
         /// Removes empty lines and replaces relevant newlines with terminators
         /// </summary>
         void RemoveEmptyLines()
-        {            
+        {
             var lineHasContent = false;
             var node = module.Tokens.First;
             while (node != null)
