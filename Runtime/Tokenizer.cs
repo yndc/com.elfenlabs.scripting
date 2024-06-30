@@ -9,6 +9,7 @@ namespace Elfenlabs.Scripting
     {
         Module module;
         readonly Dictionary<string, TokenType> symbols = new();
+        Stack<bool> stringInterpolationBraces = new();
         int longestSymbolLength = 0;
         int tail;
         int head;
@@ -73,6 +74,9 @@ namespace Elfenlabs.Scripting
             CleanFormatting();
         }
 
+        /// <summary>
+        /// Scans the next token
+        /// </summary>
         void ScanNextToken()
         {
             if (TryScanIndent())
@@ -105,6 +109,10 @@ namespace Elfenlabs.Scripting
             throw NewException($"Unidentified character: '{module.Source[tail]}'");
         }
 
+        /// <summary>
+        /// Adds a token to the tokens chain
+        /// </summary>
+        /// <param name="type"></param>
         void AddToken(TokenType type)
         {
             var value = module.Source[tail..head];
@@ -122,6 +130,10 @@ namespace Elfenlabs.Scripting
             });
         }
 
+        /// <summary>
+        /// Try scanning for indents
+        /// </summary>
+        /// <returns></returns>
         bool TryScanIndent()
         {
             if (PeekSlice(4) == "    ") // 4 spaces is treated as an indent
@@ -140,6 +152,10 @@ namespace Elfenlabs.Scripting
             return false;
         }
 
+        /// <summary>
+        /// Try scanning for new lines
+        /// </summary>
+        /// <returns></returns>
         bool TryScanNewLine()
         {
             if (Peek() == '\n')
@@ -153,13 +169,20 @@ namespace Elfenlabs.Scripting
             return false;
         }
 
+        /// <summary>
+        /// Try scanning for string literal
+        /// </summary>
+        /// <returns></returns>
         bool TryScanLiteralString()
         {
+            // Start parsing characters as string literals when we find backticks OR right-braces 
             if (Peek() != '`')
                 return false;
 
-            AdvanceTail(1); // Skip the first '`'
+            // Parse characters as string literals until we find backticks to enclose the string
+            // Or a single '{' to indicate a string interpolation
 
+            AdvanceTail(1); // Skip the first '`'
             while (true)
             {
                 var c = Peek();
@@ -171,15 +194,13 @@ namespace Elfenlabs.Scripting
                         line++;
                         lastLineCharCum = head;
                         break;
-                    //case '{':
-                    //    if (Peek(1) == '{')
-                    //    {
-                    //        continue;
-                    //    }
-                    //    AddToken(TokenType.String);
-                    //    AdvanceHead();
-                    //    AddToken(TokenType.LeftBrace);
-                    //    return true;
+                    case '{':
+                        if (Peek(1) == '{')
+                            break;
+                        AddToken(TokenType.String);
+                        AdvanceHead();
+                        AddToken(TokenType.LeftBrace);
+                        return true;
                     case '`':
                         AddToken(TokenType.String);
                         AdvanceTail(1); // Skip the last '`'

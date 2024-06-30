@@ -80,7 +80,7 @@ namespace Elfenlabs.Scripting
 
         public static string GenerateLinePointer(int col, int length = 1)
         {
-            return new string(' ', col - 1) + new string('^', Math.Max(1, length));
+            return new string(' ', Math.Max(0, col - 1)) + new string('^', Math.Max(1, length));
         }
 
         public static string GenerateCodeTokenPointer(Token token, int previousLines = 0)
