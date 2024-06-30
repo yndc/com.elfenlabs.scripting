@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Codice.Client.Commands.WkTree;
 using Elfenlabs.Strings;
 
 namespace Elfenlabs.Scripting
@@ -159,20 +160,33 @@ namespace Elfenlabs.Scripting
 
             AdvanceTail(1); // Skip the first '`'
 
-            while (Peek() != '`')
+            while (true)
             {
-                AdvanceHead();
-                if (Peek() == '\0')
+                var c = Peek();
+                switch (c)
                 {
-                    throw NewException("Unterminated string");
+                    case '\0':
+                        throw NewException("Unterminated string");
+                    case '\n':
+                        line++;
+                        lastLineCharCum = head;
+                        break;
+                    //case '{':
+                    //    if (Peek(1) == '{')
+                    //    {
+                    //        continue;
+                    //    }
+                    //    AddToken(TokenType.String);
+                    //    AdvanceHead();
+                    //    AddToken(TokenType.LeftBrace);
+                    //    return true;
+                    case '`':
+                        AddToken(TokenType.String);
+                        AdvanceTail(1); // Skip the last '`'
+                        return true;
                 }
+                AdvanceHead();
             }
-
-            AddToken(TokenType.String);
-
-            AdvanceTail(1); // Skip the last '`'
-
-            return true;
         }
 
         bool TryScanLiteralNumeric()
