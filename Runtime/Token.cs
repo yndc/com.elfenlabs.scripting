@@ -39,7 +39,7 @@ namespace Elfenlabs.Scripting
         NewLine, Indent,
 
         // Structural 
-        StatementTerminator,
+        StatementTerminator, StringInterpolationTerminator,
 
         // Miscelanous
         Error,

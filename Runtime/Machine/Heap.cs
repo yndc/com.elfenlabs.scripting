@@ -76,6 +76,21 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
+        /// Try expanding the given heap index with the given word length
+        /// If fails a new block will be allocated instead and the given block will be deallocated
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="wordLen"></param>
+        /// <returns></returns>
+        public bool TryExpand(int index, int wordLen, out int newIndex)
+        {
+            // TODO: Implement heap expansion, at the moment this will allocate a new block and deallocate the old one
+            Deallocate(index, wordLen);
+            newIndex = Allocate(wordLen);
+            return false;
+        }
+
+        /// <summary>
         /// Get the data as a native array
         /// </summary>
         /// <param name="allocator"></param>
@@ -111,6 +126,8 @@ namespace Elfenlabs.Scripting
 
         int TryGetEmptyChunk(int wordLen, int maxAttempt = 10)
         {
+            // TODO: implement better
+            return -1;
             for (int i = 0; i < emptyChunks.Length; i++)
             {
                 var slice = emptyChunks.ElementAt(i);

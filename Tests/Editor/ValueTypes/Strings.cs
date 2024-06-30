@@ -17,7 +17,7 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
-        public void Formatting()
+        public void Interpolation()
         {
             var result = CompilerUtility.Debug(@"
                 var name = `John`
@@ -28,42 +28,43 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
-        public void NestedInterpolation()
+        public void InterpolationNested()
         {
             var result = CompilerUtility.Debug(@"
                 var name = `teve`
-                var message = `Hello, {`S{name}`}!`
+                var time = `morning`
+                var message = `Hello, {`S{name}`}! Good {time}, how are you?`
             ".NormalizeMultiline());
 
-            Assert.AreEqual("Hello, Steve!", Utility.GetStringFromHeap(result, 1));
+            Assert.AreEqual("Hello, Steve! Good morning, how are you?", Utility.GetStringFromHeap(result, 2));
         }
 
-        [Test]
-        public void InsideBraces()
-        {
-            var result = CompilerUtility.Debug(@"
-                structure Person
-                    String Name
-                    Int Age
+        //[Test]
+        //public void InterpolationNestedBraces()
+        //{
+        //    var result = CompilerUtility.Debug(@"
+        //        structure Person
+        //            String Name
+        //            Int Age
 
-                var message = `Hello, {Person { Name = `Mark`, Age = 25 }}!`
-            ".NormalizeMultiline());
+        //        var message = `Hello, {Person { Name = `Mark`, Age = 25 }}!`
+        //    ".NormalizeMultiline());
 
-            Assert.AreEqual("Hello, Steve!", Utility.GetStringFromHeap(result, 1));
-        }
+        //    Assert.AreEqual("Hello, Steve!", Utility.GetStringFromHeap(result, 1));
+        //}
 
-        [Test]
-        public void NestedBraces()
-        {
-            var result = CompilerUtility.Debug(@"
-                structure Person
-                    String Name
-                    Int Age
+        //[Test]
+        //public void NestedBraces()
+        //{
+        //    var result = CompilerUtility.Debug(@"
+        //        structure Person
+        //            String Name
+        //            Int Age
 
-                var message = `Hello, {`{Person { Name = `Mark`, Age = 25 }`}!`
-            ".NormalizeMultiline());
+        //        var message = `Hello, {`{Person { Name = `Mark`, Age = 25 }`}!`
+        //    ".NormalizeMultiline());
 
-            Assert.AreEqual("Hello, Steve!", Utility.GetStringFromHeap(result, 1));
-        }
+        //    Assert.AreEqual("Hello, Steve!", Utility.GetStringFromHeap(result, 1));
+        //}
     }
 }

@@ -151,6 +151,12 @@ namespace Elfenlabs.Scripting
                     }
                     return ValueType.Bool;
 
+                // String concatenation
+                case TokenType.StringInterpolationTerminator:
+                    AssertValueType(lhsValueType, ValueType.String);
+                    AssertValueType(rhsValueType, ValueType.String);
+                    CodeBuilder.Add(new Instruction(InstructionType.StringConcatenate));
+                    return ValueType.String;
             }
 
             return rhsValueType;

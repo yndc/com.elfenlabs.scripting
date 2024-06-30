@@ -147,7 +147,7 @@ namespace Elfenlabs.Scripting
                 if (isStringInterpolation)
                 {
                     AdvanceHead();
-                    AdvanceToken(TokenType.RightBrace);
+                    AdvanceToken(TokenType.StringInterpolationTerminator);
                     ScanLiteralString();
                     return true;
                 }
@@ -313,7 +313,7 @@ namespace Elfenlabs.Scripting
                     case '{':
                         AdvanceToken(TokenType.String);
                         AdvanceHead();
-                        AdvanceToken(TokenType.LeftBrace);
+                        AdvanceToken(TokenType.StringInterpolationTerminator);
                         braceInterpolation.Push(true);
                         return;
                 }

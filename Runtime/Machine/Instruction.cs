@@ -82,6 +82,7 @@ namespace Elfenlabs.Scripting
         FloatModulo,
         FloatNegate,
         BoolNegate,
+        StringConcatenate,
 
         // --------------------------------
         // Comparison operations
@@ -240,6 +241,7 @@ namespace Elfenlabs.Scripting
             { InstructionType.IntDivide, Format.O },
             { InstructionType.IntModulo, Format.O },
             { InstructionType.IntNegate, Format.O },
+            { InstructionType.StringConcatenate, Format.O },
             { InstructionType.VariableIncrement, Format.O },
             { InstructionType.VariableDecrement, Format.O },
             { InstructionType.FloatAdd, Format.O },

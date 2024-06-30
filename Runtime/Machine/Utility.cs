@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Elfenlabs.Scripting
 {
     public unsafe partial struct Machine
@@ -9,8 +11,7 @@ namespace Elfenlabs.Scripting
         /// <returns></returns>
         public string GetStringFromHeap(int heapIndex)
         {
-            var strLen = *heapPtr + heapIndex;
-            return new string((sbyte*)heapPtr, heapIndex + sizeof(int), strLen);
+            return Encoding.UTF8.GetString((byte*)heapPtr + heapIndex * sizeof(int) + sizeof(int), *(heapPtr + heapIndex));
         }
     }
 }

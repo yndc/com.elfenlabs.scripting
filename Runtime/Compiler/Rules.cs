@@ -48,46 +48,47 @@ namespace Elfenlabs.Scripting
         static Dictionary<TokenType, ParseRule> parseRules = new()
         {
             // Grouping
-            { TokenType.LeftParentheses,        new ParseRule(Handling.Group) },
-            { TokenType.RightParentheses,       new ParseRule() },
-            { TokenType.LeftBrace,              new ParseRule(Handling.Composite) },
-            { TokenType.RightBrace,             new ParseRule() },
-            { TokenType.LeftBracket,            new ParseRule(Handling.Composite) },
-            { TokenType.RightBracket,           new ParseRule() },
+            { TokenType.LeftParentheses,                new ParseRule(Handling.Group) },
+            { TokenType.RightParentheses,               new ParseRule() },
+            { TokenType.LeftBrace,                      new ParseRule(Handling.Composite) },
+            { TokenType.RightBrace,                     new ParseRule() },
+            { TokenType.LeftBracket,                    new ParseRule(Handling.Composite) },
+            { TokenType.RightBracket,                   new ParseRule() },
 
             // Operators
-            { TokenType.Minus,                  new ParseRule(Handling.Unary, Handling.Binary, Precedence.Term) },
-            { TokenType.Plus,                   new ParseRule(Handling.None, Handling.Binary, Precedence.Term) },
-            { TokenType.Slash,                  new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
-            { TokenType.Asterisk,               new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
-            { TokenType.Bang,                   new ParseRule(Handling.Unary) },
-            { TokenType.And,                    new ParseRule(Handling.None, Handling.And, Precedence.And) },
+            { TokenType.Minus,                          new ParseRule(Handling.Unary, Handling.Binary, Precedence.Term) },
+            { TokenType.Plus,                           new ParseRule(Handling.None, Handling.Binary, Precedence.Term) },
+            { TokenType.Slash,                          new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
+            { TokenType.Asterisk,                       new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
+            { TokenType.Bang,                           new ParseRule(Handling.Unary) },
+            { TokenType.And,                            new ParseRule(Handling.None, Handling.And, Precedence.And) },
 
             // Literal values
-            { TokenType.Integer,                new ParseRule(Handling.Literal) },
-            { TokenType.Float,                  new ParseRule(Handling.Literal) },
-            { TokenType.False,                  new ParseRule(Handling.Literal) },
-            { TokenType.True,                   new ParseRule(Handling.Literal) },
-            { TokenType.String,                 new ParseRule(Handling.Literal) },
+            { TokenType.Integer,                        new ParseRule(Handling.Literal) },
+            { TokenType.Float,                          new ParseRule(Handling.Literal) },
+            { TokenType.False,                          new ParseRule(Handling.Literal) },
+            { TokenType.True,                           new ParseRule(Handling.Literal) },
+            { TokenType.String,                         new ParseRule(Handling.Literal) },
 
             // Structural
-            { TokenType.StatementTerminator,    new ParseRule() },
-            { TokenType.EOF,                    new ParseRule() },
-            { TokenType.Then,                   new ParseRule() },
+            { TokenType.StatementTerminator,            new ParseRule() },
+            { TokenType.EOF,                            new ParseRule() },
+            { TokenType.Then,                           new ParseRule() },
+            { TokenType.StringInterpolationTerminator,  new ParseRule(Handling.None, Handling.Binary, Precedence.Term) },
 
             // Comparison 
-            { TokenType.BangEqual,              new ParseRule(Handling.None, Handling.Binary, Precedence.Equality) },
-            { TokenType.EqualEqual,             new ParseRule(Handling.None, Handling.Binary, Precedence.Equality) },
-            { TokenType.Greater,                new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison) },
-            { TokenType.GreaterEqual,           new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison) },
-            { TokenType.Less,                   new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison) },
-            { TokenType.LessEqual,              new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison) },
+            { TokenType.BangEqual,                      new ParseRule(Handling.None, Handling.Binary, Precedence.Equality) },
+            { TokenType.EqualEqual,                     new ParseRule(Handling.None, Handling.Binary, Precedence.Equality) },
+            { TokenType.Greater,                        new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison) },
+            { TokenType.GreaterEqual,                   new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison) },
+            { TokenType.Less,                           new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison) },
+            { TokenType.LessEqual,                      new ParseRule(Handling.None, Handling.Binary, Precedence.Comparison) },
 
             // Values 
-            { TokenType.Equal,                  new ParseRule(Handling.None, Handling.Binary, Precedence.Assignment) },
+            { TokenType.Equal,                          new ParseRule(Handling.None, Handling.Binary, Precedence.Assignment) },
 
             // User defined 
-            { TokenType.Identifier,             new ParseRule(Handling.Identifier) },
+            { TokenType.Identifier,                     new ParseRule(Handling.Identifier) },
         };
 
         public static ParseRule GetRule(TokenType type)

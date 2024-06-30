@@ -148,6 +148,38 @@ namespace Elfenlabs.Scripting
                             value %= other;
                             break;
                         }
+                    case InstructionType.StringConcatenate:
+                        {
+                            var rhsHeapIndex = Pop<int>();
+                            var lhsHeapIndex = *(stackHeadPtr - 1);
+                            var lhsLen = *(heapPtr + lhsHeapIndex);
+                            var rhsLen = *(heapPtr + rhsHeapIndex);
+                            var newLen = lhsLen + rhsLen;
+                            var newWordLen = 1 + CompilerUtility.GetWordLength(newLen);
+                            if (!heap.TryExpand(lhsHeapIndex, newWordLen, out var newHeapIndex))
+                            {
+                                *(heapPtr + newHeapIndex) = newLen;
+                                UnsafeUtility.MemCpy(
+                                    heapPtr + newHeapIndex + 1,
+                                    heapPtr + lhsHeapIndex + 1,
+                                    lhsLen);
+                                UnsafeUtility.MemCpy(
+                                    ((byte*)(heapPtr + newHeapIndex + 1)) + lhsLen,
+                                    heapPtr + rhsHeapIndex + 1,
+                                    rhsLen);
+                            }
+                            *(stackHeadPtr - 1) = newHeapIndex;
+                            //else
+                            //{
+                            //    var newDestPtr = heapPtr + newHeapIndex;
+                            //    *newDestPtr = newLen;
+                            //    UnsafeUtility.MemCpy(
+                            //        ((byte*)(newDestPtr + 1)) + lhsLen,
+                            //        heapPtr + rhsHeapIndex + 1,
+                            //        rhsLen + 5);
+                            //}
+                            break;
+                        }
 
                     // Float arithmetic operations
                     case InstructionType.FloatNegate:
