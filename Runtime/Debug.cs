@@ -124,11 +124,20 @@ namespace Elfenlabs.Scripting
                 case Format.OS:
                     text.Append(instruction.ArgShort);
                     break;
+                case Format.OSs:
+                    text.Append(instruction.ArgSignedShort);
+                    break;
                 case Format.OB:
                     text.Append(instruction.ArgByte);
                     break;
                 case Format.OBS:
                     text.Append(instruction.ArgShort);
+                    text.Append("\t");
+                    text.Append(instruction.ArgByte1);
+                    text.Append("\t");
+                    break;
+                case Format.OBSs:
+                    text.Append(instruction.ArgSignedShort);
                     text.Append("\t");
                     text.Append(instruction.ArgByte1);
                     text.Append("\t");

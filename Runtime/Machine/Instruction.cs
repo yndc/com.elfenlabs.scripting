@@ -117,8 +117,10 @@ namespace Elfenlabs.Scripting
     {
         O,
         OS,
+        OSs,
         OB,
         OBS,
+        OBSs,
         OBBB,
         I,
         SS,
@@ -197,6 +199,15 @@ namespace Elfenlabs.Scripting
             }
         }
 
+        public Instruction(InstructionType type, short signedShortArg)
+        {
+            fixed (byte* ptr = Data)
+            {
+                *ptr = (byte)type;
+                *(short*)(ptr + 2) = signedShortArg;
+            }
+        }
+
         public Instruction(InstructionType type, ushort shortArg, byte byteArg)
         {
             fixed (byte* ptr = Data)
@@ -204,6 +215,16 @@ namespace Elfenlabs.Scripting
                 *ptr = (byte)type;
                 *(ptr + 1) = byteArg;
                 *(ushort*)(ptr + 2) = shortArg;
+            }
+        }
+
+        public Instruction(InstructionType type, short signedShortArg, byte byteArg)
+        {
+            fixed (byte* ptr = Data)
+            {
+                *ptr = (byte)type;
+                *(ptr + 1) = byteArg;
+                *(short*)(ptr + 2) = signedShortArg;
             }
         }
 
@@ -241,8 +262,8 @@ namespace Elfenlabs.Scripting
         {
             { InstructionType.Halt, Format.O },
             { InstructionType.Yield, Format.OS },
-            { InstructionType.Jump, Format.OS },
-            { InstructionType.JumpCondition, Format.OBS },
+            { InstructionType.Jump, Format.OSs },
+            { InstructionType.JumpCondition, Format.OBSs },
             { InstructionType.Call, Format.OBS },
             { InstructionType.Return, Format.OB },
             { InstructionType.LoadConstant, Format.OBS },

@@ -26,7 +26,7 @@ namespace Elfenlabs.Scripting
         True, False, Null,
         Structure, Function,
         And, Or,
-        Loop,
+        While,
         External,
         Return,
         Returns,

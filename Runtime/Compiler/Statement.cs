@@ -11,6 +11,9 @@ namespace Elfenlabs.Scripting
                 case TokenType.If:
                     ConsumeStatementIf();
                     break;
+                case TokenType.While:
+                    ConsumeStatementWhile();
+                    break;
                 case TokenType.Identifier:
                     ConsumeStatementIdentifier();
                     Consume(TokenType.StatementTerminator, "Expected new-line after statement");
@@ -50,6 +53,29 @@ namespace Elfenlabs.Scripting
             }
 
             throw CreateException(current.Value, $"Unknown statement identifier {identifier}");
+        }
+
+        void ConsumeStatementWhile()
+        {
+            Skip();
+
+            var conditionExpressionInstructionIndex = CodeBuilder.InstructionCount;
+            ConsumeExpression();
+            Consume(TokenType.StatementTerminator, "Expected new-line after while condition");
+
+            // Jump to the end of the while block if the condition is false
+            var jumpToEndInstructionIndex = CodeBuilder.Add(new Instruction(InstructionType.JumpCondition, 0));
+
+            // Begin while statement block
+            BeginScope();
+            ConsumeBlock();
+            EndScope();
+
+            // Jump back to the condition
+            CodeBuilder.Add(new Instruction(InstructionType.Jump, (short)(conditionExpressionInstructionIndex - CodeBuilder.InstructionCount - 1)));
+        
+            // Patch the jump to the end of the while block
+            CodeBuilder.Patch(jumpToEndInstructionIndex).ArgSignedShort = (short)(CodeBuilder.InstructionCount - jumpToEndInstructionIndex - 1);
         }
     }
 }

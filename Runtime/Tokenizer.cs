@@ -29,7 +29,7 @@ namespace Elfenlabs.Scripting
             AddSymbol("function", TokenType.Function);
             AddSymbol("and", TokenType.And);
             AddSymbol("or", TokenType.Or);
-            AddSymbol("loop", TokenType.Loop);
+            AddSymbol("while", TokenType.While);
             AddSymbol("return", TokenType.Return);
             AddSymbol("returns", TokenType.Returns);
             AddSymbol("external", TokenType.External);
