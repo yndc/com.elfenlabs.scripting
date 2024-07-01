@@ -1,8 +1,8 @@
 # Roadmap
 
 - [x] String formatting
-- [ ] While loop
-- [ ] `break` and `continue`
+- [x] While loop
+- [x] `break` and `continue`
 - [ ] Arrays
 - [ ] For loop 
 - [ ] For loop (arrays)
