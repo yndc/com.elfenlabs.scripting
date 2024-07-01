@@ -33,5 +33,23 @@ namespace Elfenlabs.Scripting.Tests
 
             Assert.AreEqual(101, result.Stack[0]);
         }
+
+        [Test]
+        public void WhileContinue()
+        {
+            var result = CompilerUtility.Debug(@"
+                var sum = 0
+                var x = 0
+                while x < 100
+                    x++
+                    if x % 2 == 0 then
+                        continue
+                    sum = sum + x
+
+                // Print(x)
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(2500, result.Stack[0]);
+        }
     }
 }
