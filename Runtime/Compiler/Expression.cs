@@ -114,6 +114,13 @@ namespace Elfenlabs.Scripting
                         case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatMultiply)); break;
                     }
                     break;
+                case TokenType.Remainder:
+                    switch (lhsValueType.Identifier)
+                    {
+                        case "Int": CodeBuilder.Add(new Instruction(InstructionType.IntModulo)); break;
+                        case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatModulo)); break;
+                    }
+                    break;
 
                 // Comparison
                 case TokenType.BangEqual:

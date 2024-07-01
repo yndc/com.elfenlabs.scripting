@@ -9,7 +9,7 @@ namespace Elfenlabs.Scripting
         LeftBrace, RightBrace,
         LeftBracket, RightBracket,
         Comma, Dot,
-        Minus, Plus, Slash, Asterisk,
+        Minus, Plus, Slash, Asterisk, Remainder,
 
         // One or two character tokens
         Bang, BangEqual,
