@@ -32,6 +32,8 @@ namespace Elfenlabs.Scripting
             AddSymbol("while", TokenType.While);
             AddSymbol("return", TokenType.Return);
             AddSymbol("returns", TokenType.Returns);
+            AddSymbol("break", TokenType.Break);
+            AddSymbol("continue", TokenType.Continue);
             AddSymbol("external", TokenType.External);
             AddSymbol("global", TokenType.Global);
             AddSymbol("var", TokenType.Variable);

@@ -22,6 +22,10 @@ namespace Elfenlabs.Scripting
             RegisterBuiltInTypes();
         }
 
+        /// <summary>
+        /// Adds a module to the compiler
+        /// </summary>
+        /// <param name="module"></param>
         public void AddModule(Module module)
         {
             // Create global scope 
@@ -164,6 +168,40 @@ namespace Elfenlabs.Scripting
                     break;
                 default:
                     ConsumeStatement();
+                    break;
+            }
+        }
+
+        void ConsumeStatement()
+        {
+            switch (current.Value.Type)
+            {
+                case TokenType.If:
+                    ConsumeStatementIf();
+                    break;
+                case TokenType.While:
+                    ConsumeStatementWhile();
+                    break;
+                case TokenType.Continue:
+                    ConsumeStatementContinue();
+                    Consume(TokenType.StatementTerminator, "Expected new-line after statement");
+                    break;
+                case TokenType.Break:
+                    ConsumeStatementBreak();
+                    Consume(TokenType.StatementTerminator, "Expected new-line after statement");
+                    break;
+                case TokenType.Identifier:
+                    ConsumeStatementIdentifier();
+                    Consume(TokenType.StatementTerminator, "Expected new-line after statement");
+                    break;
+                case TokenType.Return:
+                    ConsumeStatementReturn();
+                    Consume(TokenType.StatementTerminator, "Expected new-line after statement");
+                    break;
+                default:
+                    ConsumeExpression();
+                    CodeBuilder.Add(new Instruction(InstructionType.Pop));
+                    Consume(TokenType.StatementTerminator, "Expected new-line after statement");
                     break;
             }
         }
