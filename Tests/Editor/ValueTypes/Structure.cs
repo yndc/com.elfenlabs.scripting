@@ -11,11 +11,11 @@ namespace Elfenlabs.Scripting.Tests
         {
             var result = CompilerUtility.Debug(@"
                 structure Person
-                    Name String
-                    Age Int 
+                    field Name String
+                    field Age Int 
 
                     // in centimetres
-                    Height Float 
+                    field Height Float 
 
                 var a = Person {
                     Name = `John`
@@ -42,8 +42,8 @@ namespace Elfenlabs.Scripting.Tests
         {
             var result = CompilerUtility.Debug(@"
                 structure Coordinate
-                    X Int
-                    Y Int 
+                    field X Int
+                    field Y Int 
 
                 var a = Coordinate {
                     X = 1
@@ -51,6 +51,27 @@ namespace Elfenlabs.Scripting.Tests
                 }
 
                 var total = a.X + a.Y
+                
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(result.Stack[0], 1);
+            Assert.AreEqual(result.Stack[1], 2);
+            Assert.AreEqual(result.Stack[2], 3);
+        }
+
+        [Test]
+        public void Methods()
+        {
+            var result = CompilerUtility.Debug(@"
+                structure Vector 
+                    field X Float
+                    field Y Float
+
+                    function Magnitude() returns Float 
+                        return Math.Sqrt(X**2 + Y**2)
+
+                var v = Vector { X = 5.0, Y = 10.0 }
+                var mag = v.Magnitude()
                 
             ".NormalizeMultiline());
 

@@ -88,7 +88,7 @@ namespace Elfenlabs.Scripting
         {
             switch (current.Value.Type)
             {
-                case TokenType.Identifier:
+                case TokenType.Field:
                     ConsumeStructureFieldDeclaration(typeBuilder);
                     break;
                 default:
@@ -98,6 +98,7 @@ namespace Elfenlabs.Scripting
 
         void ConsumeStructureFieldDeclaration(StructureValueType.Builder typeBuilder)
         {
+            Consume(TokenType.Field);
             var name = Consume(TokenType.Identifier).Value;
             var type = ConsumeType();
             typeBuilder.AddField(name, type);

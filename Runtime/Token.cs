@@ -24,7 +24,7 @@ namespace Elfenlabs.Scripting
         // Keywords
         If, Then, Else,
         True, False, Null,
-        Structure, Function,
+        Structure, Function, Field,
         And, Or,
         While, Continue, Break,
         External,

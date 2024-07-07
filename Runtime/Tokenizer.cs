@@ -26,6 +26,7 @@ namespace Elfenlabs.Scripting
             AddSymbol("false", TokenType.False);
             AddSymbol("nil", TokenType.Null);
             AddSymbol("structure", TokenType.Structure);
+            AddSymbol("field", TokenType.Field);
             AddSymbol("function", TokenType.Function);
             AddSymbol("and", TokenType.And);
             AddSymbol("or", TokenType.Or);
