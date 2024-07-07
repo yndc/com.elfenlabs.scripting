@@ -11,11 +11,11 @@ namespace Elfenlabs.Scripting.Tests
         {
             var result = CompilerUtility.Debug(@"
                 structure Person
-                    String Name
-                    Int Age
+                    Name String
+                    Age Int 
 
                     // in centimetres
-                    Float Height
+                    Height Float 
 
                 var a = Person {
                     Name = `John`
@@ -38,12 +38,12 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
-        public void Ooo()
+        public void MemberAccess()
         {
             var result = CompilerUtility.Debug(@"
                 structure Coordinate
-                    Int X
-                    Int Y   
+                    X Int
+                    Y Int 
 
                 var a = Coordinate {
                     X = 1

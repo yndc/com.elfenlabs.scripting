@@ -98,8 +98,8 @@ namespace Elfenlabs.Scripting
 
         void ConsumeStructureFieldDeclaration(StructureValueType.Builder typeBuilder)
         {
-            var type = ConsumeType();
             var name = Consume(TokenType.Identifier).Value;
+            var type = ConsumeType();
             typeBuilder.AddField(name, type);
             Consume(TokenType.StatementTerminator, "Expected new-line after structure field declaration");
         }
