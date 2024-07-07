@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Elfenlabs.Scripting
@@ -136,6 +137,12 @@ namespace Elfenlabs.Scripting
                             value *= other;
                             break;
                         }
+                    case InstructionType.IntPower:
+                        {
+                            ref var value = ref Binary<int>(out var other);
+                            value = (int)math.pow(value, other);
+                            break;
+                        }
                     case InstructionType.IntDivide:
                         {
                             ref var value = ref Binary<int>(out var other);
@@ -206,6 +213,18 @@ namespace Elfenlabs.Scripting
                         {
                             ref var value = ref Binary<float>(out var other);
                             value *= other;
+                            break;
+                        }
+                    case InstructionType.FloatPower:
+                        {
+                            ref var value = ref Binary<float>(out var other);
+                            value = math.pow(value, other);
+                            break;
+                        }
+                    case InstructionType.FloatDivide:
+                        {
+                            ref var value = ref Binary<float>(out var other);
+                            value /= other;
                             break;
                         }
 

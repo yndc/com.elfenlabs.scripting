@@ -114,6 +114,13 @@ namespace Elfenlabs.Scripting
                         case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatMultiply)); break;
                     }
                     break;
+                case TokenType.Power:
+                    switch (lhsValueType.Identifier)
+                    {
+                        case "Int": CodeBuilder.Add(new Instruction(InstructionType.IntPower)); break;
+                        case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatPower)); break;
+                    }
+                    break;
                 case TokenType.Remainder:
                     switch (lhsValueType.Identifier)
                     {

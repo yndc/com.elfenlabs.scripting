@@ -44,6 +44,7 @@ namespace Elfenlabs.Scripting
             AddSymbol("-", TokenType.Minus);
             AddSymbol("=", TokenType.Equal);
             AddSymbol("*", TokenType.Asterisk);
+            AddSymbol("**", TokenType.Power);
             AddSymbol("%", TokenType.Remainder);
             AddSymbol("/", TokenType.Slash);
             AddSymbol("(", TokenType.LeftParentheses);

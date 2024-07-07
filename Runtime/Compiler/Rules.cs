@@ -60,6 +60,7 @@ namespace Elfenlabs.Scripting
             { TokenType.Plus,                           new ParseRule(Handling.None, Handling.Binary, Precedence.Term) },
             { TokenType.Slash,                          new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
             { TokenType.Asterisk,                       new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
+            { TokenType.Power,                          new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
             { TokenType.Remainder,                      new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
             { TokenType.Bang,                           new ParseRule(Handling.Unary) },
             { TokenType.And,                            new ParseRule(Handling.None, Handling.And, Precedence.And) },

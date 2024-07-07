@@ -25,6 +25,16 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
+        public void Operators()
+        {
+            var result = CompilerUtility.Debug(@"
+                7 ** 5
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(16807, result.Stack[0]);
+        }
+
+        [Test]
         public void Increment()
         {
             var result = CompilerUtility.Debug(@"
