@@ -1,0 +1,18 @@
+structure Vector 
+    field X Float
+    field Y Float
+
+    function Magnitude() returns Float 
+        return Math.Sqrt(X**2 + Y**2)
+
+    static Zero = Vector { X = 0, Y = 0 }
+    static function Distance (Vector a, Vector b) -> Float
+        return a.Distance(b)
+
+function Magnitude() returns Float
+    return Math.Sqrt(X**2 + Y**2)
+
+var magnitude = Float 
+
+var a = Vector { X = 5.0, Y = 10.0 }
+var mag = a.Magnitude()

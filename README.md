@@ -154,9 +154,8 @@ Structs are user-defined data structures.
 
 ```
 structure Data
-    One Int
-    Two Float
-    
+    field One Int
+    field Two Float
 ```
 
 
@@ -212,16 +211,16 @@ alias Position as Int<2>
 alias Name as Byte<32>
 
 structure Character 
-    Label Name
-    CurrentPosition Position
+    field Label Name
+    field CurrentPos Position
     
-var char1 = Character
+var char1 = Character 
     Name = `One`
-    CurrentPosition = {1, 2}
+    CurrentPos = {1, 2}
     
 var char2 = Character 
     Name = `Two`
-    CurrentPosition = {-4, 10} 
+    CurrentPos = {-4, 10} 
 
 // Returns the delta cell position and distance
 function Distance(Character first, Character second) returns (Position, Float) 
@@ -236,9 +235,9 @@ Structures, tuples, and spans can be type-casted as long as they have the same e
 
 ```
 structure Position
-    Float X
-    Float Y
-    Float Z
+    field X Float
+    field Y Float
+    field Z Float
 ```
 
 This structure can be casted into a span and tuple of the same layout with the `as` keyword.
@@ -288,12 +287,59 @@ function Increment(shared Int x) returns nothing
     x = x + 1
 ```
 
+#### Methods
+
+All types can have methods. 
+
+```
+structure Vector 
+    Float X
+    Float Y
+
+    function Magnitude() returns Float 
+        return Math.Sqrt(X^2 + Y^2)
+
+var a = Vector { X = 5.0, Y = 10.0 }
+var mag = a.Magnitude()
+
+```
+
+Methods and fields can be extended from another module
+
+```
+extend Vector
+    Float Distance(Vector other)
+        var delta = Vector { X = other.X - X, Y = other.Y - Y }
+        var quad = delta.X ^ 2 + delta.Y ^ 2
+        return Math.Sqrt(quad)
+
+var a = Vector { X = 5.0, Y = 10.0 }
+var dist = a.Distance(Vector { X = -25.0, Y = 20 })
+```
+
+Associated members can also be static
+
+```
+extend structure Vector
+    static Vector Zero = Vector { X = 0, Y = 0 }
+    static Float Distance(Vector a, Vector b)
+        return a.Distance(b)
+
+var z = Vector.Zero
+var a = Vector { X = 52.0, Y = 90.0 }
+var b = Vector { X = 67.0, Y = -50.0 }
+var dist = Vector.Distance(a, b)
+```
+
 ### Functions 
 
 Functions can be declared with the `function` keyword: 
 
 ```
 function Add (Int a, Int b) returns Int
+    return a + b
+
+Int Add(Int a, Int b)
     return a + b
     
 var result = Add(1, 2)

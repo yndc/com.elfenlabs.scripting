@@ -1,0 +1,41 @@
+structure Node<T>
+    T Value 
+    box own Node<T> Next
+    box Node<T> Prev
+    box LinkedList<T> Collection
+
+    Node<T> New(T value)
+        return Node<T> { Value = value, Next = Null, Prev = Null }
+
+structure LinkedList<T>
+    Int Length
+    box own Node<T> Head
+    box Node<T> Tail
+
+    box LinkedList<T> New()
+        return LinkedList<T> { Head = Null, Tail = Null, Length = 0 }
+
+    LinkedList<T> Add(T value)
+        var node = Node<T>.New(value)
+        if self.Head == Null
+            self.Head = own node    // self.Head now owns `node`
+            self.Tail = node        // weak ref
+        else 
+            self.Tail.Next = own node
+            self.Tail = node
+        Length = Length + 1
+
+    Void Delete(Node<T> node)
+        node.Prev.Next = node.Next 
+        node.Next.Prev = node.Prev
+
+var linkedList = LinkedList<Int>.New()
+for i in range 100
+    linkedList.Add(i)
+
+var node = linkedList.Head
+while node != Null 
+    if node.Value mod 2 == 0 
+        linkedList.Delete(node)
+    else
+        node = node.Next
