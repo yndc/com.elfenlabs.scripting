@@ -54,7 +54,7 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
-        public void GlobalClosures()
+        public void Shadowing()
         {
             var result = CompilerUtility.Debug(@"
                 var a = 1
@@ -74,6 +74,23 @@ namespace Elfenlabs.Scripting.Tests
             Assert.AreEqual(4, result.Stack[3]);
             Assert.AreEqual(2, result.Stack[4]);
             Assert.AreEqual(12, result.Stack[5]);
+        }
+
+        [Test]
+        public void Closures()
+        {
+            var result = CompilerUtility.Debug(@"
+                var x = 1
+                function Increment () returns Void
+                    x = x + 1
+                
+                Increment()
+                Increment()
+                Increment()
+                Increment()
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(5, result.Stack[0]);
         }
     }
 }
