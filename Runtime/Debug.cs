@@ -115,8 +115,7 @@ namespace Elfenlabs.Scripting
         public static string Debug(Instruction instruction, Format format)
         {
             var text = new StringBuilder();
-            text.Append(instruction.Type.ToString());
-            text.Append("\t");
+            text.Append(instruction.Type.ToString().PadRight(16));
             switch (format)
             {
                 case Format.O:
