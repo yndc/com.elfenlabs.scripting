@@ -1,31 +1,10 @@
 using System.Collections.Generic;
+using static Unity.Entities.SystemBaseDelegates;
 
 namespace Elfenlabs.Scripting
 {
     public class StructureValueType : ValueType
     {
-        public class Builder
-        {
-            public List<Field> Fields = new();
-            public byte WordLength;
-
-            public void AddField(string name, ValueType type)
-            {
-                Fields.Add(new Field { Name = name, Type = type, Offset = WordLength });
-                WordLength += type.WordLength;
-            }
-
-            public StructureValueType Build(string name)
-            {
-                return new StructureValueType(name)
-                {
-                    Identifier = new Path(name),
-                    Fields = Fields.ToArray(),
-                    WordLength = WordLength,
-                };
-            }
-        }
-
         public class Field
         {
             public string Name;
@@ -33,7 +12,7 @@ namespace Elfenlabs.Scripting
             public byte Offset;
         }
 
-        public Field[] Fields;
+        public List<Field> Fields;
 
         public StructureValueType(string name) : base(name, 0) { }
 
@@ -56,6 +35,26 @@ namespace Elfenlabs.Scripting
             result = null;
             return false;
         }
+
+        /// <summary>
+        /// Adds a new field to the structure
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="type"></param>
+        public void AddField(string name, ValueType type)
+        {
+            Fields.Add(new Field { Name = name, Type = type, Offset = WordLength });
+            WordLength += type.WordLength;
+        }
+
+        /// <summary>
+        /// Adds a new method to the structure
+        /// </summary>
+        /// <param name="function"></param>
+        public void AddMethod(FunctionHeader function)
+        {
+            Methods.Add(function);
+        }
     }
 
     public partial class Compiler
@@ -64,8 +63,8 @@ namespace Elfenlabs.Scripting
         {
             Consume(TokenType.Structure);
 
-            var typeBuilder = new StructureValueType.Builder();
             var name = Consume(TokenType.Identifier).Value;
+            var type = new StructureValueType(name);
 
             Consume(TokenType.StatementTerminator, "Expected new-line after structure name");
 
@@ -76,33 +75,48 @@ namespace Elfenlabs.Scripting
                 if (!TryConsumeIndents(currentScope.Depth))
                     break;
 
-                ConsumeStructureMemberDeclaration(typeBuilder);
+                ConsumeStructureMemberDeclaration(type);
             }
 
             currentScope = currentScope.Parent;
 
-            RegisterType(typeBuilder.Build(name));
+            RegisterType(type);
         }
 
-        void ConsumeStructureMemberDeclaration(StructureValueType.Builder typeBuilder)
+        void ConsumeStructureMemberDeclaration(StructureValueType type)
         {
             switch (current.Value.Type)
             {
                 case TokenType.Field:
-                    ConsumeStructureFieldDeclaration(typeBuilder);
+                    ConsumeStructureFieldDeclaration(type);
+                    break;
+                case TokenType.Function:
+                    ConsumeStructureFunctionDeclaration(type);
                     break;
                 default:
                     throw new CompilerException(current.Value, $"Expected structure member declaration. Received: {current.Value}");
             }
         }
 
-        void ConsumeStructureFieldDeclaration(StructureValueType.Builder typeBuilder)
+        void ConsumeStructureFieldDeclaration(StructureValueType type)
         {
             Consume(TokenType.Field);
-            var name = Consume(TokenType.Identifier).Value;
-            var type = ConsumeType();
-            typeBuilder.AddField(name, type);
+            var fieldNname = Consume(TokenType.Identifier).Value;
+            var fieldType = ConsumeType();
+            type.AddField(fieldNname, fieldType);
             Consume(TokenType.StatementTerminator, "Expected new-line after structure field declaration");
+        }
+
+        void ConsumeStructureFunctionDeclaration(StructureValueType type)
+        {
+            var header = ConsumeFunctionDeclarationHeader();
+
+            // Inject 'self' as the first argument in the method
+            header.Parameters.Insert(0, new FunctionHeader.Parameter("self", type));
+
+            // Create a new scope for the method with the struct's field members
+            currentScope = currentScope.CreateChild();
+            //currentScope.DeclareVariable("self", type);
         }
 
         void ConsumeStructLiteral(StructureValueType type)
