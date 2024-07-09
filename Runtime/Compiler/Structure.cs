@@ -12,7 +12,7 @@ namespace Elfenlabs.Scripting
             public byte Offset;
         }
 
-        public List<Field> Fields;
+        public List<Field> Fields = new();
 
         public StructureValueType(string name) : base(name, 0) { }
 
@@ -109,14 +109,14 @@ namespace Elfenlabs.Scripting
 
         void ConsumeStructureFunctionDeclaration(StructureValueType type)
         {
-            var header = ConsumeFunctionDeclarationHeader();
+            var function = ConsumeFunctionDeclarationHeader();
 
-            // Inject 'self' as the first argument in the method
-            header.Parameters.Insert(0, new FunctionHeader.Parameter("self", type));
+            // Add 'self' variable as a reference to this structure
+            function.Parameters.Insert(0, new FunctionHeader.Parameter("self", new ReferenceType(type)));
 
-            // Create a new scope for the method with the struct's field members
-            currentScope = currentScope.CreateChild();
-            //currentScope.DeclareVariable("self", type);
+            var subProgram = new SubProgram(function);
+            RegisterSubProgram(subProgram);
+            ConsumeFunctionBody(subProgram);
         }
 
         void ConsumeStructLiteral(StructureValueType type)
