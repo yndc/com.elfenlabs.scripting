@@ -51,10 +51,13 @@ namespace Elfenlabs.Scripting
             Frames.RemoveAtSwapBack(Frames.Length - 1);
 
             // Copy the return value to the caller stack
-            UnsafeUtility.MemCpy(
-                frame.ValuesPtr,
-                stackHeadPtr - returnWordLength,
-                returnWordLength * CompilerUtility.WordSize);
+            if (returnWordLength > 0)
+            {
+                UnsafeUtility.MemCpy(
+                    frame.ValuesPtr,
+                    stackHeadPtr - returnWordLength,
+                    returnWordLength * CompilerUtility.WordSize);
+            }
 
             // Restore the frame state
             instructionPtr = frame.InstructionPtr;

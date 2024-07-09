@@ -38,7 +38,7 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
-        public void MemberAccess()
+        public void FieldRead()
         {
             var result = CompilerUtility.Debug(@"
                 structure Coordinate
@@ -60,6 +60,30 @@ namespace Elfenlabs.Scripting.Tests
         }
 
         [Test]
+        public void FieldWrite()
+        {
+            var result = CompilerUtility.Debug(@"
+                structure Coordinate
+                    field X Int
+                    field Y Int 
+
+                var a = Coordinate {
+                    X = 1
+                    Y = 2
+                }
+
+                a.X = 3 
+
+                var total = a.X + a.Y
+                
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(result.Stack[0], 3);
+            Assert.AreEqual(result.Stack[1], 2);
+            Assert.AreEqual(result.Stack[2], 5);
+        }
+
+        [Test]
         public void Methods()
         {
             var result = CompilerUtility.Debug(@"
@@ -68,9 +92,11 @@ namespace Elfenlabs.Scripting.Tests
                     field Y Float
 
                     function Magnitude() returns Float 
-                        return Math.Sqrt(X**2 + Y**2)
+                        // return Math.Sqrt(self.X ** 2 + self.Y ** 2)
+                        return self.X ** 2 + self.Y ** 2
 
                 var v = Vector { X = 5.0, Y = 10.0 }
+                var x = 3.0
                 var mag = v.Magnitude()
                 
             ".NormalizeMultiline());

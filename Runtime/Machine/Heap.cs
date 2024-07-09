@@ -280,17 +280,6 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
-        /// Writes data from the stack to the heap at the given index with the given length
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="wordLen"></param>
-        unsafe void WriteHeap(int index, byte wordLen)
-        {
-            UnsafeUtility.MemCpy(heapPtr + index, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
-            stackHeadPtr -= wordLen;
-        }
-
-        /// <summary>
         /// Store data from the stack to the heap with the given length, leaving the heap index on the stack.
         /// </summary>
         /// <param name="wordLen"></param>

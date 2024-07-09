@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace Elfenlabs.Scripting
 {
@@ -71,23 +70,20 @@ namespace Elfenlabs.Scripting
                     case InstructionType.LoadConstant:
                         LoadConstant(instruction.ArgShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.LoadVariable:
-                        LoadVariable(instruction.ArgShort, instruction.ArgByte1);
+                    case InstructionType.LoadStack:
+                        LoadStack(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.LoadVariableElement:
-                        LoadVariableElement(instruction.ArgShort, instruction.ArgByte1);
+                    case InstructionType.LoadStackWithOffset:
+                        LoadStackWithOffset(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
                     case InstructionType.LoadHeap:
                         LoadHeap(instruction.ArgShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.StoreVariable:
-                        StoreVariable(instruction.ArgShort, instruction.ArgByte1);
-                        break;
-                    case InstructionType.StoreHeap:
-                        StoreHeap(instruction.ArgByte1);
+                    case InstructionType.WriteStack:
+                        WriteStack(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
                     case InstructionType.WriteHeap:
-                        WriteHeap(instruction.ArgShort, instruction.ArgByte1);
+                        StoreHeap(instruction.ArgByte1);
                         break;
                     case InstructionType.HeapLoadConstant:
                         HeapLoadConstant(instruction.ArgShort, instruction.ArgByte1);

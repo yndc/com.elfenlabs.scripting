@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System;
-using UnityEngine;
 
 namespace Elfenlabs.Scripting
 {
@@ -11,15 +10,18 @@ namespace Elfenlabs.Scripting
         public Dictionary<string, FunctionHeader> Functions = new();
         public int Depth;
         public ushort WordLength;
+        public bool IsFunction;
 
+        /// <summary>
+        /// Declares a new variable in this scope
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public ushort DeclareVariable(string name, ValueType type)
         {
-            var variable = new Variable()
-            {
-                Name = name,
-                Type = type,
-                Position = WordLength
-            };
+            var variable = new Variable(name, type, WordLength);
 
             if (!Variables.TryAdd(name, variable))
                 throw new Exception($"Variable {name} already declared in this scope");
@@ -29,6 +31,12 @@ namespace Elfenlabs.Scripting
             return variable.Position;
         }
 
+        /// <summary>
+        /// Declares a new function in this scope
+        /// </summary>
+        /// <param name="function"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public FunctionHeader DeclareFunction(FunctionHeader function)
         {
             if (!Functions.TryAdd(function.Name, function))
@@ -37,13 +45,24 @@ namespace Elfenlabs.Scripting
             return function;
         }
 
+        /// <summary>
+        /// Try getting a variable by name, will out the variable with relative offset from the this scope
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="variable"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public bool TryGetVariable(string name, out Variable variable)
         {
             if (Variables.TryGetValue(name, out variable))
                 return true;
 
-            if (Parent != null)
-                return Parent.TryGetVariable(name, out variable);
+            if (Parent != null && Parent.TryGetVariable(name, out variable))
+            {
+                //if (IsFunction)
+                    //variable.Position -= Parent.WordLength;
+                return true;
+            }
 
             return false;
         }
@@ -59,9 +78,9 @@ namespace Elfenlabs.Scripting
             return false;
         }
 
-        public Scope CreateChild()
+        public Scope CreateChild(bool isFunction = false)
         {
-            return new Scope { Parent = this, Depth = Depth + 1 };
+            return new Scope { Parent = this, Depth = Depth + 1, IsFunction = isFunction };
         }
     }
 
@@ -70,7 +89,6 @@ namespace Elfenlabs.Scripting
         void ConsumeBlock()
         {
             var depth = currentScope.Depth;
-
             while (true)
             {
                 if (!TryConsumeIndents(depth))

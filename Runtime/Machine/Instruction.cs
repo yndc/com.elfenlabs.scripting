@@ -9,39 +9,80 @@ namespace Elfenlabs.Scripting
         // Control flow operations 
         // --------------------------------
 
+        /// <summary>
+        /// Halts the execution of the script
+        /// </summary>
         Halt,
         Yield,
-        Jump,               // <short>    - The instruction pointer offset to jump into
-        JumpCondition,      // <short>    - The instruction pointer offset to jump into 
-                            // <byte>     - The boolean value to check with the top of the stack
-        Call,               // <short>    - The index of the function to call
-                            // <byte>     - The number of words to push on the stack
-        Return,             // <byte>     - The number of words to return
+
+        /// <summary>
+        /// Jump the instruction pointer to the given offset
+        /// <br/>
+        /// <br/>arg short  : Instruction offset to jump into
+        /// </summary>
+        Jump,
+
+        /// <summary>
+        /// Jump the instruction pointer to the given offset if the top of the stack 
+        /// is equal with the given byte argument
+        /// <br/>
+        /// <br/>arg short  : Instruction offset to jump into
+        /// <br/>arg byte   : The boolean value to check with the top of the stack
+        /// </summary>
+        JumpCondition,
+
+        /// <summary>
+        /// Calls a function with the given index
+        /// <br/>
+        /// <br/>arg ushort  : Index of the function to call
+        /// <br/>arg byte    : Length in words from the top of the stack to pass as arguments
+        /// </summary>
+        Call,
+
+        /// <summary>
+        /// Returns to the previous frame 
+        /// <br/>
+        /// <br/>arg byte    : Length in words from the top of the stack to return 
+        /// </summary>
+        Return,
 
         // --------------------------------
         // Stack operations
         // --------------------------------
 
-        LoadConstant,       // <short>    - The index of the constant to load
-                            // <byte>     - The number of words to load from the constant
+        /// <summary>
+        /// Copies constant values from the given position to the top of the stack.
+        /// <br/>
+        /// <br/>arg short  : Starting word offset from the base constant pointer
+        /// <br/>arg byte   : Length in words to copy
+        /// </summary>
+        LoadConstant,
 
-        LoadVariable,       // <short>    - The index of the variable to load
-                            // <byte>     - The number of words to load from the stack
+        /// <summary>
+        /// Copies the stack values from the given position to the top of the stack.
+        /// <br/>
+        /// <br/>arg short  : Starting word offset from the current frame pointer
+        /// <br/>arg byte   : Length in words to copy from the stack
+        /// </summary>
+        LoadStack,
 
-        LoadVariableElement,// <short>    - The index of the variable to load
-                            // <byte>     - The number of words to load from the stack
+        /// <summary>
+        /// Pops a word from the stack, then copies the stack values from the 
+        /// given offset plus the popped value to the top of the stack.
+        /// <br/>
+        /// <br/>arg short  : Starting word offset from the current frame pointer
+        /// <br/>arg byte   : Length in words to copy from the stack
+        /// </summary>
+        LoadStackWithOffset,
 
         LoadHeap,           // <short>    - The index of the heap to load
                             // <byte>     - The number of words to load from the heap   
 
-        StoreVariable,      // <short>    - The index of the variable to store
+        WriteStack,      // <short>    - The index of the variable to store
                             // <byte>     - The number of words to store from the stack
 
-        StoreHeap,          // <short>    - The index of the heap to store
+        WriteHeap,          // <short>    - The index of the heap to store
                             // <byte>     - The number of words to store from the stack
-
-        WriteHeap,          // <short>    - The index of the heap to write
-                            // <byte>     - The number of words to write from the stack
 
         Pop,                // <short>    - The number of words to pop from the stack
 
@@ -269,14 +310,13 @@ namespace Elfenlabs.Scripting
             { InstructionType.Call, Format.OBS },
             { InstructionType.Return, Format.OB },
             { InstructionType.LoadConstant, Format.OBS },
-            { InstructionType.LoadVariable, Format.OBS },
-            { InstructionType.LoadVariableElement, Format.OBS },
-            { InstructionType.StoreVariable, Format.OBS },
+            { InstructionType.LoadStack, Format.OBSs },
+            { InstructionType.LoadStackWithOffset, Format.OBSs },
+            { InstructionType.WriteStack, Format.OBSs },
             { InstructionType.Pop, Format.OS },
             { InstructionType.FillZero, Format.OS },
             { InstructionType.WritePrevious, Format.OBS },
             { InstructionType.LoadHeap, Format.OBS },
-            { InstructionType.StoreHeap, Format.OBS },
             { InstructionType.WriteHeap, Format.OBS },
             { InstructionType.HeapLoadConstant, Format.OBS},
             { InstructionType.CallExternal, Format.OS},

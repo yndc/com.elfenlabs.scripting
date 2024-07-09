@@ -122,7 +122,7 @@ namespace Elfenlabs.Scripting
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void LoadVariable(ushort offset, byte wordLen)
+        unsafe void LoadStack(short offset, byte wordLen)
         {
             EnsureStackCapacity(wordLen);
             UnsafeUtility.MemCpy(stackHeadPtr, frameValuesPtr + offset, wordLen * CompilerUtility.WordSize);
@@ -135,7 +135,7 @@ namespace Elfenlabs.Scripting
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void LoadVariableElement(ushort offset, byte wordLen)
+        unsafe void LoadStackWithOffset(short offset, byte wordLen)
         {
             EnsureStackCapacity(wordLen);
             var index = Pop<int>();
@@ -149,7 +149,7 @@ namespace Elfenlabs.Scripting
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void StoreVariable(ushort offset, byte wordLen)
+        unsafe void WriteStack(short offset, byte wordLen)
         {
             UnsafeUtility.MemCpy(frameValuesPtr + offset, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
             stackHeadPtr -= wordLen;
