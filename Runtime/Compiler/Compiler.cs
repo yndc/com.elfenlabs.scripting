@@ -77,6 +77,17 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
+        /// Consumes current token
+        /// </summary>
+        /// <returns></returns>
+        Token Consume()
+        {
+            var token = current.Value;
+            Skip();
+            return token;
+        }
+
+        /// <summary>
         /// Consume current token with type assertion
         /// </summary>
         /// <param name="type"></param>
