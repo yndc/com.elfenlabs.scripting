@@ -241,6 +241,11 @@ namespace Elfenlabs.Scripting
                 //    return variable.Type.ToElement();
                 //}
 
+                if (variable.Type is ReferenceType referenceType)
+                {
+                    
+                }
+
                 // Check if it uses the member access operator
                 if (MatchAdvance(TokenType.Dot))
                 {
@@ -251,7 +256,7 @@ namespace Elfenlabs.Scripting
                             var index = int.Parse(indexToken.Value);
                             if (index >= spanValueType.Length)
                                 throw CreateException(indexToken, $"Index {index} is out of bounds for span {spanValueType}");
-                            CodeBuilder.Add(new Instruction(InstructionType.LoadVariable, (ushort)(variable.Position + index), spanValueType.Element.WordLength));
+                            CodeBuilder.Add(new Instruction(InstructionType.LoadStack, (ushort)(variable.Position + index), spanValueType.Element.WordLength));
                             return spanValueType.Element;
                         case StructureValueType structureValueType:
                             var member = Consume(TokenType.Identifier, "Expected identifier after '.'");
@@ -259,18 +264,20 @@ namespace Elfenlabs.Scripting
                             {
                                 throw CreateException(current.Value, $"Unknown member {member} in variable {identifier} of type {structureValueType}");
                             }
-                            CodeBuilder.Add(new Instruction(InstructionType.LoadVariable, (ushort)(variable.Position + field.Offset), field.Type.WordLength));
+                            CodeBuilder.Add(new Instruction(InstructionType.LoadStack, (ushort)(variable.Position + field.Offset), field.Type.WordLength));
                             return field.Type;
                         default:
                             throw CreateException(previous.Value, $"The member accessor operator '.' can only be used for spans, structs, or module. {identifier} is not one of them.");
                     }
                 }
 
-                CodeBuilder.Add(new Instruction(InstructionType.LoadVariable, variable.Position, variable.Type.WordLength));
+                CodeBuilder.Add(new Instruction(InstructionType.LoadStack, variable.Position, variable.Type.WordLength));
 
                 // Handles increment and decrement operators
-                ConsumeVariableIncrement(variable);
-                ConsumeVariableDecrement(variable);
+                if (MatchAdvance(TokenType.Increment))
+                    ConsumeVariableIncrement(variable);
+                if (MatchAdvance(TokenType.Decrement))
+                    ConsumeVariableDecrement(variable);
 
                 return variable.Type;
             }
@@ -278,7 +285,7 @@ namespace Elfenlabs.Scripting
             // Check if it refers to a function
             if (currentScope.TryGetFunction(identifier, out var function))
             {
-                if (MatchAdvance(TokenType.LeftParentheses))
+                if (current.Value.Type == TokenType.LeftParentheses)
                 {
                     return ConsumeFunctionCall(function);
                 }
