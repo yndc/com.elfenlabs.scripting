@@ -19,6 +19,11 @@ namespace Elfenlabs.Scripting
         /// </summary>
         public byte WordLength;
 
+        /// <summary>
+        /// Methods available for this type
+        /// </summary>
+        public List<FunctionHeader> Methods = new();
+
         public ValueType(Path identifier, byte wordLength)
         {
             Identifier = identifier;
@@ -93,6 +98,13 @@ namespace Elfenlabs.Scripting
         {
             return $"{Element}<{Length}>";
         }
+    }
+
+    public class ReferenceType : ValueType
+    {
+        public ValueType Element;
+        
+        public ReferenceType(ValueType element) : base(new Path($"ref {element.Identifier.Name}"), 1) { }
     }
 
     public partial class Compiler
