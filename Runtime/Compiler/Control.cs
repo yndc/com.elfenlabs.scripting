@@ -89,6 +89,7 @@ namespace Elfenlabs.Scripting
             // Check if it refers to a variable
             if (currentScope.TryGetVariable(identifier, out var variable))
             {
+                Skip();
                 ConsumeStatementVariable(variable);
                 return;
             }
@@ -97,11 +98,8 @@ namespace Elfenlabs.Scripting
             if (currentScope.TryGetFunction(identifier, out FunctionHeader function))
             {
                 Skip();
-                if (MatchAdvance(TokenType.LeftParentheses))
-                {
-                    ConsumeFunctionCall(function);
-                    return;
-                }
+                ConsumeFunctionCall(function);
+                return;
             }
 
             throw CreateException(current.Value, $"Unknown statement identifier {identifier}");
