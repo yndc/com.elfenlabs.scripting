@@ -102,13 +102,13 @@ namespace Elfenlabs.Scripting
 
         public ByteCode Build()
         {
-            AssertEndWithHalt();
+            EnsureEndWithHalt();
             return new ByteCode(instructions, constants);
         }
 
         public BlobBuilderArray<byte> Build(BlobBuilder blobBuilder, ref BlobArray<byte> dst)
         {
-            AssertEndWithHalt();
+            EnsureEndWithHalt();
             var codeBuilder = blobBuilder.Allocate(ref dst, instructions.Length);
             unsafe
             {
@@ -117,11 +117,27 @@ namespace Elfenlabs.Scripting
             return codeBuilder;
         }
 
-        void AssertEndWithHalt()
+        public void EnsureEndWithHalt()
         {
-            if (instructions.Length == 0 || instructions[^1].Type != InstructionType.Halt)
+            if (instructions.Length == 0 || (instructions[^1].Type != InstructionType.Halt && instructions[^1].Type != InstructionType.Return))
             {
                 instructions.Add(new Instruction(InstructionType.Halt));
+            }
+        }
+
+        public void EnsureEndWithReturn()
+        {
+            if (instructions.Length == 0 || instructions[^1].Type != InstructionType.Return)
+            {
+                instructions.Add(new Instruction(InstructionType.Return, 0));
+            }
+        }
+
+        public void AssertEndWithReturn()
+        {
+            if (instructions.Length == 0 || instructions[^1].Type != InstructionType.Return)
+            {
+                throw new System.Exception("Chunk must end with a return instruction");
             }
         }
     }

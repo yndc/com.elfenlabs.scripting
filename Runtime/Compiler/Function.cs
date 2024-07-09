@@ -33,7 +33,7 @@ namespace Elfenlabs.Scripting
         /// <summary>
         /// Parameters of this function
         /// </summary>
-        public Parameter[] Parameters;
+        public List<Parameter> Parameters;
 
         /// <summary>
         /// Flags this function as an external function
@@ -59,7 +59,7 @@ namespace Elfenlabs.Scripting
         {
             Name = name;
             ReturnType = returnType;
-            Parameters = parameters;
+            Parameters = new List<Parameter>(parameters);
             Index = 0;
         }
     }
@@ -151,23 +151,25 @@ namespace Elfenlabs.Scripting
 
         List<FunctionHeader.Parameter> ConsumeFunctionDeclarationParameters()
         {
-            Consume(TokenType.LeftParentheses, "Expected '(' before function parameters");
             var parameters = new List<FunctionHeader.Parameter>();
-            while (true)
+            Consume(TokenType.LeftParentheses, "Expected '(' before function parameters");
+            while (current.Value.Type != TokenType.RightParentheses)
             {
-                parameters.Add(ConsumeFunctionDeclarationParameter());
+                var parameter = ConsumeFunctionDeclarationParameter();
+                parameters.Add(parameter);
                 switch (current.Value.Type)
                 {
                     case TokenType.Comma:
                         Skip();
                         continue;
                     case TokenType.RightParentheses:
-                        Skip();
-                        return parameters;
+                        break;
                     default:
-                        throw CreateException(current.Value, "Expected ',' or ')' after function parameter");
+                        throw CreateException(current.Value, "Expected ',' or ')' after function parameter declaration");
                 }
             }
+            Skip();
+            return parameters;
         }
 
         FunctionHeader.Parameter ConsumeFunctionDeclarationParameter()
@@ -179,11 +181,11 @@ namespace Elfenlabs.Scripting
 
         void ConsumeFunctionBody(SubProgram subProgram)
         {
-            var functionScope = currentScope.CreateChild();
+            var functionScope = currentScope.CreateChild(true);
             var previousFunction = currentSubProgram;
 
             // Add all parameters as variables to the function scope
-            for (int i = 0; i < subProgram.Header.Parameters.Length; i++)
+            for (int i = 0; i < subProgram.Header.Parameters.Count; i++)
             {
                 var p = subProgram.Header.Parameters[i];
                 functionScope.DeclareVariable(p.Name, p.Type);
@@ -191,12 +193,20 @@ namespace Elfenlabs.Scripting
             currentSubProgram = subProgram;
             currentScope = functionScope;
             ConsumeBlock();
+
+            // Ensure that the function ends with a return statement
+            if (subProgram.Header.ReturnType == ValueType.Void)
+                CodeBuilder.EnsureEndWithReturn();
+            else
+                CodeBuilder.AssertEndWithReturn();
+
             currentSubProgram = previousFunction;
             currentScope = functionScope.Parent;
         }
 
         ValueType ConsumeFunctionCall(FunctionHeader function)
         {
+            Consume(TokenType.LeftParentheses, "Expected '(' after function name");
             ConsumeFunctionCallParameters(function.Parameters);
             if (function.IsExternal)
                 CodeBuilder.Add(new Instruction(InstructionType.CallExternal, function.Index));
@@ -205,11 +215,10 @@ namespace Elfenlabs.Scripting
             return function.ReturnType;
         }
 
-        void ConsumeFunctionCallParameters(FunctionHeader.Parameter[] functionParameters)
+        void ConsumeFunctionCallParameters(List<FunctionHeader.Parameter> functionParameters)
         {
             var callParameters = new List<ValueType>();
-            var parseParameters = true;
-            while (parseParameters)
+            while (current.Value.Type != TokenType.RightParentheses)
             {
                 callParameters.Add(ConsumeExpression());
                 switch (current.Value.Type)
@@ -218,17 +227,16 @@ namespace Elfenlabs.Scripting
                         Skip();
                         continue;
                     case TokenType.RightParentheses:
-                        Skip();
-                        parseParameters = false;
                         break;
                     default:
                         throw CreateException(current.Value, "Expected ',' or ')' after function parameter");
                 }
             }
+            Skip();
 
-            if (callParameters.Count != functionParameters.Length)
+            if (callParameters.Count != functionParameters.Count)
                 throw CreateException(current.Value,
-                    $"Expected {functionParameters.Length} parameters, got {callParameters.Count}");
+                    $"Expected {functionParameters.Count} parameters, got {callParameters.Count}");
 
             for (int i = 0; i < callParameters.Count; i++)
             {
