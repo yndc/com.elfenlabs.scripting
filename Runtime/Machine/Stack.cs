@@ -170,16 +170,28 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
-        /// Store the stack value onto a ref
+        /// Store the stack value onto an address
         /// </summary>
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void StoreRef(short offset, byte wordLen)
+        unsafe void StoreToAddress(short offset, byte wordLen)
         {
             var address = *(stackHeadPtr - wordLen - 1);
             UnsafeUtility.MemCpy(Stack.GetUnsafePtr() + address + offset, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
             stackHeadPtr -= (wordLen + 1);
+        }
+
+        /// <summary>
+        /// Store the stack value to previous stack 
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="wordLen"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void StoreToOffset(short offset, byte wordLen)
+        {
+            UnsafeUtility.MemCpy(stackHeadPtr - wordLen - offset, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
+            stackHeadPtr -= wordLen;
         }
 
         /// <summary>

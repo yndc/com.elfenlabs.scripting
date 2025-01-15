@@ -115,7 +115,7 @@ namespace Elfenlabs.Scripting
         /// <br/>arg short : Offset to add to the top of the stack.
         /// <br/>arg byte  : Length in words to copy.
         /// </summary>
-        StoreOffset,
+        StoreToOffset,
 
         /// <summary>
         /// Copies values from the top of the stack to a specified stack address
@@ -373,7 +373,8 @@ namespace Elfenlabs.Scripting
             { InstructionType.LoadStackAddress, Format.OS },
             { InstructionType.LoadFromStackAddress, Format.OBSs },
             { InstructionType.Store, Format.OBSs },
-            { InstructionType.StoreRef, Format.OBSs },
+            { InstructionType.StoreToAddress, Format.OBSs },
+            { InstructionType.StoreToOffset, Format.OBSs },
             { InstructionType.Pop, Format.OS },
             { InstructionType.FillZero, Format.OS },
             { InstructionType.WritePrevious, Format.OBS },

@@ -88,10 +88,13 @@ namespace Elfenlabs.Scripting
                     case InstructionType.Store:
                         Store(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.StoreRef:
-                        StoreRef(instruction.ArgSignedShort, instruction.ArgByte1);
+                    case InstructionType.StoreToAddress:
+                        StoreToAddress(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.StoreHeap:
+                    case InstructionType.StoreToOffset:
+                        StoreToOffset(instruction.ArgSignedShort, instruction.ArgByte1);
+                        break;
+                    case InstructionType.StoreToHeap:
                         StoreHeap(instruction.ArgByte1);
                         break;
                     case InstructionType.HeapLoadConstant:

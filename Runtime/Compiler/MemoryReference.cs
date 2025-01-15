@@ -131,9 +131,9 @@ namespace Elfenlabs.Scripting
                         throw CreateException(equalToken, $"Cannot assign {rhsType.Identifier} to {resolvedValue.Type.Identifier}");
 
                     if (resolvedValue.IsHeap)
-                        CodeBuilder.Add(new Instruction(InstructionType.WriteHeap, resolvedValue.Offset, resolvedValue.Type.WordLength));
+                        CodeBuilder.Add(new Instruction(InstructionType.StoreToHeap, resolvedValue.Offset, resolvedValue.Type.WordLength));
                     if (resolvedValue.IsUnderRef)
-                        CodeBuilder.Add(new Instruction(InstructionType.StoreRef, resolvedValue.Offset, resolvedValue.Type.WordLength));
+                        CodeBuilder.Add(new Instruction(InstructionType.StoreToAddress, resolvedValue.Offset, resolvedValue.Type.WordLength));
                     else
                         CodeBuilder.Add(new Instruction(InstructionType.Store, resolvedValue.Offset, resolvedValue.Type.WordLength));
 

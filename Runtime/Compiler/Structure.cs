@@ -137,11 +137,10 @@ namespace Elfenlabs.Scripting
 
             var literalFields = new List<StructureValueType.Field>();
             var assignedFields = new HashSet<StructureValueType.Field>();
-            var structOffset = currentScope.FrameOffset + currentScope.WordLength;
             while (current.Value.Type != TokenType.RightBrace)
             {
                 Skip(TokenType.Indent);
-                var field = ConsumeStructLiteralField(type, assignedFields, structOffset);
+                var field = ConsumeStructLiteralField(type, assignedFields);
                 literalFields.Add(field);
                 Skip(TokenType.StatementTerminator);
                 Skip(TokenType.Comma);
@@ -150,7 +149,7 @@ namespace Elfenlabs.Scripting
             Consume(TokenType.RightBrace);
         }
 
-        StructureValueType.Field ConsumeStructLiteralField(StructureValueType type, HashSet<StructureValueType.Field> assignedFields, int structOffset)
+        StructureValueType.Field ConsumeStructLiteralField(StructureValueType type, HashSet<StructureValueType.Field> assignedFields)
         {
             var fieldName = Consume(TokenType.Identifier).Value;
             if (!type.TryGetField(fieldName, out var field))
@@ -158,15 +157,13 @@ namespace Elfenlabs.Scripting
             if (assignedFields.Contains(field))
                 throw CreateException(previous.Value, $"Field {fieldName} already assigned in structure literal");
 
-            // var fieldLocator = new MemoryReference() { Type = field.Type, Offset =  }
-
             Consume(TokenType.Equal);
 
             var expressionType = ConsumeExpression();
             if (expressionType != field.Type)
                 throw CreateException(previous.Value, $"Cannot assign {expressionType.Identifier} to {field.Type.Identifier}");
 
-            CodeBuilder.Add(new Instruction(InstructionType.Store, (ushort)(structOffset + field.Offset), field.Type.WordLength));
+            CodeBuilder.Add(new Instruction(InstructionType.StoreToOffset, (ushort)(type.WordLength - field.Offset), field.Type.WordLength));
 
             return field;
         }
