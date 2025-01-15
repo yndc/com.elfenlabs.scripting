@@ -193,55 +193,55 @@ namespace Elfenlabs.Scripting.Tests
             Assert.AreEqual(2f, BitConverter.Int32BitsToSingle(result.Stack[3]));
         }
 
-        //[Test]
-        //public void Nested()
-        //{
-        //    var result = CompilerUtility.Debug(@"
-        //        structure Vector 
-        //            field X Float
-        //            field Y Float
+        [Test]
+        public void NestedMethod()
+        {
+           var result = CompilerUtility.Debug(@"
+               structure Vector 
+                   field X Float
+                   field Y Float
 
-        //            function Magnitude() returns Float 
-        //                return self.X ** 2.0 + self.Y ** 2.0
+                   function Magnitude() returns Float 
+                       return self.X ** 2.0 + self.Y ** 2.0
 
-        //            function Transpose() returns Void
-        //                var temp = self.X
-        //                self.X = self.Y
-        //                self.Y = temp
+                   function Transpose() returns Void
+                       var temp = self.X
+                       self.X = self.Y
+                       self.Y = temp
 
-        //        structure Rectangle
-        //            field TopLeft Vector
-        //            field BottomRight Vector
+               structure Rectangle
+                   field BottomLeft Vector
+                   field TopRight Vector
 
-        //            function Area() returns Float
-        //                var width = self.BottomRight.X - self.TopLeft.X
-        //                var height = self.TopLeft.Y - self.BottomRight.Y
-        //                return width * height
+                   function Area() returns Float
+                       var width = self.TopRight.X - self.BottomLeft.X
+                       var height = self.TopRight.Y - self.BottomLeft.Y
+                       return width * height
 
-        //            function Transpose() returns Void
-        //                self.TopLeft.Transpose()
-        //                self.BottomRight.Transpose()
+                   function Transpose() returns Void
+                       self.TopRight.Transpose()
+                       self.BottomLeft.Transpose()
 
-        //        var rect = Rectangle {
-        //            TopLeft = Vector { X = 1.0, Y = 5.0 }
-        //            BottomRight = Vector { X = 10.0, Y = 1.0 }
-        //        }
+               var rect = Rectangle {
+                   TopRight = Vector { X = 3.0, Y = 4.0 }
+                   BottomLeft = Vector { Y = 2.0, X = 1.0 }
+               }
 
-        //        var area1 = rect.Area()
+               var area1 = rect.Area()
 
-        //        rect.TopLeft.X = 2.0
-        //        rect.BottomRight.Transpose()
+               rect.TopRight.X = 10.0
+               rect.TopRight.Transpose()
 
-        //        var area2 = rect.Area()
+               var area2 = rect.Area()
 
-        //    ".NormalizeMultiline());
+           ".NormalizeMultiline());
 
-        //    Assert.AreEqual(2f, BitConverter.Int32BitsToSingle(result.Stack[0]));
-        //    Assert.AreEqual(5f, BitConverter.Int32BitsToSingle(result.Stack[1]));
-        //    Assert.AreEqual(1f, BitConverter.Int32BitsToSingle(result.Stack[2]));
-        //    Assert.AreEqual(10f, BitConverter.Int32BitsToSingle(result.Stack[3]));
-        //    Assert.AreEqual(102f, BitConverter.Int32BitsToSingle(result.Stack[4]));
-        //    Assert.AreEqual(345f, BitConverter.Int32BitsToSingle(result.Stack[5]));
-        //}
+           Assert.AreEqual(1f, BitConverter.Int32BitsToSingle(result.Stack[0]));
+           Assert.AreEqual(2f, BitConverter.Int32BitsToSingle(result.Stack[1]));
+           Assert.AreEqual(4f, BitConverter.Int32BitsToSingle(result.Stack[2]));
+           Assert.AreEqual(10f, BitConverter.Int32BitsToSingle(result.Stack[3]));
+           Assert.AreEqual(4f, BitConverter.Int32BitsToSingle(result.Stack[4]));
+           Assert.AreEqual(24f, BitConverter.Int32BitsToSingle(result.Stack[5]));
+        }
     }
 }
