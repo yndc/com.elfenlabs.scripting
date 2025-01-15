@@ -3,13 +3,13 @@ using static Unity.Entities.SystemBaseDelegates;
 
 namespace Elfenlabs.Scripting
 {
-    public class StructureValueType : ValueType
+    public class StructureValueType : Type
     {
         public class Field
         {
             public string Name;
-            public ValueType Type;
-            public byte Offset;
+            public Type Type;
+            public short Offset;
         }
 
         public List<Field> Fields = new();
@@ -22,7 +22,7 @@ namespace Elfenlabs.Scripting
         /// <param name="name"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public bool TryGetFieldByName(string name, out Field result)
+        public bool TryGetField(string name, out Field result)
         {
             foreach (var field in Fields)
             {
@@ -41,7 +41,7 @@ namespace Elfenlabs.Scripting
         /// </summary>
         /// <param name="name"></param>
         /// <param name="type"></param>
-        public void AddField(string name, ValueType type)
+        public void AddField(string name, Type type)
         {
             Fields.Add(new Field { Name = name, Type = type, Offset = WordLength });
             WordLength += type.WordLength;
@@ -70,6 +70,15 @@ namespace Elfenlabs.Scripting
 
             currentScope = currentScope.CreateChild();
 
+            ConsumeStructureMembers(type);
+
+            currentScope = currentScope.Parent;
+
+            RegisterType(type);
+        }
+
+        void ConsumeStructureMembers(StructureValueType type)
+        {
             while (true)
             {
                 if (!TryConsumeIndents(currentScope.Depth))
@@ -77,10 +86,6 @@ namespace Elfenlabs.Scripting
 
                 ConsumeStructureMemberDeclaration(type);
             }
-
-            currentScope = currentScope.Parent;
-
-            RegisterType(type);
         }
 
         void ConsumeStructureMemberDeclaration(StructureValueType type)
@@ -114,6 +119,8 @@ namespace Elfenlabs.Scripting
             // Add 'self' variable as a reference to this structure
             function.Parameters.Insert(0, new FunctionHeader.Parameter("self", new ReferenceType(type)));
 
+            type.AddMethod(function);
+
             var subProgram = new SubProgram(function);
             RegisterSubProgram(subProgram);
             ConsumeFunctionBody(subProgram);
@@ -130,24 +137,28 @@ namespace Elfenlabs.Scripting
 
             var literalFields = new List<StructureValueType.Field>();
             var assignedFields = new HashSet<StructureValueType.Field>();
+            var structOffset = currentScope.FrameOffset + currentScope.WordLength;
             while (current.Value.Type != TokenType.RightBrace)
             {
                 Skip(TokenType.Indent);
-                var field = ConsumeStructLiteralField(type, assignedFields);
+                var field = ConsumeStructLiteralField(type, assignedFields, structOffset);
                 literalFields.Add(field);
                 Skip(TokenType.StatementTerminator);
+                Skip(TokenType.Comma);
             }
 
             Consume(TokenType.RightBrace);
         }
 
-        StructureValueType.Field ConsumeStructLiteralField(StructureValueType type, HashSet<StructureValueType.Field> assignedFields)
+        StructureValueType.Field ConsumeStructLiteralField(StructureValueType type, HashSet<StructureValueType.Field> assignedFields, int structOffset)
         {
             var fieldName = Consume(TokenType.Identifier).Value;
-            if (!type.TryGetFieldByName(fieldName, out var field))
+            if (!type.TryGetField(fieldName, out var field))
                 throw CreateException(previous.Value, $"Field {fieldName} does not exist in structure {type.Identifier}");
             if (assignedFields.Contains(field))
                 throw CreateException(previous.Value, $"Field {fieldName} already assigned in structure literal");
+
+            // var fieldLocator = new MemoryReference() { Type = field.Type, Offset =  }
 
             Consume(TokenType.Equal);
 
@@ -155,7 +166,7 @@ namespace Elfenlabs.Scripting
             if (expressionType != field.Type)
                 throw CreateException(previous.Value, $"Cannot assign {expressionType.Identifier} to {field.Type.Identifier}");
 
-            CodeBuilder.Add(new Instruction(InstructionType.WritePrevious, (ushort)(type.WordLength - field.Offset), field.Type.WordLength));
+            CodeBuilder.Add(new Instruction(InstructionType.Store, (ushort)(structOffset + field.Offset), field.Type.WordLength));
 
             return field;
         }

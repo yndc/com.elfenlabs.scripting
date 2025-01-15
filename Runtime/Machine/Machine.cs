@@ -19,14 +19,14 @@ namespace Elfenlabs.Scripting
 
         public Machine(int initialStackCapacity, Allocator allocator)
         {
-            Values = new NativeList<int>(initialStackCapacity, allocator);
+            Stack = new NativeList<int>(initialStackCapacity, allocator);
             Frames = new NativeList<Frame>(10, allocator);
             ExternalFunctions = new NativeArray<FunctionPointer<ExternalFunction>>();
             heap = new Arena(256, allocator);
             State = ExecutionState.Running;
             heapPtr = heap.GetUnsafePtr();
-            stackHeadPtr = Values.GetUnsafePtr();
-            frameValuesPtr = Values.GetUnsafePtr();
+            stackHeadPtr = Stack.GetUnsafePtr();
+            stackFramePtr = Stack.GetUnsafePtr();
             instructionPtr = null;
             constantsPtr = null;
             currentFrame = default;
@@ -55,12 +55,12 @@ namespace Elfenlabs.Scripting
 
         public void Dispose()
         {
-            Values.Dispose();
+            Stack.Dispose();
         }
 
         public JobHandle Dispose(JobHandle handle)
         {
-            return Values.Dispose(handle);
+            return Stack.Dispose(handle);
         }
     }
 }

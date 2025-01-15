@@ -2,12 +2,13 @@ using System.Runtime.CompilerServices;
 using TreeEditor;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.VisualScripting.YamlDotNet.Core.Tokens;
 
 namespace Elfenlabs.Scripting
 {
     public unsafe partial struct Machine
     {
-        public NativeList<int> Values;
+        public NativeList<int> Stack;
         public NativeList<Frame> Frames;
         public int* stackHeadPtr;
         int* constantsPtr;
@@ -18,7 +19,7 @@ namespace Elfenlabs.Scripting
         /// <returns></returns>
         public int GetStackWordLength()
         {
-            return (int)(stackHeadPtr - Values.GetUnsafePtr());
+            return (int)(stackHeadPtr - Stack.GetUnsafePtr());
         }
 
         /// <summary>
@@ -27,7 +28,7 @@ namespace Elfenlabs.Scripting
         /// <param name="words"></param>
         public void EnsureStackCapacity(int additionalWords)
         {
-            Values.ResizeUninitialized(GetStackWordLength() + additionalWords);
+            Stack.ResizeUninitialized(GetStackWordLength() + additionalWords);
         }
 
         /// <summary>
@@ -125,22 +126,35 @@ namespace Elfenlabs.Scripting
         unsafe void LoadStack(short offset, byte wordLen)
         {
             EnsureStackCapacity(wordLen);
-            UnsafeUtility.MemCpy(stackHeadPtr, frameValuesPtr + offset, wordLen * CompilerUtility.WordSize);
+            UnsafeUtility.MemCpy(stackHeadPtr, stackFramePtr + offset, wordLen * CompilerUtility.WordSize);
             stackHeadPtr += wordLen;
         }
 
         /// <summary>
-        /// Pushes a variable element value onto the stack using index on the top of the stack.
+        /// Push the stack address for the current frame plus offset argument
         /// </summary>
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void LoadStackWithOffset(short offset, byte wordLen)
+        unsafe void LoadStackAddress(short offset)
+        {
+            *stackHeadPtr = (int)(stackFramePtr + offset - Stack.GetUnsafePtr());
+            stackHeadPtr += 1;
+        }
+
+        /// <summary>
+        /// Pushes a stack value from an address onto the stack.
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="wordLen"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void LoadFromStackAddress(short offset, byte wordLen)
         {
             EnsureStackCapacity(wordLen);
-            var index = Pop<int>();
-            UnsafeUtility.MemCpy(stackHeadPtr, frameValuesPtr + offset + index, wordLen * CompilerUtility.WordSize);
-            stackHeadPtr += wordLen;
+            var addressPtr = stackHeadPtr - 1;
+            var address = *(addressPtr) + offset;
+            UnsafeUtility.MemCpy(addressPtr, Stack.GetUnsafePtr() + address, wordLen * CompilerUtility.WordSize);
+            stackHeadPtr += wordLen - 1;
         }
 
         /// <summary>
@@ -149,10 +163,23 @@ namespace Elfenlabs.Scripting
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void WriteStack(short offset, byte wordLen)
+        unsafe void Store(short offset, byte wordLen)
         {
-            UnsafeUtility.MemCpy(frameValuesPtr + offset, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
+            UnsafeUtility.MemCpy(stackFramePtr + offset, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
             stackHeadPtr -= wordLen;
+        }
+
+        /// <summary>
+        /// Store the stack value onto a ref
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="wordLen"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void StoreRef(short offset, byte wordLen)
+        {
+            var address = *(stackHeadPtr - wordLen - 1);
+            UnsafeUtility.MemCpy(Stack.GetUnsafePtr() + address + offset, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
+            stackHeadPtr -= (wordLen + 1);
         }
 
         /// <summary>
@@ -165,18 +192,6 @@ namespace Elfenlabs.Scripting
             EnsureStackCapacity(wordLen);
             UnsafeUtility.MemClear(stackHeadPtr, wordLen * CompilerUtility.WordSize);
             stackHeadPtr += wordLen;
-        }
-
-        /// <summary>
-        /// Pop the stack value of the given word length and write it to the previous stack value with the given offset
-        /// Overlapping is undefined behavior
-        /// </summary>
-        /// <param name="offset"></param>
-        /// <param name="wordLen"></param>
-        unsafe void WritePrevious(ushort offset, byte wordLen)
-        {
-            UnsafeUtility.MemCpy(stackHeadPtr - offset - wordLen, stackHeadPtr - wordLen, wordLen * CompilerUtility.WordSize);
-            stackHeadPtr -= wordLen;
         }
     }
 }

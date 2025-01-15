@@ -5,12 +5,40 @@ namespace Elfenlabs.Scripting
 {
     public class Scope
     {
+        /// <summary>
+        /// Parent of this scope
+        /// </summary>
         public Scope Parent;
+
+        /// <summary>
+        /// Variables declared in this scope
+        /// </summary>
         public Dictionary<string, Variable> Variables = new();
+
+        /// <summary>
+        /// Functions declared in this scope
+        /// </summary>
         public Dictionary<string, FunctionHeader> Functions = new();
+
+        /// <summary>
+        /// Scope depth with 0 as the global scope
+        /// </summary>
         public int Depth;
-        public ushort WordLength;
-        public bool IsFunction;
+
+        /// <summary>
+        /// Offset from a nearest frame
+        /// </summary>
+        public int FrameOffset;
+
+        /// <summary>
+        /// Length of all variables in this scope
+        /// </summary>
+        public short WordLength;
+
+        /// <summary>
+        /// Flags if this scope is a function frame
+        /// </summary>
+        public bool IsFrame;
 
         /// <summary>
         /// Declares a new variable in this scope
@@ -19,16 +47,17 @@ namespace Elfenlabs.Scripting
         /// <param name="type"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public ushort DeclareVariable(string name, ValueType type)
+        public short DeclareVariable(string name, Type type)
         {
-            var variable = new Variable(name, type, WordLength);
+            var offset = (short)(FrameOffset + WordLength);
+            var variable = new Variable(type, name, this, offset);
 
             if (!Variables.TryAdd(name, variable))
                 throw new Exception($"Variable {name} already declared in this scope");
 
             WordLength += type.WordLength;
 
-            return variable.Position;
+            return offset;
         }
 
         /// <summary>
@@ -46,7 +75,7 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
-        /// Try getting a variable by name, will out the variable with relative offset from the this scope
+        /// Try getting a variable by name, if a variable is not found in this scope, it will try to find it in the parent scope
         /// </summary>
         /// <param name="name"></param>
         /// <param name="variable"></param>
@@ -59,14 +88,18 @@ namespace Elfenlabs.Scripting
 
             if (Parent != null && Parent.TryGetVariable(name, out variable))
             {
-                //if (IsFunction)
-                    //variable.Position -= Parent.WordLength;
                 return true;
             }
 
             return false;
         }
 
+        /// <summary>
+        /// Try getting a function by name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="function"></param>
+        /// <returns></returns>
         public bool TryGetFunction(string name, out FunctionHeader function)
         {
             if (Functions.TryGetValue(name, out function))
@@ -78,9 +111,14 @@ namespace Elfenlabs.Scripting
             return false;
         }
 
-        public Scope CreateChild(bool isFunction = false)
+        public Scope CreateChild(bool isFrame = false)
         {
-            return new Scope { Parent = this, Depth = Depth + 1, IsFunction = isFunction };
+            var child = new Scope { Parent = this, Depth = Depth + 1, IsFrame = isFrame };
+            if (!isFrame)
+            {
+                child.FrameOffset = FrameOffset + WordLength;
+            }
+            return child;
         }
     }
 

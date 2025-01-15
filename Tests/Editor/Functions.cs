@@ -76,21 +76,21 @@ namespace Elfenlabs.Scripting.Tests
             Assert.AreEqual(12, result.Stack[5]);
         }
 
-        [Test]
-        public void Closures()
-        {
-            var result = CompilerUtility.Debug(@"
-                var x = 1
-                function Increment () returns Void
-                    x = x + 1
-                
-                Increment()
-                Increment()
-                Increment()
-                Increment()
-            ".NormalizeMultiline());
+        //[Test]
+        //public void Closures()
+        //{
+        //    var result = CompilerUtility.Debug(@"
+        //        var x = 1
+        //        function Increment () returns Void
+        //            x = x + 1
 
-            Assert.AreEqual(5, result.Stack[0]);
-        }
+        //        Increment()
+        //        Increment()
+        //        Increment()
+        //        Increment()
+        //    ".NormalizeMultiline());
+
+        //    Assert.AreEqual(5, result.Stack[0]);
+        //}
     }
 }

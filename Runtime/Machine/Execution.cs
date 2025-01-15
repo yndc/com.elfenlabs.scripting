@@ -67,22 +67,31 @@ namespace Elfenlabs.Scripting
                         }
 
                     // Stack operations
+                    case InstructionType.Push:
+                        Push(instruction.ArgSignedShort);
+                        break;
                     case InstructionType.LoadConstant:
                         LoadConstant(instruction.ArgShort, instruction.ArgByte1);
                         break;
                     case InstructionType.LoadStack:
                         LoadStack(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.LoadStackWithOffset:
-                        LoadStackWithOffset(instruction.ArgSignedShort, instruction.ArgByte1);
+                    case InstructionType.LoadStackAddress:
+                        LoadStackAddress(instruction.ArgSignedShort);
+                        break;
+                    case InstructionType.LoadFromStackAddress:
+                        LoadFromStackAddress(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
                     case InstructionType.LoadHeap:
                         LoadHeap(instruction.ArgShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.WriteStack:
-                        WriteStack(instruction.ArgSignedShort, instruction.ArgByte1);
+                    case InstructionType.Store:
+                        Store(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.WriteHeap:
+                    case InstructionType.StoreRef:
+                        StoreRef(instruction.ArgSignedShort, instruction.ArgByte1);
+                        break;
+                    case InstructionType.StoreHeap:
                         StoreHeap(instruction.ArgByte1);
                         break;
                     case InstructionType.HeapLoadConstant:
@@ -94,17 +103,14 @@ namespace Elfenlabs.Scripting
                     case InstructionType.FillZero:
                         FillZero(instruction.ArgShort);
                         break;
-                    case InstructionType.WritePrevious:
-                        WritePrevious(instruction.ArgShort, instruction.ArgByte1);
-                        break;
                     case InstructionType.VariableIncrement:
                         {
-                            frameValuesPtr[instruction.ArgShort]++;
+                            stackFramePtr[instruction.ArgShort]++;
                             break;
                         }
                     case InstructionType.VariableDecrement:
                         {
-                            frameValuesPtr[instruction.ArgShort]--;
+                            stackFramePtr[instruction.ArgShort]--;
                             break;
                         }
 
@@ -121,7 +127,7 @@ namespace Elfenlabs.Scripting
                             value += other;
                             break;
                         }
-                    case InstructionType.IntSubstract:
+                    case InstructionType.IntSubtract:
                         {
                             ref var value = ref Binary<int>(out var other);
                             value -= other;

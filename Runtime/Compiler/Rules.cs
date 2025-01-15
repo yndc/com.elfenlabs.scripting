@@ -63,7 +63,8 @@ namespace Elfenlabs.Scripting
             { TokenType.Power,                          new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
             { TokenType.Remainder,                      new ParseRule(Handling.None, Handling.Binary, Precedence.Factor) },
             { TokenType.Bang,                           new ParseRule(Handling.Unary) },
-            { TokenType.And,                            new ParseRule(Handling.None, Handling.And, Precedence.And) },
+            { TokenType.And,                            new ParseRule(Handling.None, Handling.Binary, Precedence.And) },
+            { TokenType.Dot,                            new ParseRule(Handling.None, Handling.Binary, Precedence.Call) },
 
             // Literal values
             { TokenType.Integer,                        new ParseRule(Handling.Literal) },

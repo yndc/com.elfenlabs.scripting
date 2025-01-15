@@ -4,12 +4,12 @@ namespace Elfenlabs.Scripting
 {
     public partial class Compiler
     {
-        ValueType ConsumeExpression()
+        Type ConsumeExpression()
         {
             return ConsumeExpressionForward(Precedence.Assignment);
         }
 
-        ValueType ConsumeExpressionForward(Precedence minimumPrecedence)
+        Type ConsumeExpressionForward(Precedence minimumPrecedence)
         {
             Skip();
 
@@ -32,7 +32,7 @@ namespace Elfenlabs.Scripting
             return lastValueType;
         }
 
-        ValueType ConsumeExpression(Handling handling)
+        Type ConsumeExpression(Handling handling)
         {
             return handling switch
             {
@@ -42,18 +42,18 @@ namespace Elfenlabs.Scripting
                 Handling.Literal => ConsumeExpressionLiteral(),
                 Handling.Composite => ConsumeExpressionComposite(),
                 Handling.Identifier => ConsumeExpressionIdentifier(),
-                _ => ValueType.Void,
+                _ => Type.Void,
             };
         }
 
-        ValueType ConsumeExpressionGroup()
+        Type ConsumeExpressionGroup()
         {
             var valueType = ConsumeExpression();
             Consume(TokenType.RightParentheses, "Expected ')' after expression.");
             return valueType;
         }
 
-        ValueType ConsumeExpressionUnary()
+        Type ConsumeExpressionUnary()
         {
             var op = previous.Value.Type;
             var valueType = ConsumeExpressionForward(Precedence.Unary);
@@ -68,7 +68,7 @@ namespace Elfenlabs.Scripting
                     }
                     break;
                 case TokenType.Bang:
-                    AssertValueType(valueType, ValueType.Bool);
+                    AssertValueType(valueType, Type.Bool);
                     CodeBuilder.Add(new Instruction(InstructionType.BoolNegate)); break;
                 default: throw CreateException(previous.Value, $"Invalid unary symbol {op}");
             }
@@ -76,7 +76,7 @@ namespace Elfenlabs.Scripting
             return valueType;
         }
 
-        ValueType ConsumeExpressionBinary()
+        Type ConsumeExpressionBinary()
         {
             var op = previous.Value.Type;
             var rule = GetRule(op);
@@ -96,7 +96,7 @@ namespace Elfenlabs.Scripting
                 case TokenType.Minus:
                     switch (lhsValueType.Identifier)
                     {
-                        case "Int": CodeBuilder.Add(new Instruction(InstructionType.IntSubstract)); break;
+                        case "Int": CodeBuilder.Add(new Instruction(InstructionType.IntSubtract)); break;
                         case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatSubstract)); break;
                     }
                     break;
@@ -132,51 +132,58 @@ namespace Elfenlabs.Scripting
                 // Comparison
                 case TokenType.BangEqual:
                     CodeBuilder.Add(new Instruction(InstructionType.NotEqual));
-                    return ValueType.Bool;
+                    return Type.Bool;
                 case TokenType.EqualEqual:
                     CodeBuilder.Add(new Instruction(InstructionType.Equal));
-                    return ValueType.Bool;
+                    return Type.Bool;
                 case TokenType.Greater:
                     switch (lhsValueType.Identifier)
                     {
                         case "Int": CodeBuilder.Add(new Instruction(InstructionType.IntGreaterThan)); break;
                         case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatGreaterThan)); break;
                     }
-                    return ValueType.Bool;
+                    return Type.Bool;
                 case TokenType.GreaterEqual:
                     switch (lhsValueType.Identifier)
                     {
                         case "Int": CodeBuilder.Add(new Instruction(InstructionType.IntGreaterThanEqual)); break;
                         case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatGreaterThanEqual)); break;
                     }
-                    return ValueType.Bool;
+                    return Type.Bool;
                 case TokenType.Less:
                     switch (lhsValueType.Identifier)
                     {
                         case "Int": CodeBuilder.Add(new Instruction(InstructionType.IntLessThan)); break;
                         case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatLessThan)); break;
                     }
-                    return ValueType.Bool;
+                    return Type.Bool;
                 case TokenType.LessEqual:
                     switch (lhsValueType.Identifier)
                     {
                         case "Int": CodeBuilder.Add(new Instruction(InstructionType.IntLessThanEqual)); break;
                         case "Float": CodeBuilder.Add(new Instruction(InstructionType.FloatLessThanEqual)); break;
                     }
-                    return ValueType.Bool;
+                    return Type.Bool;
 
                 // String concatenation
                 case TokenType.StringInterpolationTerminator:
-                    AssertValueType(lhsValueType, ValueType.String);
-                    AssertValueType(rhsValueType, ValueType.String);
+                    AssertValueType(lhsValueType, Type.String);
+                    AssertValueType(rhsValueType, Type.String);
                     CodeBuilder.Add(new Instruction(InstructionType.StringConcatenate));
-                    return ValueType.String;
+                    return Type.String;
+
+                // Access operator
+                // TODO: untested
+                case TokenType.Dot:
+                    var lhsValue = new MemoryReference { Type = lhsValueType, IsHeap = false, Offset = currentScope.WordLength };
+                    lhsValue = ConsumeValueAccessor(lhsValue);
+                    return lhsValue.Type;
             }
 
             return rhsValueType;
         }
 
-        ValueType ConsumeExpressionLiteral()
+        Type ConsumeExpressionLiteral()
         {
             var str = previous.Value.Value;
 
@@ -184,30 +191,30 @@ namespace Elfenlabs.Scripting
             {
                 case TokenType.Integer:
                     CodeBuilder.AddConstant(int.Parse(str));
-                    return ValueType.Int;
+                    return Type.Int;
                 case TokenType.Float:
                     CodeBuilder.AddConstant(float.Parse(str));
-                    return ValueType.Float;
+                    return Type.Float;
                 case TokenType.False:
                     CodeBuilder.AddConstant(0);
-                    return ValueType.Bool;
+                    return Type.Bool;
                 case TokenType.True:
                     CodeBuilder.AddConstant(1);
-                    return ValueType.Bool;
+                    return Type.Bool;
                 case TokenType.String:
                     CodeBuilder.AddConstant(str);
-                    return ValueType.String;
+                    return Type.String;
                 default:
                     throw CreateException(previous.Value, $"Unknown literal {str} of type {previous.Value.Type}");
             };
         }
 
-        ValueType ConsumeExpressionIdentifier()
+        Type ConsumeExpressionIdentifier()
         {
             var identifier = previous.Value.Value;
 
             // Check if it refers to a type, replace it as the default value for that type
-            if (types.TryGetValue(identifier, out ValueType valueType))
+            if (types.TryGetValue(identifier, out Type valueType))
             {
                 // If it is a struct type and the next token is a left brace, it is a struct literal
                 if (valueType is StructureValueType && current.Value.Type == TokenType.LeftBrace)
@@ -230,56 +237,20 @@ namespace Elfenlabs.Scripting
             // Check if it refers to a variable
             if (currentScope.TryGetVariable(identifier, out var variable))
             {
-                // Check if it uses the array access operator
-                //if (MatchAdvance(TokenType.LeftBracket))
-                //{
-                //    if (variable.Type.Span == 0) throw CreateException(previous.Value, $"Variable {identifier} is not an array, you can't use the array accessor operator here '[]'");
-                //    var indexValueType = ConsumeExpression();
-                //    AssertValueTypeEqual(indexValueType, ValueType.Int);
-                //    Consume(TokenType.RightBracket, "Expected ']' to close the array accessor operator");
-                //    builder.Add(new Instruction(InstructionType.LoadVariableElement, variable.Position, variable.Type.WordLength));
-                //    return variable.Type.ToElement();
-                //}
-
-                if (variable.Type is ReferenceType referenceType)
+                var resolvedValue = ConsumeValueAccessor(variable);
+                if (resolvedValue.IsHeap)
                 {
-                    
+                    CodeBuilder.Add(new Instruction(InstructionType.LoadHeap, resolvedValue.Offset, resolvedValue.Type.WordLength));
                 }
-
-                // Check if it uses the member access operator
-                if (MatchAdvance(TokenType.Dot))
+                else if (resolvedValue.IsUnderRef)
                 {
-                    switch (variable.Type)
-                    {
-                        case SpanValueType spanValueType:
-                            var indexToken = Consume(TokenType.Integer, "Expected integer after '.'");
-                            var index = int.Parse(indexToken.Value);
-                            if (index >= spanValueType.Length)
-                                throw CreateException(indexToken, $"Index {index} is out of bounds for span {spanValueType}");
-                            CodeBuilder.Add(new Instruction(InstructionType.LoadStack, (ushort)(variable.Position + index), spanValueType.Element.WordLength));
-                            return spanValueType.Element;
-                        case StructureValueType structureValueType:
-                            var member = Consume(TokenType.Identifier, "Expected identifier after '.'");
-                            if (!structureValueType.TryGetFieldByName(member.Value, out var field))
-                            {
-                                throw CreateException(current.Value, $"Unknown member {member} in variable {identifier} of type {structureValueType}");
-                            }
-                            CodeBuilder.Add(new Instruction(InstructionType.LoadStack, (ushort)(variable.Position + field.Offset), field.Type.WordLength));
-                            return field.Type;
-                        default:
-                            throw CreateException(previous.Value, $"The member accessor operator '.' can only be used for spans, structs, or module. {identifier} is not one of them.");
-                    }
+                    CodeBuilder.Add(new Instruction(InstructionType.LoadFromStackAddress, resolvedValue.Offset, resolvedValue.Type.WordLength));
                 }
-
-                CodeBuilder.Add(new Instruction(InstructionType.LoadStack, variable.Position, variable.Type.WordLength));
-
-                // Handles increment and decrement operators
-                if (MatchAdvance(TokenType.Increment))
-                    ConsumeVariableIncrement(variable);
-                if (MatchAdvance(TokenType.Decrement))
-                    ConsumeVariableDecrement(variable);
-
-                return variable.Type;
+                else if (!resolvedValue.IsRValue)
+                {
+                    CodeBuilder.Add(new Instruction(InstructionType.LoadStack, resolvedValue.Offset, resolvedValue.Type.WordLength));
+                }
+                return resolvedValue.Type;
             }
 
             // Check if it refers to a function

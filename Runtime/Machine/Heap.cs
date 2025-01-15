@@ -292,6 +292,17 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
+        /// Pops given length of words from the stack as the data, then pop a word as the heap address
+        /// Copy data to the heap at the address plus the given offset
+        /// </summary>
+        unsafe void WriteHeap(short offset, byte wordLen)
+        {
+            var index = *(stackHeadPtr - wordLen - 1);
+            stackHeadPtr -= (wordLen + 1);
+            UnsafeUtility.MemCpy(heapPtr + index, (stackHeadPtr + 1), wordLen * CompilerUtility.WordSize);
+        }
+
+        /// <summary>
         /// Copy data from the constant table to the heap with the given length then push the heap index to the stack.
         /// This is optimization for loading constant data to the heap directly without going through the stack.
         /// </summary>

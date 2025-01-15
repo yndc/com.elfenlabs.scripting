@@ -28,7 +28,7 @@ namespace Elfenlabs.Scripting
         public NativeArray<int> GetStackSnapshot(Allocator allocator)
         {
             var snapshot = new NativeArray<int>(GetStackWordLength(), allocator);
-            UnsafeUtility.MemCpy(snapshot.GetUnsafePtr(), frameValuesPtr, (int)(stackHeadPtr - Values.GetUnsafePtr()) * sizeof(int));
+            UnsafeUtility.MemCpy(snapshot.GetUnsafePtr(), stackFramePtr, (int)(stackHeadPtr - Stack.GetUnsafePtr()) * sizeof(int));
             return snapshot;
         }
 

@@ -11,7 +11,7 @@ namespace Elfenlabs.Scripting
         SubProgram currentSubProgram;
         LinkedListNode<Token> current;
         LinkedListNode<Token> previous;
-        ValueType lastValueType;
+        Type lastValueType;
         Scope globalScope;
         Scope currentScope;
 
@@ -29,11 +29,11 @@ namespace Elfenlabs.Scripting
         public void AddModule(Module module)
         {
             // Create global scope 
-            globalScope = new Scope();
+            globalScope = new Scope() { IsFrame = true };
             currentScope = globalScope;
 
             // Create root function in the global scope
-            var rootFunctionHeader = new FunctionHeader("root", ValueType.Void);
+            var rootFunctionHeader = new FunctionHeader("root", Type.Void);
             var rootSubProgram = new SubProgram(rootFunctionHeader);
             subPrograms.Add(rootSubProgram);
             currentSubProgram = rootSubProgram;
@@ -144,7 +144,7 @@ namespace Elfenlabs.Scripting
             return true;
         }
 
-        void AssertValueType(ValueType type, params ValueType[] set)
+        void AssertValueType(Type type, params Type[] set)
         {
             if (!set.Contains(type))
                 throw CreateException(previous.Value, string.Format(
@@ -153,7 +153,7 @@ namespace Elfenlabs.Scripting
                     type.Identifier));
         }
 
-        void AssertValueTypeEqual(ValueType lhs, ValueType rhs)
+        void AssertValueTypeEqual(Type lhs, Type rhs)
         {
             if (lhs != rhs)
                 throw CreateException(previous.Value, string.Format(
@@ -165,9 +165,6 @@ namespace Elfenlabs.Scripting
         {
             switch (current.Value.Type)
             {
-                case TokenType.Variable:
-                    ConsumeStatementVariableDeclaration();
-                    break;
                 case TokenType.Function:
                     ConsumeFunctionDeclaration();
                     break;
@@ -187,6 +184,9 @@ namespace Elfenlabs.Scripting
         {
             switch (current.Value.Type)
             {
+                case TokenType.Variable:
+                    ConsumeStatementVariableDeclaration();
+                    break;
                 case TokenType.If:
                     ConsumeStatementIf();
                     break;

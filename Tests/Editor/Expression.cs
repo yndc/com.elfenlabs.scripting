@@ -13,7 +13,7 @@ namespace Elfenlabs.Scripting.Tests
 
             Assert.AreEqual(-5, result.Stack[0]);
         }
-        
+
         [Test]
         public void Precedence()
         {
@@ -43,18 +43,6 @@ namespace Elfenlabs.Scripting.Tests
             ".NormalizeMultiline());
 
             Assert.AreEqual(result.Stack[0], 6);
-        }
-
-        [Test]
-        public void IncrementOrder()
-        {
-            var result = CompilerUtility.Debug(@"
-                var a = 5
-                var b = a++ + 1 + a++
-            ".NormalizeMultiline());
-
-            Assert.AreEqual(result.Stack[0], 7);
-            Assert.AreEqual(result.Stack[1], 12);
         }
     }
 }

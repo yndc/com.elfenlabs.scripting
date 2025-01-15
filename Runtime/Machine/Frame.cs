@@ -6,13 +6,13 @@ namespace Elfenlabs.Scripting
     {
         public Instruction* InstructionPtr;
         public int* ConstantsPtr;
-        public int* FrameValuesPtr;
-        public int* ValuesPtr;
+        public int* StackFramePtr;
+        public int* StackHeadPtr;
     }
 
     public unsafe partial struct Machine
     {
-        int* frameValuesPtr;
+        int* stackFramePtr;
 
         /// <summary>
         /// Call a function in another chunk 
@@ -29,11 +29,11 @@ namespace Elfenlabs.Scripting
             {
                 ConstantsPtr = constantsPtr,
                 InstructionPtr = instructionPtr,
-                FrameValuesPtr = frameValuesPtr,
-                ValuesPtr = newFrameValuesPtr
+                StackFramePtr = stackFramePtr,
+                StackHeadPtr = newFrameValuesPtr
             });
 
-            frameValuesPtr = newFrameValuesPtr;
+            stackFramePtr = newFrameValuesPtr;
 
             var chunk = Program.Chunks[chunkIndex];
             instructionPtr = (Instruction*)chunk.Instructions.GetUnsafePtr();
@@ -47,23 +47,23 @@ namespace Elfenlabs.Scripting
         void Return(byte returnWordLength)
         {
             // Get the last call frame
-            var frame = Frames[^1];
+            var callerFrame = Frames[^1];
             Frames.RemoveAtSwapBack(Frames.Length - 1);
 
             // Copy the return value to the caller stack
             if (returnWordLength > 0)
             {
                 UnsafeUtility.MemCpy(
-                    frame.ValuesPtr,
+                    callerFrame.StackHeadPtr,
                     stackHeadPtr - returnWordLength,
                     returnWordLength * CompilerUtility.WordSize);
             }
 
             // Restore the frame state
-            instructionPtr = frame.InstructionPtr;
-            constantsPtr = frame.ConstantsPtr;
-            stackHeadPtr = frame.ValuesPtr + returnWordLength;
-            frameValuesPtr = frame.FrameValuesPtr;
+            instructionPtr = callerFrame.InstructionPtr;
+            constantsPtr = callerFrame.ConstantsPtr;
+            stackHeadPtr = callerFrame.StackHeadPtr + returnWordLength;
+            stackFramePtr = callerFrame.StackFramePtr;
         }
 
         Frame CaptureFrame()
@@ -72,8 +72,8 @@ namespace Elfenlabs.Scripting
             {
                 ConstantsPtr = constantsPtr,
                 InstructionPtr = instructionPtr,
-                FrameValuesPtr = frameValuesPtr,
-                ValuesPtr = stackHeadPtr
+                StackFramePtr = stackFramePtr,
+                StackHeadPtr = stackHeadPtr
             };
         }
 

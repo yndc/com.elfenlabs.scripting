@@ -12,8 +12,8 @@ namespace Elfenlabs.Scripting
         public class Parameter
         {
             public string Name;
-            public ValueType Type;
-            public Parameter(string name, ValueType type)
+            public Type Type;
+            public Parameter(string name, Type type)
             {
                 Name = name;
                 Type = type;
@@ -28,7 +28,7 @@ namespace Elfenlabs.Scripting
         /// <summary>
         /// Return type of this function
         /// </summary>
-        public ValueType ReturnType;
+        public Type ReturnType;
 
         /// <summary>
         /// Parameters of this function
@@ -55,7 +55,7 @@ namespace Elfenlabs.Scripting
         /// </summary>
         public byte ReturnWordLength => (byte)(ParameterWordLength + ReturnType.WordLength);
 
-        public FunctionHeader(string name, ValueType returnType, params Parameter[] parameters)
+        public FunctionHeader(string name, Type returnType, params Parameter[] parameters)
         {
             Name = name;
             ReturnType = returnType;
@@ -91,7 +91,7 @@ namespace Elfenlabs.Scripting
         {
             // Print (string) -> void
             RegisterExternalFunction(new FunctionHeader(
-                "Print", ValueType.Void, new FunctionHeader.Parameter("value", ValueType.String)
+                "Print", Type.Void, new FunctionHeader.Parameter("value", Type.String)
             ));
         }
 
@@ -144,7 +144,7 @@ namespace Elfenlabs.Scripting
             Consume(TokenType.Identifier, "Expected function name");
             var name = previous.Value.Value;
             var parameters = ConsumeFunctionDeclarationParameters();
-            var returnType = MatchAdvance(TokenType.Returns) ? ConsumeType() : ValueType.Void;
+            var returnType = MatchAdvance(TokenType.Returns) ? ConsumeType() : Type.Void;
             Consume(TokenType.StatementTerminator, "Expected new-line after function header");
             return new FunctionHeader(name, returnType, parameters.ToArray());
         }
@@ -195,7 +195,7 @@ namespace Elfenlabs.Scripting
             ConsumeBlock();
 
             // Ensure that the function ends with a return statement
-            if (subProgram.Header.ReturnType == ValueType.Void)
+            if (subProgram.Header.ReturnType == Type.Void)
                 CodeBuilder.EnsureEndWithReturn();
             else
                 CodeBuilder.AssertEndWithReturn();
@@ -204,10 +204,10 @@ namespace Elfenlabs.Scripting
             currentScope = functionScope.Parent;
         }
 
-        ValueType ConsumeFunctionCall(FunctionHeader function)
+        Type ConsumeFunctionCall(FunctionHeader function, int injected = 0)
         {
             Consume(TokenType.LeftParentheses, "Expected '(' after function name");
-            ConsumeFunctionCallParameters(function.Parameters);
+            ConsumeFunctionCallParameters(function.Parameters, injected);
             if (function.IsExternal)
                 CodeBuilder.Add(new Instruction(InstructionType.CallExternal, function.Index));
             else
@@ -215,9 +215,9 @@ namespace Elfenlabs.Scripting
             return function.ReturnType;
         }
 
-        void ConsumeFunctionCallParameters(List<FunctionHeader.Parameter> functionParameters)
+        void ConsumeFunctionCallParameters(List<FunctionHeader.Parameter> functionParameters, int injected = 0)
         {
-            var callParameters = new List<ValueType>();
+            var callParameters = new List<Type>();
             while (current.Value.Type != TokenType.RightParentheses)
             {
                 callParameters.Add(ConsumeExpression());
@@ -232,17 +232,21 @@ namespace Elfenlabs.Scripting
                         throw CreateException(current.Value, "Expected ',' or ')' after function parameter");
                 }
             }
+
             Skip();
 
-            if (callParameters.Count != functionParameters.Count)
+            var callParameterCount = callParameters.Count + injected;
+
+            if (callParameterCount  != functionParameters.Count)
                 throw CreateException(current.Value,
                     $"Expected {functionParameters.Count} parameters, got {callParameters.Count}");
 
+            // Check if the types of the parameters match
             for (int i = 0; i < callParameters.Count; i++)
             {
-                if (callParameters[i] != functionParameters[i].Type)
+                if (callParameters[i] != functionParameters[i + injected].Type)
                     throw CreateException(current.Value,
-                        $"Expected parameter of type {functionParameters[i]} but got {callParameters[i]}");
+                        $"Expected parameter of type {functionParameters[i + injected]} but got {callParameters[i]}");
             }
         }
 
@@ -250,7 +254,7 @@ namespace Elfenlabs.Scripting
         {
             Skip();
 
-            if (currentSubProgram.Header.ReturnType == ValueType.Void)
+            if (currentSubProgram.Header.ReturnType == Type.Void)
             {
                 if (MatchAdvance(TokenType.StatementTerminator))
                 {
@@ -267,7 +271,7 @@ namespace Elfenlabs.Scripting
             CodeBuilder.Add(new Instruction(InstructionType.Return, currentSubProgram.Header.ReturnType.WordLength));
         }
 
-        ValueType ConsumeFunctionPointer(FunctionHeader function)
+        Type ConsumeFunctionPointer(FunctionHeader function)
         {
             throw CreateException(current.Value, "Function pointers are not supported yet");
         }

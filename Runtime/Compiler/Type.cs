@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Unity.VisualScripting.YamlDotNet.Core.Tokens;
+using static Elfenlabs.Scripting.StructureValueType;
 
 namespace Elfenlabs.Scripting
 {
     /// <summary>
     /// Description of a value type
     /// </summary>
-    public class ValueType : IEquatable<ValueType>
+    public class Type : IEquatable<Type>
     {
         /// <summary>
         /// Unique fully-qualified identifier for this type
@@ -24,16 +25,36 @@ namespace Elfenlabs.Scripting
         /// </summary>
         public List<FunctionHeader> Methods = new();
 
-        public ValueType(Path identifier, byte wordLength)
+        public Type(Path identifier, byte wordLength)
         {
             Identifier = identifier;
             WordLength = wordLength;
         }
 
-        public ValueType(string fullyQualifiedPath, byte wordLength)
+        public Type(string fullyQualifiedPath, byte wordLength)
         {
             Identifier = new Path(fullyQualifiedPath);
             WordLength = wordLength;
+        }
+
+        /// <summary>
+        /// Try getting method by name
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        public bool TryGetMethod(string name, out FunctionHeader result)
+        {
+            foreach (var method in Methods)
+            {
+                if (method.Name == name)
+                {
+                    result = method;
+                    return true;
+                }
+            }
+            result = null;
+            return false;
         }
 
         /// <summary>
@@ -52,20 +73,20 @@ namespace Elfenlabs.Scripting
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as ValueType);
+            return Equals(obj as Type);
         }
 
-        public bool Equals(ValueType other)
+        public bool Equals(Type other)
         {
             return Identifier.Equals(other.Identifier);
         }
 
-        public static bool operator ==(ValueType left, ValueType right)
+        public static bool operator ==(Type left, Type right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(ValueType left, ValueType right)
+        public static bool operator !=(Type left, Type right)
         {
             return !(left == right);
         }
@@ -75,20 +96,20 @@ namespace Elfenlabs.Scripting
             return Identifier.ToString();
         }
 
-        public static ValueType Void => new("Void", 0);
-        public static ValueType Bool => new("Bool", 1);
-        public static ValueType Int => new("Int", 1);
-        public static ValueType Float => new("Float", 1);
-        public static ValueType String => new("String", 1);
+        public static Type Void => new("Void", 0);
+        public static Type Bool => new("Bool", 1);
+        public static Type Int => new("Int", 1);
+        public static Type Float => new("Float", 1);
+        public static Type String => new("String", 1);
     }
 
-    public class SpanValueType : ValueType
+    public class SpanValueType : Type
     {
-        public ValueType Element;
+        public Type Element;
 
         public int Length;
 
-        public SpanValueType(ValueType element, int length) : base(new Path($"{element.Identifier.Name}<{length}>"), (byte)(element.WordLength * length))
+        public SpanValueType(Type element, int length) : base(new Path($"{element.Identifier.Name}<{length}>"), (byte)(element.WordLength * length))
         {
             Element = element;
             Length = length;
@@ -100,18 +121,55 @@ namespace Elfenlabs.Scripting
         }
     }
 
-    public class ReferenceType : ValueType
+    /// <summary>
+    /// Reference type holds a reference to a stack value
+    /// </summary>
+    public class ReferenceType : Type
     {
-        public ValueType Element;
-        
-        public ReferenceType(ValueType element) : base(new Path($"ref {element.Identifier.Name}"), 1) { }
+        public Type Element;
+
+        public ReferenceType(Type element) : base(new Path($"ref {element.Identifier.Name}"), 1)
+        {
+            Element = element;
+        }
+
+        public ReferenceType(Type element, Path identifierOverride) : base(identifierOverride, 1)
+        {
+            Element = element;
+        }
+    }
+
+    /// <summary>
+    /// Pointer type holds a reference to a heap value
+    /// </summary>
+    public class PointerType : Type
+    {
+        public Type Element;
+
+        public PointerType(Type element) : base(new Path($"ptr {element.Identifier.Name}"), 1)
+        {
+            Element = element;
+        }
+
+        public PointerType(Type element, Path identifierOverride) : base(identifierOverride, 1)
+        {
+            Element = element;
+        }
+    }
+
+    public class ListValueType : ReferenceType
+    {
+        public ListValueType(Type element) : base(element, new Path($"{element.Identifier.Name}[]"))
+        {
+            Element = element;
+        }
     }
 
     public partial class Compiler
     {
-        Dictionary<string, ValueType> types;
+        Dictionary<string, Type> types;
 
-        public ValueType ConsumeType()
+        public Type ConsumeType()
         {
             var typeName = Consume(TokenType.Identifier, $"Expected type name but get {current.Value.Type}").Value;
             var type = GetType(typeName) ?? throw new Exception($"Unknown type {typeName}");
@@ -127,7 +185,7 @@ namespace Elfenlabs.Scripting
             }
         }
 
-        public ValueType GetType(string identifier)
+        public Type GetType(string identifier)
         {
             if (types.TryGetValue(identifier, out var type))
                 return type;
@@ -137,15 +195,15 @@ namespace Elfenlabs.Scripting
 
         void RegisterBuiltInTypes()
         {
-            types = new Dictionary<string, ValueType>();
-            RegisterType(ValueType.Void);
-            RegisterType(ValueType.Bool);
-            RegisterType(ValueType.Int);
-            RegisterType(ValueType.Float);
-            RegisterType(ValueType.String);
+            types = new Dictionary<string, Type>();
+            RegisterType(Type.Void);
+            RegisterType(Type.Bool);
+            RegisterType(Type.Int);
+            RegisterType(Type.Float);
+            RegisterType(Type.String);
         }
 
-        void RegisterType(ValueType type)
+        void RegisterType(Type type)
         {
             if (types.ContainsKey(type.Identifier))
                 throw new Exception($"Type {type.Identifier} already exists");

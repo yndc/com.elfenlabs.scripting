@@ -5,7 +5,7 @@ namespace Elfenlabs.Scripting
 {
     public partial class Compiler
     {
-        ValueType ConsumeExpressionComposite()
+        Type ConsumeExpressionComposite()
         {
             var opening = previous.Value.Type;
             switch (opening)
@@ -17,18 +17,18 @@ namespace Elfenlabs.Scripting
             }
         }
 
-        ValueType ConsumeSpanElements()
+        Type ConsumeSpanElements()
         {
             var parseElements = true;
-            var valueType = ValueType.Void;
+            var valueType = Type.Void;
             var count = 0;
             while (parseElements)
             {
                 var elementValueType = ConsumeExpression();
-                if (elementValueType == ValueType.Void)
+                if (elementValueType == Type.Void)
                     throw CreateException(previous.Value, "Expected expression in span element");
 
-                if (valueType == ValueType.Void)
+                if (valueType == Type.Void)
                     valueType = elementValueType;
                 else if (valueType != elementValueType)
                     throw CreateException(

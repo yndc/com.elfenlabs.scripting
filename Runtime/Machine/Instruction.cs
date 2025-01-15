@@ -10,79 +10,137 @@ namespace Elfenlabs.Scripting
         // --------------------------------
 
         /// <summary>
-        /// Halts the execution of the script
+        /// Halts execution of the script.
         /// </summary>
         Halt,
+
+        /// <summary>
+        /// Yields execution temporarily.
+        /// </summary>
         Yield,
 
         /// <summary>
-        /// Jump the instruction pointer to the given offset
+        /// Jumps the instruction pointer to the specified offset.
         /// <br/>
-        /// <br/>arg short  : Instruction offset to jump into
+        /// <br/>arg short : Instruction offset to jump to.
         /// </summary>
         Jump,
 
         /// <summary>
-        /// Jump the instruction pointer to the given offset if the top of the stack 
-        /// is equal with the given byte argument
+        /// Jumps the instruction pointer to the specified offset if the top of the stack 
+        /// matches the provided byte argument.
         /// <br/>
-        /// <br/>arg short  : Instruction offset to jump into
-        /// <br/>arg byte   : The boolean value to check with the top of the stack
+        /// <br/>arg short : Instruction offset to jump to.
+        /// <br/>arg byte  : The value to compare with the top of the stack.
         /// </summary>
         JumpCondition,
 
         /// <summary>
-        /// Calls a function with the given index
+        /// Calls a function by its index.
         /// <br/>
-        /// <br/>arg ushort  : Index of the function to call
-        /// <br/>arg byte    : Length in words from the top of the stack to pass as arguments
+        /// <br/>arg ushort : Index of the function to call.
+        /// <br/>arg byte   : Length in words from the top of the stack to pass as arguments.
         /// </summary>
         Call,
 
         /// <summary>
-        /// Returns to the previous frame 
+        /// Returns to the previous stack frame.
         /// <br/>
-        /// <br/>arg byte    : Length in words from the top of the stack to return 
+        /// <br/>arg byte : Length in words from the top of the stack to return.
         /// </summary>
         Return,
 
         // --------------------------------
-        // Stack operations
+        // Memory operations
         // --------------------------------
 
         /// <summary>
-        /// Copies constant values from the given position to the top of the stack.
+        /// Pushes a signed short value onto the stack.
         /// <br/>
-        /// <br/>arg short  : Starting word offset from the base constant pointer
-        /// <br/>arg byte   : Length in words to copy
+        /// <br/>arg short : Value to be pushed.
+        /// </summary>
+        Push,
+
+        /// <summary>
+        /// Pushes constant values onto the stack.
+        /// <br/>
+        /// <br/>arg short : Index of the constant.
+        /// <br/>arg byte  : Length in words to copy.
         /// </summary>
         LoadConstant,
 
         /// <summary>
-        /// Copies the stack values from the given position to the top of the stack.
+        /// Pushes values from the stack, starting from the specified offset, onto the stack.
         /// <br/>
-        /// <br/>arg short  : Starting word offset from the current frame pointer
-        /// <br/>arg byte   : Length in words to copy from the stack
+        /// <br/>arg short : Starting offset from the current frame pointer.
+        /// <br/>arg byte  : Length in words to copy.
         /// </summary>
         LoadStack,
 
         /// <summary>
-        /// Pops a word from the stack, then copies the stack values from the 
-        /// given offset plus the popped value to the top of the stack.
+        /// Push the stack address for the current frame plus offset argument
         /// <br/>
-        /// <br/>arg short  : Starting word offset from the current frame pointer
-        /// <br/>arg byte   : Length in words to copy from the stack
+        /// <br/>arg short : Offset to be added
         /// </summary>
-        LoadStackWithOffset,
+        LoadStackAddress,
 
-        LoadHeap,           // <short>    - The index of the heap to load
-                            // <byte>     - The number of words to load from the heap   
+        /// <summary>
+        /// Push the stack value from an address onto the stack.
+        /// <br/>
+        /// <br/>arg short : Offset to add to the address
+        /// <br/>arg byte  : Length in words to push
+        /// </summary>
+        LoadFromStackAddress,
 
-        WriteStack,      // <short>    - The index of the variable to store
-                            // <byte>     - The number of words to store from the stack
+        /// <summary>
+        /// Pops a word from the stack, adds the offset, 
+        /// and pushes values from the heap with the specified length onto the stack.
+        /// <br/>
+        /// <br/>arg short : Offset to add to the popped value.
+        /// <br/>arg byte  : Length in words to copy from the heap.
+        /// </summary>
+        LoadHeap,
 
-        WriteHeap,          // <short>    - The index of the heap to store
-                            // <byte>     - The number of words to store from the stack
+        /// <summary>
+        /// Copies values from the top of the stack to a frame pointer offset
+        /// <br/>
+        /// <br/>arg short : Destination offset from the current frame pointer.
+        /// <br/>arg byte  : Length in words to copy.
+        /// </summary>
+        Store,
+
+        /// <summary>
+        /// Copies values from the top of the stack to an offset from the top of the stack
+        /// <br/>
+        /// <br/>arg short : Offset to add to the top of the stack.
+        /// <br/>arg byte  : Length in words to copy.
+        /// </summary>
+        StoreOffset,
+
+        /// <summary>
+        /// Copies values from the top of the stack to a specified stack address
+        /// <br/>
+        /// <br/>arg short : Offset to add to the address.
+        /// <br/>arg byte  : Length in words to copy.
+        /// </summary>
+        StoreToAddress,
+
+        /// <summary>
+        /// Pops values from the stack and stores them in the heap, then pushes the heap address onto the stack.
+        /// <br/>
+        /// <br/>arg byte : Length in words to store.
+        /// </summary>
+        StoreToHeap,
+
+        /// <summary>
+        /// Pops values from the stack, then pops a heap address. Copies the values 
+        /// to the heap at the specified offset from the address.
+        /// <br/>
+        /// <br/>arg short : Offset to add to the popped heap address.
+        /// <br/>arg byte  : Length in words to copy.
+        /// </summary>
+        StoreToHeapAddress,
+
 
         Pop,                // <short>    - The number of words to pop from the stack
 
@@ -109,7 +167,7 @@ namespace Elfenlabs.Scripting
         // --------------------------------
 
         IntAdd,
-        IntSubstract,
+        IntSubtract,
         IntMultiply,
         IntPower,
         IntDivide,
@@ -309,19 +367,22 @@ namespace Elfenlabs.Scripting
             { InstructionType.JumpCondition, Format.OBSs },
             { InstructionType.Call, Format.OBS },
             { InstructionType.Return, Format.OB },
+            { InstructionType.Push, Format.OSs },
             { InstructionType.LoadConstant, Format.OBS },
             { InstructionType.LoadStack, Format.OBSs },
-            { InstructionType.LoadStackWithOffset, Format.OBSs },
-            { InstructionType.WriteStack, Format.OBSs },
+            { InstructionType.LoadStackAddress, Format.OS },
+            { InstructionType.LoadFromStackAddress, Format.OBSs },
+            { InstructionType.Store, Format.OBSs },
+            { InstructionType.StoreRef, Format.OBSs },
             { InstructionType.Pop, Format.OS },
             { InstructionType.FillZero, Format.OS },
             { InstructionType.WritePrevious, Format.OBS },
             { InstructionType.LoadHeap, Format.OBS },
-            { InstructionType.WriteHeap, Format.OBS },
+            { InstructionType.StoreToHeapAddress, Format.OBS },
             { InstructionType.HeapLoadConstant, Format.OBS},
             { InstructionType.CallExternal, Format.OS},
             { InstructionType.IntAdd, Format.O },
-            { InstructionType.IntSubstract, Format.O },
+            { InstructionType.IntSubtract, Format.O },
             { InstructionType.IntMultiply, Format.O },
             { InstructionType.IntPower, Format.O },
             { InstructionType.IntDivide, Format.O },
