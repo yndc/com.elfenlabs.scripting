@@ -203,9 +203,11 @@ namespace Elfenlabs.Scripting
                         { 
                             Type = field.Type,
                             IsHeap = parent.IsHeap,
+                            IsRValue = parent.IsRValue,
+                            IsUnderRef = parent.IsUnderRef
                         };
 
-                        // If the parent is a ref type, the parent is guaranteed to be a variable since ref types cannot be a field member
+                        // If the parent is a ref type, the parent is guaranteed to be a variable or argument since ref types cannot be a field member
                         if (parent.Type is ReferenceType)
                         {
                             CodeBuilder.Add(new Instruction(InstructionType.LoadStack, parent.Offset, 1));
