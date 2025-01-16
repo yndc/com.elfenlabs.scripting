@@ -161,17 +161,21 @@ namespace Elfenlabs.Scripting
 
         public Type ConsumeType()
         {
-            var typeName = Consume(TokenType.Identifier, $"Expected type name but get {current.Value.Type}").Value;
-            var type = GetType(typeName) ?? throw new Exception($"Unknown type {typeName}");
+            var baseTypeName = Consume(TokenType.Identifier, $"Expected type name but get {current.Value.Type}").Value;
+            var baseType = GetType(baseTypeName) ?? throw new Exception($"Unknown type {baseTypeName}");
             switch (current.Value.Type)
             {
                 case TokenType.Less:
                     Consume(TokenType.Less);
                     var spanSizeToken = Consume(TokenType.Integer, "Expected span size after '<'");
                     Consume(TokenType.Greater, "Expected '>' after span size");
-                    return new SpanValueType(type, int.Parse(spanSizeToken.Value));
+                    return new SpanValueType(baseType, int.Parse(spanSizeToken.Value));
+                case TokenType.LeftBracket:
+                    Consume(TokenType.LeftBracket);
+                    Consume(TokenType.RightBracket);
+                    return new ListType(baseType);
                 default:
-                    return type;
+                    return baseType;
             }
         }
 

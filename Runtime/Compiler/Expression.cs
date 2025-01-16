@@ -206,51 +206,24 @@ namespace Elfenlabs.Scripting
                     return Type.String;
                 default:
                     throw CreateException(previous.Value, $"Unknown literal {str} of type {previous.Value.Type}");
-            };
+            }
+            ;
         }
 
         Type ConsumeExpressionIdentifier()
         {
             var identifier = previous.Value.Value;
 
-            // Check if it refers to a type, replace it as the default value for that type
-            if (types.TryGetValue(identifier, out Type valueType))
+            // Check if a primitive type exists with the same name
+            if (types.TryGetValue(identifier, out Type type))
             {
-                // If it is a struct type and the next token is a left brace, it is a struct literal
-                if (valueType is StructureValueType && current.Value.Type == TokenType.LeftBrace)
-                {
-                    ConsumeStructLiteral(valueType as StructureValueType);
-                }
-
-                // Otherwise it is a default value
-                else
-                {
-                    Rewind();
-
-                    valueType = ConsumeType();
-                    CodeBuilder.AddConstant(valueType.GenerateDefaultValue());
-                }
-
-                return valueType;
+                return ConsumeExpressionType(type);
             }
 
             // Check if it refers to a variable
             if (currentScope.TryGetVariable(identifier, out var variable))
             {
-                var resolvedValue = ConsumeValueAccessor(variable);
-                if (resolvedValue.IsHeap)
-                {
-                    CodeBuilder.Add(new Instruction(InstructionType.LoadHeap, resolvedValue.Offset, resolvedValue.Type.WordLength));
-                }
-                else if (resolvedValue.IsUnderRef)
-                {
-                    CodeBuilder.Add(new Instruction(InstructionType.PushFromStackAddress, resolvedValue.Offset, resolvedValue.Type.WordLength));
-                }
-                else if (!resolvedValue.IsRValue)
-                {
-                    CodeBuilder.Add(new Instruction(InstructionType.PushFromFrame, resolvedValue.Offset, resolvedValue.Type.WordLength));
-                }
-                return resolvedValue.Type;
+                return ConsumeExpressionVariable(variable);
             }
 
             // Check if it refers to a function
@@ -267,6 +240,44 @@ namespace Elfenlabs.Scripting
             }
 
             throw CreateException(previous.Value, $"Unknown identifier {identifier}");
+        }
+
+        Type ConsumeExpressionVariable(Variable variable)
+        {
+            var resolvedValue = ConsumeValueAccessor(variable);
+            if (resolvedValue.IsHeap)
+            {
+                CodeBuilder.Add(new Instruction(InstructionType.LoadHeap, resolvedValue.Offset, resolvedValue.Type.WordLength));
+            }
+            else if (resolvedValue.IsUnderRef)
+            {
+                CodeBuilder.Add(new Instruction(InstructionType.PushFromStackAddress, resolvedValue.Offset, resolvedValue.Type.WordLength));
+            }
+            else if (!resolvedValue.IsRValue)
+            {
+                CodeBuilder.Add(new Instruction(InstructionType.PushFromFrame, resolvedValue.Offset, resolvedValue.Type.WordLength));
+            }
+            return resolvedValue.Type;
+        }
+
+        Type ConsumeExpressionType(Type type)
+        {
+            // If it is a struct type and the next token is a left brace, it is a struct literal
+            if (type is StructureValueType && current.Value.Type == TokenType.LeftBrace)
+            {
+                ConsumeStructLiteral(type as StructureValueType);
+            }
+
+            // Otherwise it is a default value
+            else
+            {
+                Rewind();
+
+                type = ConsumeType();
+                CodeBuilder.AddConstant(type.GenerateDefaultValue());
+            }
+
+            return type;
         }
     }
 }
