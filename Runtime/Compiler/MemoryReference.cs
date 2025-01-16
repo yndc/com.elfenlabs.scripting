@@ -271,7 +271,7 @@ namespace Elfenlabs.Scripting
                         {
                             CodeBuilder.Add(new Instruction(InstructionType.StoreToOffset, parent.Type.WordLength, returnValue.Type.WordLength));
                         }
-                        
+
                         return ConsumeValueAccessor(returnValue);
                     }
                     throw CreateException(current.Value, $"Unknown member {member.Value} of type {structureValueType}");
@@ -297,7 +297,7 @@ namespace Elfenlabs.Scripting
         {
             switch (parent.Type)
             {
-                case ListValueType listValueType:
+                case ListType listType:
                     var indexType = ConsumeExpression();
                     if (indexType != Type.Int)
                         throw CreateException(current.Value, "Index must be an integer");
@@ -311,7 +311,7 @@ namespace Elfenlabs.Scripting
                     }
                     CodeBuilder.Add(new Instruction(InstructionType.IntAdd));
 
-                    return ConsumeValueAccessor(new MemoryReference { Type = listValueType.Element, IsHeap = true });
+                    return ConsumeValueAccessor(new MemoryReference { Type = listType.Element, IsHeap = true });
                 default:
                     throw CreateException(
                         previous.Value,

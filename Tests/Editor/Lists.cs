@@ -8,8 +8,8 @@ namespace Elfenlabs.Scripting.Tests
         public void Initialization()
         {
             var result = CompilerUtility.Debug(@"
-                var l1 = create Int[]
-                var l2 = create [1, 2, 3]
+                var l1 = Int[]
+                var l2 = [1, 2, 3]
             ".NormalizeMultiline());
         }
 
@@ -17,7 +17,7 @@ namespace Elfenlabs.Scripting.Tests
         public void Push()
         {
             var result = CompilerUtility.Debug(@"
-                var list = create Int[]
+                var list = Int[]
                 list.Push(1)
                 list.Push(2)
                 list.Push(3)
@@ -28,7 +28,7 @@ namespace Elfenlabs.Scripting.Tests
         public void MemberRead()
         {
             var result = CompilerUtility.Debug(@"
-                var list = create Int[]
+                var list = Int[]
                 list.Push(1)
                 list.Push(2)
                 list.Push(3)
@@ -47,7 +47,7 @@ namespace Elfenlabs.Scripting.Tests
         public void MemberAssignment()
         {
             var result = CompilerUtility.Debug(@"
-                var numbers = create [1, 2, 3]
+                var numbers = [1, 2, 3]
 
                 numbers[0] = numbers[numbers[1]] - numbers[1] + 5
                 numbers[1 + 1] = 100

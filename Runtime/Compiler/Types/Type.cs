@@ -155,14 +155,6 @@ namespace Elfenlabs.Scripting
         }
     }
 
-    public class ListValueType : ReferenceType
-    {
-        public ListValueType(Type element) : base(element, new Path($"{element.Identifier.Name}[]"))
-        {
-            Element = element;
-        }
-    }
-
     public partial class Compiler
     {
         Dictionary<string, Type> types;

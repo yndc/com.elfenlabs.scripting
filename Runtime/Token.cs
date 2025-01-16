@@ -34,6 +34,7 @@ namespace Elfenlabs.Scripting
         Variable,
         Module,
         Use,
+        Create,
 
         // Formatting
         NewLine, Indent,

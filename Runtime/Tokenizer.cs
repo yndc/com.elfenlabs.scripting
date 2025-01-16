@@ -40,6 +40,7 @@ namespace Elfenlabs.Scripting
             AddSymbol("var", TokenType.Variable);
             AddSymbol("module", TokenType.Module);
             AddSymbol("use", TokenType.Module);
+            AddSymbol("create", TokenType.Create);
             AddSymbol("+", TokenType.Plus);
             AddSymbol("-", TokenType.Minus);
             AddSymbol("=", TokenType.Equal);

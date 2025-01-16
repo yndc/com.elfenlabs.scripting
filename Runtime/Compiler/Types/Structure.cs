@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using static Unity.Entities.SystemBaseDelegates;
 
 namespace Elfenlabs.Scripting
 {
