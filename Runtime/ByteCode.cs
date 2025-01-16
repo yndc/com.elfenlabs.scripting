@@ -65,7 +65,7 @@ namespace Elfenlabs.Scripting
                 var wordLength = CompilerUtility.GetWordLength(value.Length);
                 constants.ResizeUninitialized(constants.Length + wordLength);
                 UnsafeUtility.MemCpy(constants.GetUnsafePtr() + offset, ptr, wordLength * sizeof(int));
-                Add(new Instruction(InstructionType.LoadConstant, offset, (byte)wordLength));
+                Add(new Instruction(InstructionType.PushConstant, offset, (byte)wordLength));
                 return offset;
             }
         }
@@ -96,7 +96,7 @@ namespace Elfenlabs.Scripting
             var wordLength = CompilerUtility.GetWordLength<T>();
             constants.ResizeUninitialized(constants.Length + wordLength);
             UnsafeUtility.CopyStructureToPtr(ref value, constants.GetUnsafePtr() + offset);
-            Add(new Instruction(InstructionType.LoadConstant, offset, (byte)wordLength));
+            Add(new Instruction(InstructionType.PushConstant, offset, (byte)wordLength));
             return offset;
         }
 

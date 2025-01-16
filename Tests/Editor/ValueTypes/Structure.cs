@@ -243,5 +243,29 @@ namespace Elfenlabs.Scripting.Tests
            Assert.AreEqual(4f, BitConverter.Int32BitsToSingle(result.Stack[4]));
            Assert.AreEqual(24f, BitConverter.Int32BitsToSingle(result.Stack[5]));
         }
+
+        [Test]
+        public void MethodChaining()
+        {
+            var result = CompilerUtility.Debug(@"
+                structure Vector 
+                    field X Float
+                    field Y Float
+
+                    function CopyInc() returns Vector 
+                        var copy = Vector { X = self.X, Y = self.Y }
+                        copy.X = copy.X + 1.0
+                        copy.Y = copy.Y + 1.0
+                        return copy
+
+                var v = Vector { X = 3.0, Y = 4.0 }
+                var inc = v.CopyInc().CopyInc().CopyInc().CopyInc().CopyInc()
+            ".NormalizeMultiline());
+
+            Assert.AreEqual(3f, BitConverter.Int32BitsToSingle(result.Stack[0]));
+            Assert.AreEqual(4f, BitConverter.Int32BitsToSingle(result.Stack[1]));
+            Assert.AreEqual(8f, BitConverter.Int32BitsToSingle(result.Stack[2]));
+            Assert.AreEqual(9f, BitConverter.Int32BitsToSingle(result.Stack[3]));
+        }
     }
 }

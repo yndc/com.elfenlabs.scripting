@@ -199,18 +199,23 @@ namespace Elfenlabs.Scripting
                     var member = Consume(TokenType.Identifier, "Expected identifier after '.'");
                     if (structureValueType.TryGetField(member.Value, out var field))
                     {
-                        var fieldValue = new MemoryReference 
-                        { 
+                        var fieldValue = new MemoryReference
+                        {
                             Type = field.Type,
                             IsHeap = parent.IsHeap,
                             IsRValue = parent.IsRValue,
                             IsUnderRef = parent.IsUnderRef
                         };
 
-                        // If the parent is a ref type, the parent is guaranteed to be a variable or argument since ref types cannot be a field member
-                        if (parent.Type is ReferenceType)
+                        if (parent.IsRValue)
                         {
-                            CodeBuilder.Add(new Instruction(InstructionType.LoadStack, parent.Offset, 1));
+                            fieldValue.Offset = field.Offset;
+                        }
+
+                        // If the parent is a ref type, the parent is guaranteed to be a variable or argument since ref types cannot be a field member
+                        else if (parent.Type is ReferenceType)
+                        {
+                            CodeBuilder.Add(new Instruction(InstructionType.PushFromFrame, parent.Offset, 1));
                             fieldValue.IsUnderRef = true;
                             fieldValue.Offset = field.Offset;
                         }
@@ -235,7 +240,7 @@ namespace Elfenlabs.Scripting
                             // If the parent is a stack value then we need to load the parent's heap address to the stack
                             else
                             {
-                                CodeBuilder.Add(new Instruction(InstructionType.LoadStack, (short)(parent.Offset + field.Offset)));
+                                CodeBuilder.Add(new Instruction(InstructionType.PushFromFrame, (short)(parent.Offset + field.Offset)));
                             }
 
                             fieldValue.IsHeap = true;
@@ -245,12 +250,28 @@ namespace Elfenlabs.Scripting
                     }
                     if (structureValueType.TryGetMethod(member.Value, out var method))
                     {
-                        // TODO: handle method invocation for stack struct vs heap struct
-                        // Inject the struct address as the first argument
-                        CodeBuilder.Add(new Instruction(InstructionType.LoadStackAddress, parent.Offset));
+                        if (parent.IsRValue)
+                        {
+                            CodeBuilder.Add(new Instruction(InstructionType.PushStackAddressFromTop, parent.Type.WordLength));
+                        }
+                        else if (parent.IsHeap)
+                        {
+                            // TODO: handle method invocation for heap-allocated struct
+                        }
+                        else
+                        {
+                            CodeBuilder.Add(new Instruction(InstructionType.PushStackAddressFromFrame, parent.Offset));
+                        }
 
                         var methodReturnType = ConsumeFunctionCall(method, 1);
                         var returnValue = new MemoryReference { Type = methodReturnType, IsRValue = true };
+
+                        // For method invocation on R-Values, the returned value must replace the parent value
+                        if (parent.IsRValue)
+                        {
+                            CodeBuilder.Add(new Instruction(InstructionType.StoreToOffset, parent.Type.WordLength, returnValue.Type.WordLength));
+                        }
+                        
                         return ConsumeValueAccessor(returnValue);
                     }
                     throw CreateException(current.Value, $"Unknown member {member.Value} of type {structureValueType}");
@@ -286,7 +307,7 @@ namespace Elfenlabs.Scripting
                     // If the parent is a stack value then we need to load the parent's heap address to the stack first
                     if (!parent.IsHeap)
                     {
-                        CodeBuilder.Add(new Instruction(InstructionType.LoadStack, parent.Offset));
+                        CodeBuilder.Add(new Instruction(InstructionType.PushFromFrame, parent.Offset));
                     }
                     CodeBuilder.Add(new Instruction(InstructionType.IntAdd));
 

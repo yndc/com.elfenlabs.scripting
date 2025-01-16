@@ -254,6 +254,9 @@ namespace Elfenlabs.Scripting
         {
             Skip();
 
+            if (currentSubProgram.Header.ReturnType is ReferenceType)
+                throw CreateException(current.Value, "Cannot return a `ref`");
+
             if (currentSubProgram.Header.ReturnType == Type.Void)
             {
                 if (MatchAdvance(TokenType.StatementTerminator))

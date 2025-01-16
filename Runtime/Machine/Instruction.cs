@@ -67,7 +67,7 @@ namespace Elfenlabs.Scripting
         /// <br/>arg short : Index of the constant.
         /// <br/>arg byte  : Length in words to copy.
         /// </summary>
-        LoadConstant,
+        PushConstant,
 
         /// <summary>
         /// Pushes values from the stack, starting from the specified offset, onto the stack.
@@ -75,14 +75,21 @@ namespace Elfenlabs.Scripting
         /// <br/>arg short : Starting offset from the current frame pointer.
         /// <br/>arg byte  : Length in words to copy.
         /// </summary>
-        LoadStack,
+        PushFromFrame,
 
         /// <summary>
         /// Push the stack address for the current frame plus offset argument
         /// <br/>
         /// <br/>arg short : Offset to be added
         /// </summary>
-        LoadStackAddress,
+        PushStackAddressFromFrame,
+
+        /// <summary>
+        /// Push the stack address for the current stack head minus offset argument
+        /// <br/>
+        /// <br/>arg short : Offset to be added
+        /// </summary>
+        PushStackAddressFromTop,
 
         /// <summary>
         /// Push the stack value from an address onto the stack.
@@ -90,7 +97,7 @@ namespace Elfenlabs.Scripting
         /// <br/>arg short : Offset to add to the address
         /// <br/>arg byte  : Length in words to push
         /// </summary>
-        LoadFromStackAddress,
+        PushFromStackAddress,
 
         /// <summary>
         /// Pops a word from the stack, adds the offset, 
@@ -368,10 +375,11 @@ namespace Elfenlabs.Scripting
             { InstructionType.Call, Format.OBS },
             { InstructionType.Return, Format.OB },
             { InstructionType.Push, Format.OSs },
-            { InstructionType.LoadConstant, Format.OBS },
-            { InstructionType.LoadStack, Format.OBSs },
-            { InstructionType.LoadStackAddress, Format.OS },
-            { InstructionType.LoadFromStackAddress, Format.OBSs },
+            { InstructionType.PushConstant, Format.OBS },
+            { InstructionType.PushFromFrame, Format.OBSs },
+            { InstructionType.PushStackAddressFromFrame, Format.OS },
+            { InstructionType.PushStackAddressFromTop, Format.OS },
+            { InstructionType.PushFromStackAddress, Format.OBSs },
             { InstructionType.Store, Format.OBSs },
             { InstructionType.StoreToAddress, Format.OBSs },
             { InstructionType.StoreToOffset, Format.OBSs },

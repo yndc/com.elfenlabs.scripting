@@ -66,6 +66,8 @@ namespace Elfenlabs.Scripting
             var name = Consume(TokenType.Identifier).Value;
             var type = new StructureValueType(name);
 
+            RegisterType(type);
+
             Consume(TokenType.StatementTerminator, "Expected new-line after structure name");
 
             currentScope = currentScope.CreateChild();
@@ -73,8 +75,6 @@ namespace Elfenlabs.Scripting
             ConsumeStructureMembers(type);
 
             currentScope = currentScope.Parent;
-
-            RegisterType(type);
         }
 
         void ConsumeStructureMembers(StructureValueType type)

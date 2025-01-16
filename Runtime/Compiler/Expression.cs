@@ -175,7 +175,7 @@ namespace Elfenlabs.Scripting
                 // Access operator
                 // TODO: untested
                 case TokenType.Dot:
-                    var lhsValue = new MemoryReference { Type = lhsValueType, IsHeap = false, Offset = currentScope.WordLength };
+                    var lhsValue = new MemoryReference { Type = lhsValueType, IsRValue = true };
                     lhsValue = ConsumeValueAccessor(lhsValue);
                     return lhsValue.Type;
             }
@@ -244,11 +244,11 @@ namespace Elfenlabs.Scripting
                 }
                 else if (resolvedValue.IsUnderRef)
                 {
-                    CodeBuilder.Add(new Instruction(InstructionType.LoadFromStackAddress, resolvedValue.Offset, resolvedValue.Type.WordLength));
+                    CodeBuilder.Add(new Instruction(InstructionType.PushFromStackAddress, resolvedValue.Offset, resolvedValue.Type.WordLength));
                 }
                 else if (!resolvedValue.IsRValue)
                 {
-                    CodeBuilder.Add(new Instruction(InstructionType.LoadStack, resolvedValue.Offset, resolvedValue.Type.WordLength));
+                    CodeBuilder.Add(new Instruction(InstructionType.PushFromFrame, resolvedValue.Offset, resolvedValue.Type.WordLength));
                 }
                 return resolvedValue.Type;
             }

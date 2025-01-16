@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.VisualScripting.YamlDotNet.Core.Tokens;
-using static Elfenlabs.Scripting.StructureValueType;
 
 namespace Elfenlabs.Scripting
 {

@@ -70,16 +70,19 @@ namespace Elfenlabs.Scripting
                     case InstructionType.Push:
                         Push(instruction.ArgSignedShort);
                         break;
-                    case InstructionType.LoadConstant:
+                    case InstructionType.PushConstant:
                         LoadConstant(instruction.ArgShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.LoadStack:
+                    case InstructionType.PushFromFrame:
                         LoadStack(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
-                    case InstructionType.LoadStackAddress:
-                        LoadStackAddress(instruction.ArgSignedShort);
+                    case InstructionType.PushStackAddressFromFrame:
+                        PushStackAddressFromFrame(instruction.ArgSignedShort);
                         break;
-                    case InstructionType.LoadFromStackAddress:
+                    case InstructionType.PushStackAddressFromTop:
+                        PushStackAddressFromTop(instruction.ArgSignedShort);
+                        break;
+                    case InstructionType.PushFromStackAddress:
                         LoadFromStackAddress(instruction.ArgSignedShort, instruction.ArgByte1);
                         break;
                     case InstructionType.LoadHeap:

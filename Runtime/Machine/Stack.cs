@@ -136,9 +136,21 @@ namespace Elfenlabs.Scripting
         /// <param name="offset"></param>
         /// <param name="wordLen"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void LoadStackAddress(short offset)
+        unsafe void PushStackAddressFromFrame(short offset)
         {
             *stackHeadPtr = (int)(stackFramePtr + offset - Stack.GetUnsafePtr());
+            stackHeadPtr += 1;
+        }
+
+        /// <summary>
+        /// Push the stack address for the current frame plus offset argument
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <param name="wordLen"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void PushStackAddressFromTop(short offset)
+        {
+            *stackHeadPtr = (int)(stackHeadPtr - offset - Stack.GetUnsafePtr());
             stackHeadPtr += 1;
         }
 
