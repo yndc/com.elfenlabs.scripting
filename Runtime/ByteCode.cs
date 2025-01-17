@@ -52,6 +52,48 @@ namespace Elfenlabs.Scripting
             return instructions.Length - 1;
         }
 
+        public int Add(InstructionType op)
+        {
+            Add(new Instruction(op));
+            return instructions.Length - 1;
+        }
+
+        public int Add(InstructionType type, ushort arg)
+        {
+            Add(new Instruction(type, arg));
+            return instructions.Length - 1;
+        }
+
+        public int Add(InstructionType type, short signedShortArg)
+        {
+            Add(new Instruction(type, signedShortArg));
+            return instructions.Length - 1;
+        }
+
+        public int Add(InstructionType type, ushort shortArg, byte byteArg)
+        {
+            Add(new Instruction(type, shortArg, byteArg));
+            return instructions.Length - 1;
+        }
+
+        public int Add(InstructionType type, short signedShortArg, byte byteArg)
+        {
+            Add(new Instruction(type, signedShortArg, byteArg));
+            return instructions.Length - 1;
+        }
+
+        public int Add(InstructionType type, byte arg)
+        {
+            Add(new Instruction(type, arg));
+            return instructions.Length - 1;
+        }
+
+        public int Add(InstructionType type, byte arg1, byte arg2 = 0, byte arg3 = 0)
+        {
+            Add(new Instruction(type, arg1, arg2, arg3));
+            return instructions.Length - 1;
+        }
+
         public ref Instruction Patch(int index)
         {
             return ref instructions.ElementAt(index);

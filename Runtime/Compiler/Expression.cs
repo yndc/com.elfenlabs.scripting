@@ -274,7 +274,7 @@ namespace Elfenlabs.Scripting
                 Rewind();
 
                 type = ConsumeType();
-                CodeBuilder.AddConstant(type.GenerateDefaultValue());
+                type.Instantiate(CodeBuilder);
             }
 
             return type;

@@ -36,6 +36,11 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
+        /// Initialize this type
+        /// </summary>
+        public virtual void Initialize() { }
+
+        /// <summary>
         /// Try getting method by name
         /// </summary>
         /// <param name="name"></param>
@@ -56,12 +61,11 @@ namespace Elfenlabs.Scripting
         }
 
         /// <summary>
-        /// Generates default byte array for this type
+        /// Instantiate this type into a bytecode builder
         /// </summary>
-        /// <returns></returns>
-        public byte[] GenerateDefaultValue()
+        public virtual void Instantiate(ByteCodeBuilder builder)
         {
-            return new byte[WordLength * sizeof(int)];
+            builder.AddConstant(new byte[WordLength * sizeof(int)]);
         }
 
         public override int GetHashCode()

@@ -256,6 +256,7 @@ namespace Elfenlabs.Scripting
     public unsafe partial struct Machine
     {
         public Arena heap;
+        
         public int* heapPtr;
 
         /// <summary>
