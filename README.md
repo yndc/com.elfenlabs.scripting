@@ -1,10 +1,6 @@
 # Elfenscript
 
-An interpreted language with static typing designed for game scripting.
-
-Easy to learn, read, and type. Uses alphabetical keywords rather than symbols. One way to do something, less syntactic sugars.
-
-The bytecode VM should be as performant as possible for an interpreted language without resorting to JIT for portability & distribution restrictions. Adding external functions, providing, and receiving data should be frictionless.
+The goal is to create a fast interpreted language.
 
 ## Quickstart 
 
