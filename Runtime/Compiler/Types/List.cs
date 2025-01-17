@@ -11,6 +11,38 @@ namespace Elfenlabs.Scripting
         {
             Element = element;
         }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            // Add the methods
+            // base.Methods.Add(new FunctionHeader("Add", ));
+        }
+
+        public override void Instantiate(ByteCodeBuilder builder)
+        {
+            var initialSize = (short)GetInitialSize();
+
+            // Prepare for the reference counter
+            builder.Add(InstructionType.Push, (short)1);
+
+            // Allocate the initial capacity
+            builder.Add(InstructionType.FillZero, initialSize);
+            builder.Add(InstructionType.StoreToHeap, initialSize);
+
+            // Length and capacity
+            builder.Add(InstructionType.Push, 0);
+            builder.Add(InstructionType.Push, initialSize);
+
+            // Allocate the fat pointer, include the reference counter
+            builder.Add(InstructionType.StoreToHeap, 4);
+        }
+
+        public int GetInitialSize()
+        {
+            return 4;
+        }
     }
 
     /// <summary>
@@ -25,6 +57,6 @@ namespace Elfenlabs.Scripting
 
     public partial class Compiler
     {
-        
+
     }
 }
