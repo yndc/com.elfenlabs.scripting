@@ -2,83 +2,65 @@ using System.Collections.Generic;
 
 namespace Elfenlabs.Scripting
 {
-    public class StructureType : Type
+    public class StructureTypeTemplate
     {
-        public class Field
+        public class FieldTemplate
         {
             public string Name;
+            public PlaceholderType Placeholder;
             public Type Type;
-            public short Offset;
+
+            public FieldTemplate(string name, PlaceholderType placeholder)
+            {
+                Name = name;
+                Placeholder = placeholder;
+            }
+
+            public FieldTemplate(string name, Type type)
+            {
+                Name = name;
+                Type = type;
+            }
         }
 
-        public List<Field> Fields = new();
+        public string Identifier;
+
+        public List<FieldTemplate> Fields = new();
 
         public List<PlaceholderType> TypePlaceholders = new();
 
-        public TypeArguments ResolvedTypes;
+        public List<FunctionHeader> Methods = new();
 
-        public StructureType(string name) : base(name, 0) { }
-
-        public override bool HasUnresolved()
+        public StructureType Instantiate(TypeArguments typeArguments)
         {
-            if (TypePlaceholders.Count == 0)
-                return false;
-
-            foreach (var field in Fields)
-            {
-                if (field.Type is PlaceholderType)
-                    return true;
-            }
-
-            return false;
-        }
-
-        public override Type Clone()
-        {
-            var clone = new StructureType(Identifier.Name)
-            {
-                Fields = new List<Field>(),
-                TypePlaceholders = TypePlaceholders,
-                WordLength = WordLength,
-                Methods = Methods,
-            };
-
-            foreach (var field in Fields)
-            {
-                clone.Fields.Add(new Field { Name = field.Name, Type = field.Type.Clone(), Offset = field.Offset });
-            }
-
-            return clone;
-        }
-
-        public override void Resolve(TypeArguments typeArguments)
-        {
-            base.Resolve(typeArguments);
-
-            ResolvedTypes = typeArguments;
-
             if (TypePlaceholders.Count != typeArguments.Length)
                 throw new System.Exception($"Expected {TypePlaceholders.Count} generics but received {typeArguments.Length}");
 
-            foreach (var field in Fields)
+            var structure = new StructureType(Identifier + typeArguments.ToString());
+
+            for (int i = 0; i < Fields.Count; i++)
             {
-                if (field.Type is PlaceholderType placeholder)
+                var field = Fields[i];
+                if (field.Placeholder != null)
                 {
-                    field.Type = typeArguments[placeholder.Index];
+                    structure.AddField(field.Name, typeArguments[field.Placeholder.Index]);
+                }
+                else
+                {
+                    structure.AddField(field.Name, field.Type);
                 }
             }
 
-            if (HasUnresolved())
-                throw new System.Exception("Failed to resolve all field generics");
+            structure.Methods.AddRange(Methods);
 
-            RecalculateOffsets();
+            return structure;
         }
 
         public bool TryGetGeneric(string name, out PlaceholderType placeholder)
         {
             foreach (var generic in TypePlaceholders)
             {
-                if (generic.Identifier.Name == name)
+                if (generic.Identifier == name)
                 {
                     placeholder = generic;
                     return true;
@@ -94,104 +76,102 @@ namespace Elfenlabs.Scripting
         /// <param name="name"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public bool TryGetField(string name, out Field result)
-        {
-            foreach (var field in Fields)
-            {
-                if (field.Name == name)
-                {
-                    result = field;
-                    return true;
-                }
-            }
-            result = null;
-            return false;
-        }
-
-        /// <summary>
-        /// Adds a new field to the structure
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="type"></param>
-        public void AddField(string name, Type type)
-        {
-            Fields.Add(new Field { Name = name, Type = type, Offset = WordLength });
-            WordLength += type.WordLength;
-        }
-
-        /// <summary>
-        /// Recalculates field offsets and word length
-        /// </summary>
-        public void RecalculateOffsets()
-        {
-            short offset = 0;
-            WordLength = 0;
-            foreach (var field in Fields)
-            {
-                field.Offset = offset;
-                offset += field.Type.WordLength;
-                WordLength += field.Type.WordLength;
-            }
-        }
+        // public bool TryGetField(string name, out Field result)
+        // {
+        //     foreach (var field in Fields)
+        //     {
+        //         if (field.Name == name)
+        //         {
+        //             result = field;
+        //             return true;
+        //         }
+        //     }
+        //     result = null;
+        //     return false;
+        // }
     }
 
     public partial class Compiler
     {
-        void ConsumeStructureDeclaration()
-        {   
-            Consume(TokenType.Structure);
+        void ConsumeStructureTemplateDeclaration(string name)
+        {
 
-            var name = Consume(TokenType.Identifier).Value;
-
-            if (current.Value.Type == TokenType.Less)
+            var template = new StructureTypeTemplate
             {
-                ConsumeStructureTemplateDeclaration(name);
-                return;
-            }
+                Identifier = name,
+                TypePlaceholders = ConsumeTypeParameters()
+            };
 
-            var type = new StructureType(name);
-            RegisterType(type);
+            RegisterStructureTemplate(template);
 
             Consume(TokenType.StatementTerminator, "Expected new-line after structure name");
 
             currentScope = currentScope.CreateChild();
 
-            ConsumeStructureMembers(type);
+            ConsumeStructureTemplateMembers(template, typeParams);
 
             currentScope = currentScope.Parent;
         }
 
-        void ConsumeStructureMembers(StructureType type)
+        List<PlaceholderType> ConsumeTypeParameters()
+        {
+            Consume(TokenType.Less);
+
+            var result = new List<PlaceholderType>();
+
+            while (true)
+            {
+                var name = Consume(TokenType.Identifier).Value;
+                var type = new PlaceholderType(name, result.Count);
+
+                if (GetType(name, result) != null)
+                    throw CreateException(previous.Value, $"Type {name} already defined");
+
+                // TODO: handle constraints
+
+                result.Add(type);
+
+                if (MatchAdvance(TokenType.Comma))
+                    continue;
+
+                Consume(TokenType.Greater);
+                break;
+            }
+
+            return result;
+        }
+
+        void ConsumeStructureTemplateMembers(StructureTypeTemplate template, List<PlaceholderType> typePlaceholders)
         {
             while (true)
             {
                 if (!TryConsumeIndents(currentScope.Depth))
                     break;
 
-                ConsumeStructureMemberDeclaration(type);
+                ConsumeStructureMemberDeclaration(type, typePlaceholders);
             }
         }
 
-        void ConsumeStructureMemberDeclaration(StructureType type)
+        void ConsumeStructureMemberDeclaration(StructureType type, List<PlaceholderType> typePlaceholders)
         {
             switch (current.Value.Type)
             {
                 case TokenType.Field:
-                    ConsumeStructureFieldDeclaration(type);
+                    ConsumeStructureFieldDeclaration(type, typePlaceholders);
                     break;
                 case TokenType.Function:
-                    ConsumeStructureFunctionDeclaration(type);
+                    ConsumeStructureFunctionDeclaration(type, typePlaceholders);
                     break;
                 default:
                     throw new CompilerException(current.Value, $"Expected structure member declaration. Received: {current.Value}");
             }
         }
 
-        void ConsumeStructureFieldDeclaration(StructureType type)
+        void ConsumeStructureFieldDeclaration(StructureType type, List<PlaceholderType> typePlaceholders)
         {
             Consume(TokenType.Field);
             var fieldNname = Consume(TokenType.Identifier).Value;
-            var fieldType = ConsumeType();
+            var fieldType = ConsumeType(typePlaceholders);
             type.AddField(fieldNname, fieldType);
             Consume(TokenType.StatementTerminator, "Expected new-line after structure field declaration");
         }
@@ -203,7 +183,7 @@ namespace Elfenlabs.Scripting
             // Add 'self' variable as a reference to this structure
             function.Parameters.Insert(0, new FunctionHeader.Parameter("self", new ReferenceType(type)));
 
-            type.Methods.Add(function);
+            type.AddMethod(function);
 
             var subProgram = new SubProgram(function);
             RegisterSubProgram(subProgram);

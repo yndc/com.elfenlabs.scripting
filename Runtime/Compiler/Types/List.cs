@@ -5,9 +5,11 @@ namespace Elfenlabs.Scripting
     /// <summary>
     /// Lists are a type of pointer that points to a ListDescriptor
     /// </summary>
-    public class ListType : PointerType
+    public class ListType : Type
     {
-        public ListType(Type element) : base(element, new Path($"{element.Identifier.Name}[]"))
+        public Type Element;
+
+        public ListType(Type element) : base(new Path($"{element.Identifier.Name}[]"), 1)
         {
             Element = element;
         }

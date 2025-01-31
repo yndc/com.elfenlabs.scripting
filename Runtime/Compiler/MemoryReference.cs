@@ -41,7 +41,7 @@ namespace Elfenlabs.Scripting
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="field"></param>
-        public MemoryReference(MemoryReference parent, StructureValueType.Field field)
+        public MemoryReference(MemoryReference parent, StructureType.Field field)
         {
             Type = field.Type;
             IsHeap = parent.IsHeap;
@@ -84,7 +84,7 @@ namespace Elfenlabs.Scripting
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="field"></param>
-        public Variable(Variable parent, StructureValueType.Field field) : base()
+        public Variable(Variable parent, StructureType.Field field) : base()
         {
             Type = field.Type;
             Name = $"{parent.Name}.{field.Name}";
@@ -195,7 +195,7 @@ namespace Elfenlabs.Scripting
             var underlyingType = parent.Type is ReferenceType refType ? refType.Element : parent.Type;
             switch (underlyingType)
             {
-                case StructureValueType structureValueType:
+                case StructureType structureValueType:
                     var member = Consume(TokenType.Identifier, "Expected identifier after '.'");
                     if (structureValueType.TryGetField(member.Value, out var field))
                     {

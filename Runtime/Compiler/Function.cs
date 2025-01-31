@@ -1,9 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using Unity.Burst;
 using Unity.Collections;
-using static Unity.Entities.SystemBaseDelegates;
 
 namespace Elfenlabs.Scripting
 {
@@ -41,9 +38,25 @@ namespace Elfenlabs.Scripting
         public bool IsExternal;
 
         /// <summary>
+        /// Generic placeholder types of this function
+        /// </summary>
+        public List<PlaceholderType> PlaceholderTypes = new();
+
+        /// <summary>
+        /// Generic variants of this function, maps generic type to function table index
+        /// </summary>
+        public Dictionary<TypeArguments, int> GenericVariants = new();
+
+        /// <summary>
         /// The index of this function in the function table
         /// </summary>
         public ushort Index;
+
+        /// <summary>
+        /// The start of the function body, used for lazy compilation of generic variants 
+        /// </summary>
+        public Token Body;
+
 
         /// <summary>
         /// Word length of all parameters combined
@@ -55,12 +68,13 @@ namespace Elfenlabs.Scripting
         /// </summary>
         public byte ReturnWordLength => (byte)(ParameterWordLength + ReturnType.WordLength);
 
-        public FunctionHeader(string name, Type returnType, params Parameter[] parameters)
+        public FunctionHeader(string name, Type returnType, Token body, params Parameter[] parameters)
         {
             Name = name;
             ReturnType = returnType;
             Parameters = new List<Parameter>(parameters);
             Index = 0;
+            Body = body;
         }
     }
 
@@ -91,7 +105,8 @@ namespace Elfenlabs.Scripting
         {
             // Print (string) -> void
             RegisterExternalFunction(new FunctionHeader(
-                "Print", Type.Void, new FunctionHeader.Parameter("value", Type.String)
+                "Print", Type.Void, null,
+                new FunctionHeader.Parameter("value", Type.String)
             ));
         }
 
@@ -146,7 +161,7 @@ namespace Elfenlabs.Scripting
             var parameters = ConsumeFunctionDeclarationParameters();
             var returnType = MatchAdvance(TokenType.Returns) ? ConsumeType() : Type.Void;
             Consume(TokenType.StatementTerminator, "Expected new-line after function header");
-            return new FunctionHeader(name, returnType, parameters.ToArray());
+            return new FunctionHeader(name, returnType, current.Value, parameters.ToArray());
         }
 
         List<FunctionHeader.Parameter> ConsumeFunctionDeclarationParameters()
@@ -237,7 +252,7 @@ namespace Elfenlabs.Scripting
 
             var callParameterCount = callParameters.Count + injected;
 
-            if (callParameterCount  != functionParameters.Count)
+            if (callParameterCount != functionParameters.Count)
                 throw CreateException(current.Value,
                     $"Expected {functionParameters.Count} parameters, got {callParameters.Count}");
 

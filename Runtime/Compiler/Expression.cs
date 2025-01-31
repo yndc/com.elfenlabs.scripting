@@ -217,6 +217,8 @@ namespace Elfenlabs.Scripting
             // Check if a primitive type exists with the same name
             if (types.TryGetValue(identifier, out Type type))
             {
+                Rewind();
+                type = ConsumeType();
                 return ConsumeExpressionType(type);
             }
 
@@ -263,17 +265,14 @@ namespace Elfenlabs.Scripting
         Type ConsumeExpressionType(Type type)
         {
             // If it is a struct type and the next token is a left brace, it is a struct literal
-            if (type is StructureValueType && current.Value.Type == TokenType.LeftBrace)
+            if (type is StructureType && current.Value.Type == TokenType.LeftBrace)
             {
-                ConsumeStructLiteral(type as StructureValueType);
+                ConsumeStructLiteral(type as StructureType);
             }
 
             // Otherwise it is a default value
             else
             {
-                Rewind();
-
-                type = ConsumeType();
                 type.Instantiate(CodeBuilder);
             }
 
