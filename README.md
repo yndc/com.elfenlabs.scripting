@@ -1,6 +1,6 @@
 # Elfenscript
 
-The goal is to create a fast interpreted language.
+Fast and lightweight interpreted language with static typing and predictable GC.
 
 ## Quickstart 
 
@@ -16,7 +16,7 @@ Declare variables with the `var` keyword.
 var a = 1
 ```
 
-The language has static typings but variable types are inferred by usage. 
+Variable types are inferred by usage. 
 
 ### Types
 
@@ -27,7 +27,6 @@ Primitive type supported:
 - `Float` (single-precision 32-bit)
 - `Byte` (8 bit)
 - `Bool`
-- References
 
 Literal values are parsed by these rules:
 
@@ -62,6 +61,8 @@ Built-in compound types:
 - Tuple `(T1, T2, ... Tn)`: Stack-allocated fixed group of values 
 - Map `[Tk] -> Tv`: Heap-allocated hash map
 - Functions `(T1, T2, ... Tn) -> TR`
+- References `ref T`
+- Pointers `ptr T`
 
 
 ##### Spans
